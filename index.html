@@ -182,6 +182,12 @@
                             <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-6">Create New Task</h3>
                             <form id="createTaskForm" class="flex flex-col gap-6">
                                 <label class="flex flex-col">
+                                    <p class="text-white text-base font-medium leading-normal pb-2">Task Title</p>
+                                    <input id="taskTitle" type="text" placeholder="Enter task title..." class="form-input h-12 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4" />
+                                    <span class="text-xs text-white/50 pt-2">A short, descriptive title for your task.</span>
+                                </label>
+
+                                <label class="flex flex-col">
                                     <p class="text-white text-base font-medium leading-normal pb-2">Task Description</p>
                                     <textarea id="taskDescription" placeholder="Describe the task..." rows="4" class="form-input bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4 py-3"></textarea>
                                     <span class="text-xs text-white/50 pt-2">Provide a clear description of what needs to be done.</span>
@@ -1064,10 +1070,11 @@
                 return;
             }
 
+            const title = document.getElementById('taskTitle').value;
             const description = document.getElementById('taskDescription').value;
             const rewardAmount = document.getElementById('rewardAmount').value;
 
-            if (!description || !rewardAmount) {
+            if (!title || !description || !rewardAmount) {
                 alert('Please fill in all fields');
                 return;
             }
@@ -1077,7 +1084,7 @@
             resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Creating task...</span>';
 
             try {
-                const tx = await taskContract.createTask(description, rewardAmount);
+                const tx = await taskContract.createTask(title, description, rewardAmount);
                 resultDiv.innerHTML = '<span class="text-blue-400">⏳ Waiting for confirmation...</span>';
                 
                 const receipt = await tx.wait();
@@ -1203,7 +1210,10 @@
                         
                         taskCard.innerHTML = `
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-semibold text-lg text-white">Task #${currentTaskId}</h3>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-white">${task.title || `Task #${currentTaskId}`}</h3>
+                                    <p class="text-xs text-gray-400">ID: #${currentTaskId}</p>
+                                </div>
                                 <div class="flex flex-wrap gap-1">
                                     ${statusBadges}
                                 </div>
