@@ -3,6 +3,7 @@ import os
 from web3 import Web3
 from solcx import compile_standard, install_solc
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Configuration
 INFURA_URL = "https://sepolia.infura.io/v3/713dcbe5e2254d718e5040c2ae716c3f"
@@ -286,12 +287,26 @@ def main():
         
         print(f"Connected to network: {w3.eth.chain_id}")
         
+        # Load .env file from parent directory
+        env_path = BASE_DIR.parent / '.env'
+        if env_path.exists():
+            load_dotenv(env_path)
+            print(f"Loaded .env from {env_path}")
+        
         # Get private key from environment or prompt
-        private_key = os.getenv('PRIVATE_KEY')
+        private_key = os.getenv('SEPOLIA_PRIVATE_KEY') or os.getenv('PRIVATE_KEY')
         if not private_key:
-            private_key = input("Enter your private key (without 0x prefix): ")
+            private_key = input("Enter your private key (without 0x prefix): ").strip()
+            if not private_key:
+                print("Error: Private key cannot be empty!")
+                return
             if not private_key.startswith('0x'):
                 private_key = '0x' + private_key
+        
+        # Validate private key
+        if not private_key or private_key == '0x':
+            print("Error: Invalid private key!")
+            return
         
         # Deploy contracts
         deployment_info = deploy_contracts(w3, private_key, compiled_sol)

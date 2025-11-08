@@ -219,10 +219,10 @@
 
     <nav class="fixed top-0 w-full z-50 glass">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="landingpage.html" class="text-2xl font-bold gradient-text">SideQuests</a>
+            <a href="/" class="text-2xl font-bold gradient-text">SideQuests</a>
             <div class="flex items-center gap-4">
-                <a href="register.html" class="text-sm font-medium hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">Sign Up</a>
-                <a href="landingpage.html" class="text-sm font-medium hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">Home</a>
+                <a href="/register" class="text-sm font-medium hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">Sign Up</a>
+                <a href="/" class="text-sm font-medium hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">Home</a>
             </div>
         </div>
     </nav>
@@ -310,7 +310,7 @@
 
             <p class="text-center mt-8" style="color: #EEEFA8;">
                 Don't have an account? 
-                <a href="register.html" class="font-semibold hover:underline" style="color: #DDD92A;">Create one here</a>
+                <a href="/register" class="font-semibold hover:underline" style="color: #DDD92A;">Create one here</a>
             </p>
 
         </div>
@@ -390,8 +390,8 @@
 
         async function checkUserAndRedirect(user) {
             console.log('🔍 User logged in:', user.uid);
-            console.log('✅ Redirecting to dashboard');
-            window.location.href = 'dashboard.html';
+            console.log('✅ Redirecting to main app');
+            window.location.href = '/app';
         }
 
         // Module scripts are deferred, so DOM is ready

@@ -2,7 +2,7 @@
   "network": "sepolia",
   "deployer": "0x7C3097a9A187eB9268DC539CB8225a0E2B65156A",
   "rewardContract": {
-    "address": "0xcd26948F81639Df327e45105e5C2E7E926F0FaB5",
+    "address": "0xFD1b4a56B7Dc1321a674265F68400fE09E7101A5",
     "abi": [
       {
         "inputs": [
@@ -632,7 +632,7 @@
     ]
   },
   "taskContract": {
-    "address": "0xF61Dc01FAB66ad6AC2A13a23f4C613A1E74aA937",
+    "address": "0x77bD0b58d5786587614a00688Ddc9db7A592449E",
     "abi": [
       {
         "inputs": [
@@ -757,6 +757,12 @@
           {
             "indexed": false,
             "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
             "name": "description",
             "type": "string"
           },
@@ -850,6 +856,11 @@
         "inputs": [
           {
             "internalType": "string",
+            "name": "_title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
             "name": "_description",
             "type": "string"
           },
@@ -880,6 +891,11 @@
                 "internalType": "uint256",
                 "name": "id",
                 "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "title",
+                "type": "string"
               },
               {
                 "internalType": "string",
@@ -1103,6 +1119,11 @@
           },
           {
             "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
             "name": "description",
             "type": "string"
           },
@@ -1170,7 +1191,7 @@
     ]
   },
   "achievementBadgeContract": {
-    "address": "0x002b0A754D9E4AC22126DFA4a44180E48528Fe25",
+    "address": "0x101546970B89156d33EC9cDC576DAbfc1BE3C13D",
     "abi": [
       {
         "inputs": [
@@ -2299,5 +2320,5 @@
       }
     ]
   },
-  "deploymentBlock": 9588336
+  "deploymentBlock": 9588739
 }
