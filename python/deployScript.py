@@ -229,8 +229,8 @@ if __name__ == "__main__":
     load_dotenv()
     
     # 1. Connect to the EVM node
-    INFURA_URL = os.getenv("INFURA_URL")
-    PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+    INFURA_URL = os.getenv("SEPOLIA_URL")
+    PRIVATE_KEY = os.getenv("SEPOLIA_PRIVATE_KEY")
     
     if not INFURA_URL or not PRIVATE_KEY:
         print("Error: INFURA_URL and PRIVATE_KEY must be set in .env file")
