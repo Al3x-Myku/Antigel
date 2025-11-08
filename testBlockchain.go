@@ -453,7 +453,6 @@ func main() {
 
 	// Static assets (CSS, JS, images, etc.)
 	http.HandleFunc("/static/", staticAssetsHandler)
-
 	// Start server
 	port := ":8080"
 	log.Printf("🚀 SideQuests Backend Server starting on http://localhost%s", port)
@@ -462,7 +461,7 @@ func main() {
 	log.Printf("📝 Register page available at: http://localhost%s/register", port)
 	log.Printf("💻 Main app available at: http://localhost%s/app", port)
 	log.Printf("🌐 API endpoints available at /api/*")
-	log.Printf("� Static assets available at /static/*")
+	log.Printf("🗂️ Static assets available at /static/*")
 
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
