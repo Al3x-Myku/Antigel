@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SideQuests</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#DDD92A",
+                        "primary-light": "#EAE151",
+                        "primary-pale": "#EEEFA8",
+                        "secondary": "#DDD92A",
+                        "background-dark": "#2D2A32",
+                        "card-dark": "#3A3740",
+                        "border-dark": "#4A4750",
+                        "text-muted-dark": "#B0ADB5",
+                        "cream": "#FAFDF6",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "1.5rem",
+                        "xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-dark text-cream">
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <div class="flex flex-1 justify-center py-5">
+                <div class="layout-content-container flex flex-col w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <!-- TopNavBar -->
+                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark px-4 sm:px-6 py-4">
+                        <div class="flex items-center gap-4">
+                            <div class="size-6 text-primary">
+                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
+                        </div>
+                        <div class="flex flex-1 justify-end items-center gap-4">
+                            <button class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-light transition-colors">
+                                <span class="truncate">Create Quest</span>
+                            </button>
+                            <button class="relative flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-card-dark text-cream gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 border border-border-dark hover:border-primary/50 transition-colors">
+                                <span class="material-symbols-outlined text-cream text-xl">notifications</span>
+                                <span class="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                                </span>
+                            </button>
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-border-dark" id="userAvatar" style='background-image: url("https://via.placeholder.com/40");'></div>
+                        </div>
+                    </header>
+
+                    <main class="flex flex-col gap-8 mt-8">
+                        <!-- Page Heading -->
+                        <div class="flex flex-wrap justify-between gap-3 px-4 sm:px-6">
+                            <div class="flex min-w-72 flex-col gap-3">
+                                <p class="text-cream text-4xl font-bold leading-tight tracking-[-0.033em]" id="welcomeText">Welcome back!</p>
+                                <p class="text-text-muted-dark text-base font-normal leading-normal">Here's your quest overview for today.</p>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 sm:px-6">
+                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
+                                <p class="text-text-muted-dark text-base font-medium leading-normal">Total Token Balance</p>
+                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">$1,250.75</p>
+                                <p class="text-primary text-base font-medium leading-normal">+15.2%</p>
+                            </div>
+                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
+                                <p class="text-text-muted-dark text-base font-medium leading-normal">Quests Completed</p>
+                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">18</p>
+                                <p class="text-primary text-base font-medium leading-normal">+2 this week</p>
+                            </div>
+                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
+                                <p class="text-text-muted-dark text-base font-medium leading-normal">XP Earned</p>
+                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">3,400 XP</p>
+                                <p class="text-primary text-base font-medium leading-normal">+150</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 sm:px-6">
+                            <!-- Left Column: Active Quests -->
+                            <div class="lg:col-span-2 flex flex-col gap-4">
+                                <!-- Section Header -->
+                                <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">My Active Quests</h2>
+                                
+                                <!-- Tabs -->
+                                <div>
+                                    <div class="flex border-b border-border-dark gap-8">
+                                        <a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-cream pb-[13px] pt-2 cursor-pointer" href="#">
+                                            <p class="text-cream text-sm font-bold leading-normal tracking-[0.015em]">In Progress (3)</p>
+                                        </a>
+                                        <a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-muted-dark pb-[13px] pt-2 hover:text-cream transition-colors cursor-pointer" href="#">
+                                            <p class="text-sm font-bold leading-normal tracking-[0.015em]">Posted by Me (1)</p>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Quest Cards -->
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
+                                        <div class="flex items-center gap-4">
+                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Design");'></div>
+                                            <div>
+                                                <p class="text-cream font-bold">Redesign Community Onboarding Flow</p>
+                                                <p class="text-sm text-text-muted-dark">for EtherMinds DAO</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-6">
+                                            <div class="text-right">
+                                                <p class="font-bold text-primary">500 USDC</p>
+                                                <p class="text-sm text-text-muted-dark">+200 XP</p>
+                                            </div>
+                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
+                                        <div class="flex items-center gap-4">
+                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Tweet");'></div>
+                                            <div>
+                                                <p class="text-cream font-bold">Create a Twitter Thread about our new feature</p>
+                                                <p class="text-sm text-text-muted-dark">for QuantumLeap</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-6">
+                                            <div class="text-right">
+                                                <p class="font-bold text-primary">50 QLP</p>
+                                                <p class="text-sm text-text-muted-dark">+50 XP</p>
+                                            </div>
+                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
+                                        <div class="flex items-center gap-4">
+                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Code");'></div>
+                                            <div>
+                                                <p class="text-cream font-bold">Review 3 Pull Requests on GitHub</p>
+                                                <p class="text-sm text-text-muted-dark">for CodeCrafters</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-6">
+                                            <div class="text-right">
+                                                <p class="font-bold text-primary">100 ETH</p>
+                                                <p class="text-sm text-text-muted-dark">+150 XP</p>
+                                            </div>
+                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Recent Activity & Trending Communities -->
+                            <div class="lg:col-span-1 flex flex-col gap-8">
+                                <!-- Recent Activity -->
+                                <div class="flex flex-col gap-4">
+                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recent Activity</h2>
+                                    <div class="flex flex-col gap-5 rounded-lg bg-card-dark p-6 border border-border-dark">
+                                        <div class="flex items-start gap-4">
+                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary/20">
+                                                <span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-cream text-sm">You completed the quest <span class="font-bold">"Community Moderator"</span>.</p>
+                                                <p class="text-xs text-text-muted-dark">2 hours ago</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-4">
+                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary-light/20">
+                                                <span class="material-symbols-outlined text-primary-light text-lg">add_task</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-cream text-sm">Your submission for <span class="font-bold">"Redesign Flow"</span> was approved.</p>
+                                                <p class="text-xs text-text-muted-dark">1 day ago</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-4">
+                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary-pale/20">
+                                                <span class="material-symbols-outlined text-primary-pale text-lg">person_add</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-cream text-sm"><span class="font-bold">@zara</span> started following you.</p>
+                                                <p class="text-xs text-text-muted-dark">2 days ago</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Trending Communities -->
+                                <div class="flex flex-col gap-4">
+                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Trending Communities</h2>
+                                    <div class="flex flex-col gap-4">
+                                        <div class="flex items-center justify-between rounded-lg bg-card-dark p-4 border border-border-dark">
+                                            <div class="flex items-center gap-3">
+                                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://via.placeholder.com/40?text=EM");'></div>
+                                                <div>
+                                                    <p class="text-cream font-bold">EtherMinds DAO</p>
+                                                    <p class="text-sm text-text-muted-dark">1,204 Questers</p>
+                                                </div>
+                                            </div>
+                                            <button class="flex items-center justify-center rounded-full bg-primary h-8 px-3 text-background-dark text-xs font-bold hover:bg-primary-light transition-colors">Join</button>
+                                        </div>
+                                        <div class="flex items-center justify-between rounded-lg bg-card-dark p-4 border border-border-dark">
+                                            <div class="flex items-center gap-3">
+                                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://via.placeholder.com/40?text=QL");'></div>
+                                                <div>
+                                                    <p class="text-cream font-bold">QuantumLeap</p>
+                                                    <p class="text-sm text-text-muted-dark">987 Questers</p>
+                                                </div>
+                                            </div>
+                                            <button class="flex items-center justify-center rounded-full bg-primary h-8 px-3 text-background-dark text-xs font-bold hover:bg-primary-light transition-colors">Join</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUB3bsWDfitlfweFyLQnqlL1foTg3IiqU",
+            authDomain: "taskmatch-openhack2025.firebaseapp.com",
+            projectId: "taskmatch-openhack2025",
+            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
+            messagingSenderId: "1085072427435",
+            appId: "1:1085072427435:web:e31a9bf2ecc3a7a3a44dc3",
+            measurementId: "G-V4F74J4B2M"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Check authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                console.log('❌ No user authenticated, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            console.log('✅ User authenticated:', user.uid);
+            
+            // Update welcome text with user's name
+            const welcomeText = document.getElementById('welcomeText');
+            const displayName = user.displayName || user.email?.split('@')[0] || 'there';
+            welcomeText.textContent = `Welcome back, ${displayName}!`;
+            
+            // Update avatar if available
+            const userAvatar = document.getElementById('userAvatar');
+            if (user.photoURL) {
+                userAvatar.style.backgroundImage = `url("${user.photoURL}")`;
+            }
+            
+            console.log('👤 Dashboard loaded!');
+        });
+    </script>
+</body>
+</html>
