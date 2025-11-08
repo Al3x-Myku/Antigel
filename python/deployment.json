@@ -2,7 +2,7 @@
   "network": "sepolia",
   "deployer": "0x7C3097a9A187eB9268DC539CB8225a0E2B65156A",
   "rewardContract": {
-    "address": "0x81Dad8CD9C33c29A532bb1Fc2f0465AC98B92cF2",
+    "address": "0xcd26948F81639Df327e45105e5C2E7E926F0FaB5",
     "abi": [
       {
         "inputs": [
@@ -632,7 +632,7 @@
     ]
   },
   "taskContract": {
-    "address": "0x89859493D3519d51BC856f268423aA61cfc889aD",
+    "address": "0xF61Dc01FAB66ad6AC2A13a23f4C613A1E74aA937",
     "abi": [
       {
         "inputs": [
@@ -1170,7 +1170,7 @@
     ]
   },
   "achievementBadgeContract": {
-    "address": "0xC41451BBb7511202DC34aaa161527604e279d5D5",
+    "address": "0x002b0A754D9E4AC22126DFA4a44180E48528Fe25",
     "abi": [
       {
         "inputs": [
@@ -2299,5 +2299,5 @@
       }
     ]
   },
-  "deploymentBlock": 9587896
+  "deploymentBlock": 9588336
 }

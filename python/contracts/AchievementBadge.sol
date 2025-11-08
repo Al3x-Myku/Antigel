@@ -393,7 +393,83 @@ contract AchievementBadge is ERC721, ERC721Enumerable, ERC721URIStorage, AccessC
         override(ERC721, ERC721URIStorage)
         returns (string memory)
     {
-        return super.tokenURI(tokenId);
+        require(_exists(tokenId), "Token does not exist");
+        
+        Badge memory badge = badges[tokenId];
+        
+        // Generate on-chain metadata with proper JSON structure
+        string memory imageUrl = getAchievementImageURL(badge.achievementType);
+        string memory rarityText = getRarityText(badge.rarity);
+        
+        // Build JSON metadata (simple string concatenation to avoid stack issues)
+        string memory json = string(abi.encodePacked(
+            '{"name":"', badge.title, ' #', _toString(tokenId), 
+            '","description":"', badge.description,
+            '","image":"', imageUrl,
+            '","attributes":[{"trait_type":"Rarity","value":"', rarityText,
+            '"},{"trait_type":"Achievement Type","value":"', _toString(uint256(badge.achievementType)),
+            '"},{"trait_type":"Minted At","display_type":"date","value":', _toString(badge.mintedAt), '}]}'
+        ));
+        
+        // Return as data URI without base64 encoding (simpler and avoids stack issues)
+        return string(abi.encodePacked('data:application/json,', json));
+    }
+    
+    /**
+     * @dev Get achievement image URL
+     */
+    function getAchievementImageURL(AchievementType achievementType) internal pure returns (string memory) {
+        // Using reliable CDN images that won't change
+        if (achievementType == AchievementType.FIRST_TASK) return "https://img.icons8.com/fluency/96/000000/bullseye.png";
+        if (achievementType == AchievementType.TASK_MILESTONE_5) return "https://img.icons8.com/fluency/96/000000/star.png";
+        if (achievementType == AchievementType.TASK_MILESTONE_10) return "https://img.icons8.com/fluency/96/000000/fire-element.png";
+        if (achievementType == AchievementType.TASK_MILESTONE_25) return "https://img.icons8.com/fluency/96/000000/muscle.png";
+        if (achievementType == AchievementType.TASK_MILESTONE_50) return "https://img.icons8.com/fluency/96/000000/medal.png";
+        if (achievementType == AchievementType.TASK_MILESTONE_100) return "https://img.icons8.com/fluency/96/000000/crown.png";
+        if (achievementType == AchievementType.EARLY_ADOPTER) return "https://img.icons8.com/fluency/96/000000/rocket.png";
+        if (achievementType == AchievementType.TOKEN_COLLECTOR_100) return "https://img.icons8.com/fluency/96/000000/money-bag.png";
+        if (achievementType == AchievementType.TOKEN_COLLECTOR_500) return "https://img.icons8.com/fluency/96/000000/diamond.png";
+        if (achievementType == AchievementType.TOKEN_COLLECTOR_1000) return "https://img.icons8.com/fluency/96/000000/whale.png";
+        if (achievementType == AchievementType.COMMUNITY_BUILDER) return "https://img.icons8.com/fluency/96/000000/construction.png";
+        if (achievementType == AchievementType.MENTOR) return "https://img.icons8.com/fluency/96/000000/teacher.png";
+        if (achievementType == AchievementType.STREAK_7) return "https://img.icons8.com/fluency/96/000000/lightning-bolt.png";
+        if (achievementType == AchievementType.STREAK_30) return "https://img.icons8.com/fluency/96/000000/trophy.png";
+        if (achievementType == AchievementType.TOP_PERFORMER) return "https://img.icons8.com/fluency/96/000000/first-place.png";
+        if (achievementType == AchievementType.HELPFUL_REVIEWER) return "https://img.icons8.com/fluency/96/000000/handshake.png";
+        return "https://img.icons8.com/fluency/96/000000/trophy.png"; // Default
+    }
+    
+    /**
+     * @dev Get rarity text
+     */
+    function getRarityText(uint256 rarity) internal pure returns (string memory) {
+        if (rarity == 1) return "Common";
+        if (rarity == 2) return "Rare";
+        if (rarity == 3) return "Epic";
+        if (rarity == 4) return "Legendary";
+        return "Common";
+    }
+    
+    /**
+     * @dev Convert uint256 to string
+     */
+    function _toString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
     }
 
     function supportsInterface(bytes4 interfaceId)
