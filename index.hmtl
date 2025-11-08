@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go + Ethereum DApp</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use the Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center font-sans p-4">
+
+    <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-lg w-full border border-gray-700">
+        
+        <h1 class="text-3xl font-bold text-center mb-2 text-cyan-400">
+            Go + Ethereum DApp
+        </h1>
+        
+        <p class="text-center text-gray-400 mb-6">
+            Read from the blockchain or deploy a new contract.
+        </p>
+
+        <!--  -->
+
+        <!-- Section 1: Frontend Connection (MetaMask) -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-white">1. Frontend Connection (MetaMask)</h2>
+            <button id="frontendButton" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg hover:shadow-orange-500/50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-wait">
+                Connect with MetaMask
+            </button>
+            <div id="walletInfo" class="mt-4 p-3 bg-gray-700 rounded-lg text-gray-300 hidden">
+                <span class="text-gray-400 block text-sm">Connected Address:</span>
+                <span id="walletAddress" class="text-white font-mono text-sm break-all"></span>
+            </div>
+            <div id="frontendResult" class="mt-2 p-3 bg-gray-700 rounded-lg text-center text-gray-300 min-h-[50px] flex items-center justify-center">
+                Click the button...
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <hr class1="border-gray-600 my-6">
+
+        <!-- Section 2: Backend Connection (Go Server) -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-white">2. Backend Read (Go Server)</h2>
+            <button id="backendButton" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg hover:shadow-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-wait">
+                Check Block via Go Backend
+            </button>
+            <div id="backendResult" class="mt-4 p-3 bg-gray-700 rounded-lg text-center text-gray-300 min-h-[50px] flex items-center justify-center">
+                Click the button...
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <hr class="border-gray-600 my-6">
+
+        <!-- Section 3: Backend Deploy (Go Server) -->
+        <div>
+            <h2 class="text-xl font-semibold mb-3 text-white">3. Backend Deploy (Go Server)</h2>
+            <p class="text-sm text-gray-400 mb-3">This will use the server's wallet to deploy a simple "Storage" contract to the Sepolia testnet. Requires setup in <code>main.go</code>.</p>
+            <button id="deployButton" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg hover:shadow-green-500/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-wait">
+                Deploy Contract via Go Backend
+            </button>
+            <div id="deployResult" class="mt-4 p-3 bg-gray-700 rounded-lg text-center text-gray-300 min-h-[50px] flex items-center justify-center">
+                Click the button...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const frontendButton = document.getElementById('frontendButton');
+        const walletInfoDiv = document.getElementById('walletInfo');
+        const walletAddressSpan = document.getElementById('walletAddress');
+        const frontendResultDiv = document.getElementById('frontendResult');
+        
+        const backendButton = document.getElementById('backendButton');
+        const backendResultDiv = document.getElementById('backendResult');
+
+        const deployButton = document.getElementById('deployButton');
+        const deployResultDiv = document.getElementById('deployResult');
+
+        // --- 1. Frontend (MetaMask) Logic ---
+        frontendButton.addEventListener('click', async () => {
+            if (typeof window.ethereum === 'undefined') {
+                frontendResultDiv.innerHTML = '<span class="text-red-400">Error: MetaMask is not installed!</span>';
+                return;
+            }
+
+            frontendButton.disabled = true;
+            frontendButton.textContent = 'Connecting...';
+            frontendResultDiv.innerHTML = '<span class="text-gray-400">Please approve in MetaMask...</span>';
+            walletInfoDiv.classList.add('hidden');
+
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const userAddress = accounts[0];
+
+                if (userAddress) {
+                    // Show connected address
+                    walletAddressSpan.textContent = userAddress;
+                    walletInfoDiv.classList.remove('hidden');
+
+                    // Get the latest block number
+                    const blockNumberHex = await window.ethereum.request({ method: 'eth_blockNumber' });
+                    const blockNumber = parseInt(blockNumberHex, 16);
+
+                    frontendResultDiv.innerHTML = `
+                        <span class="text-green-400 font-medium">Success!</span>
+                        <span class="ml-2">Latest Block: <strong class="text-white">${blockNumber}</strong></span>
+                    `;
+                    frontendButton.textContent = 'Connected';
+                } else {
+                     throw new Error('No accounts returned from MetaMask.');
+                }
+
+            } catch (error) {
+                console.error('MetaMask Error:', error);
+                let errorMessage = 'User denied connection.';
+                if (error.code === 4001) { 
+                    errorMessage = 'You rejected the connection request.';
+                }
+                
+                frontendResultDiv.innerHTML = `<span class="text-red-400">Error:</span> ${errorMessage}`;
+                frontendButton.disabled = false;
+                frontendButton.textContent = 'Connect with MetaMask';
+            }
+        });
+
+        // --- 2. Backend (Go Server) Read Logic ---
+        backendButton.addEventListener('click', async () => {
+            backendButton.disabled = true;
+            backendButton.textContent = 'Contacting Server...';
+            backendResultDiv.innerHTML = '<span class="text-gray-400">Asking Go backend for block number...</span>';
+
+            try {
+                const response = await fetch('/api/connect');
+                const data = await response.json();
+
+                if (response.ok && data.blockNumber) {
+                    backendResultDiv.innerHTML = `
+                        <span class="text-green-400 font-medium">Success!</span>
+                        <span class="ml-2">Latest Block: <strong class="text-white">${data.blockNumber}</strong></span>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Unknown server error');
+                }
+
+            } catch (error) {
+                console.error('Backend Error:', error);
+                backendResultDiv.innerHTML = `<span class="text-red-400">Error:</span> ${error.message}`;
+            } finally {
+                backendButton.disabled = false;
+                backendButton.textContent = 'Check Block via Go Backend';
+            }
+        });
+
+        // --- 3. Backend (Go Server) Deploy Logic ---
+        deployButton.addEventListener('click', async () => {
+            deployButton.disabled = true;
+            deployButton.textContent = 'Deploying...';
+            deployResultDiv.innerHTML = '<span class="text-yellow-400">Sending deploy transaction via Go...</span>';
+
+            try {
+                const response = await fetch('/api/deploy', { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok && data.contractAddress) {
+                    deployResultDiv.innerHTML = `
+                        <span class="text-green-400 font-medium">Deploy Sent!</span>
+                        <div class="mt-2 text-sm">
+                            <span class="text-gray-400">Contract Address:</span>
+                            <span class="text-white font-mono break-all">${data.contractAddress}</span>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Unknown server error');
+                }
+
+            } catch (error) {
+                console.error('Deploy Error:', error);
+                deployResultDiv.innerHTML = `<span class="text-red-400">Error:</span> ${error.message}`;
+            } finally {
+                deployButton.disabled = false;
+                deployButton.textContent = 'Deploy Contract via Go Backend';
+            }
+        });
+    </script>
+
+</body>
+</html>
