@@ -76,6 +76,13 @@ def compile_contracts():
         allow_paths=str(BASE_DIR)
     )
     
+    # Check for compilation errors
+    if 'errors' in compiled_sol:
+        for error in compiled_sol['errors']:
+            if error['severity'] == 'error':
+                error_msg = error.get('formattedMessage', error.get('message', 'Unknown error'))
+                raise Exception(f"Compilation error: {error_msg}")
+    
     return compiled_sol
 
 def deploy_contracts(w3, private_key, compiled_sol):
@@ -125,7 +132,7 @@ def deploy_contracts(w3, private_key, compiled_sol):
     task_tx = TaskContract.constructor(reward_contract_address).build_transaction({
         'from': account.address,
         'nonce': w3.eth.get_transaction_count(account.address),
-        'gas': 2000000,
+        'gas': 3000000,
         'gasPrice': w3.eth.gas_price
     })
     
@@ -155,7 +162,7 @@ def deploy_contracts(w3, private_key, compiled_sol):
     ).build_transaction({
         'from': account.address,
         'nonce': w3.eth.get_transaction_count(account.address),
-        'gas': 100000,
+        'gas': 200000,
         'gasPrice': w3.eth.gas_price
     })
     
@@ -166,9 +173,14 @@ def deploy_contracts(w3, private_key, compiled_sol):
     grant_tx_receipt = w3.eth.wait_for_transaction_receipt(grant_tx_hash)
     print("MINTER_ROLE granted successfully!")
     
+    # Verify the role was granted
+    has_role = reward_contract_instance.functions.hasRole(minter_role, task_contract_address).call()
+    print(f"MINTER_ROLE verification: {has_role}")
+    
     # Save deployment info
     deployment_info = {
         "network": "sepolia",
+        "deployer": account.address,
         "rewardContract": {
             "address": reward_contract_address,
             "abi": reward_abi
@@ -176,15 +188,18 @@ def deploy_contracts(w3, private_key, compiled_sol):
         "taskContract": {
             "address": task_contract_address,
             "abi": task_abi
-        }
+        },
+        "deploymentBlock": reward_tx_receipt.blockNumber
     }
     
     with open('deployment.json', 'w') as f:
         json.dump(deployment_info, f, indent=2)
     
     print("\n=== Deployment Summary ===")
+    print(f"Deployer: {account.address}")
     print(f"RewardContract: {reward_contract_address}")
     print(f"TaskContract: {task_contract_address}")
+    print(f"MINTER_ROLE granted: {has_role}")
     print("Deployment info saved to deployment.json")
     
     return deployment_info
@@ -208,6 +223,8 @@ def main():
             print("Error: Could not connect to Ethereum network")
             return
         
+        print(f"Connected to network: {w3.eth.chain_id}")
+        
         # Get private key from environment or prompt
         private_key = os.getenv('PRIVATE_KEY')
         if not private_key:
@@ -216,10 +233,12 @@ def main():
                 private_key = '0x' + private_key
         
         # Deploy contracts
-        deploy_contracts(w3, private_key, compiled_sol)
+        deployment_info = deploy_contracts(w3, private_key, compiled_sol)
+        
+        print("\n=== Deployment Completed Successfully ===")
         
     except Exception as e:
-        print(f"Compilation Failed: {e}")
+        print(f"Deployment Failed: {e}")
         import traceback
         traceback.print_exc()
 
