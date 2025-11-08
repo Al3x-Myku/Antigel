@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./RewardContract.sol";
+import "./AchievementBadge.sol";
 
 contract TaskContract is Ownable {
     struct TaskStruct {
@@ -23,6 +24,7 @@ contract TaskContract is Ownable {
     // State variables
     uint256 public taskCounter;
     address public rewardToken;
+    address public achievementBadge;
     
     // Events
     event TaskCreated(uint256 indexed taskId, string description, uint256 reward, address creator);
@@ -31,9 +33,10 @@ contract TaskContract is Ownable {
     event TaskCompleted(uint256 indexed taskId, address worker, uint256 reward);
     event TaskCancelled(uint256 indexed taskId);
     
-    constructor(address _rewardToken) {
+    constructor(address _rewardToken, address _achievementBadge) {
         _transferOwnership(msg.sender);
         rewardToken = _rewardToken;
+        achievementBadge = _achievementBadge;
         taskCounter = 0;
     }
     
@@ -50,6 +53,12 @@ contract TaskContract is Ownable {
         });
         
         userTasks[msg.sender].push(taskCounter);
+        
+        // Update achievement tracking
+        if (achievementBadge != address(0)) {
+            AchievementBadge badgeContract = AchievementBadge(achievementBadge);
+            badgeContract.updateTaskCreation(msg.sender);
+        }
         
         emit TaskCreated(taskCounter, _description, _reward, msg.sender);
     }
@@ -85,12 +94,20 @@ contract TaskContract is Ownable {
         require(tasks[_taskId].worker != address(0), "Task not assigned");
         
         tasks[_taskId].completed = true;
+        address worker = tasks[_taskId].worker;
+        uint256 reward = tasks[_taskId].reward;
         
         // Mint rewards to the worker
         RewardContract rewardContract = RewardContract(rewardToken);
-        rewardContract.mint(tasks[_taskId].worker, tasks[_taskId].reward);
+        rewardContract.mint(worker, reward);
         
-        emit TaskCompleted(_taskId, tasks[_taskId].worker, tasks[_taskId].reward);
+        // Update achievement tracking
+        if (achievementBadge != address(0)) {
+            AchievementBadge badgeContract = AchievementBadge(achievementBadge);
+            badgeContract.updateTaskCompletion(worker, reward);
+        }
+        
+        emit TaskCompleted(_taskId, worker, reward);
     }
     
     function cancelTask(uint256 _taskId) public {
@@ -126,5 +143,9 @@ contract TaskContract is Ownable {
     // Admin functions
     function setRewardToken(address _rewardToken) public onlyOwner {
         rewardToken = _rewardToken;
+    }
+    
+    function setAchievementBadge(address _achievementBadge) public onlyOwner {
+        achievementBadge = _achievementBadge;
     }
 }

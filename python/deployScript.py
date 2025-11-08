@@ -38,6 +38,7 @@ def compile_contracts():
     print("Reading contract source files...")
     reward_contract_source = read_contract_file("RewardContract.sol")
     task_contract_source = read_contract_file("TaskContract.sol")
+    achievement_contract_source = read_contract_file("AchievementBadge.sol")
     
     print("Compiling contracts...")
     
@@ -47,7 +48,8 @@ def compile_contracts():
             "language": "Solidity",
             "sources": {
                 "RewardContract.sol": {"content": reward_contract_source},
-                "TaskContract.sol": {"content": task_contract_source}
+                "TaskContract.sol": {"content": task_contract_source},
+                "AchievementBadge.sol": {"content": achievement_contract_source}
             },
             "settings": {
                 # This is the key part - remapping @openzeppelin to the actual path
@@ -95,12 +97,16 @@ def deploy_contracts(w3, private_key, compiled_sol):
     # Extract contract data
     reward_contract = compiled_sol['contracts']['RewardContract.sol']['RewardContract']
     task_contract = compiled_sol['contracts']['TaskContract.sol']['TaskContract']
+    achievement_contract = compiled_sol['contracts']['AchievementBadge.sol']['AchievementBadge']
     
     reward_bytecode = reward_contract['evm']['bytecode']['object']
     reward_abi = reward_contract['abi']
     
     task_bytecode = task_contract['evm']['bytecode']['object']
     task_abi = task_contract['abi']
+    
+    achievement_bytecode = achievement_contract['evm']['bytecode']['object']
+    achievement_abi = achievement_contract['abi']
     
     # Deploy RewardContract
     print("\n=== Deploying RewardContract ===")
@@ -124,12 +130,34 @@ def deploy_contracts(w3, private_key, compiled_sol):
     reward_contract_address = reward_tx_receipt.contractAddress
     print(f"RewardContract deployed at: {reward_contract_address}")
     
+    # Deploy AchievementBadge Contract
+    print("\n=== Deploying AchievementBadge Contract ===")
+    AchievementContract = w3.eth.contract(abi=achievement_abi, bytecode=achievement_bytecode)
+    
+    # Build transaction for AchievementBadge (admin = deployer address)
+    achievement_tx = AchievementContract.constructor(account.address).build_transaction({
+        'from': account.address,
+        'nonce': w3.eth.get_transaction_count(account.address),
+        'gas': 5000000,  # Larger gas limit for NFT contract
+        'gasPrice': w3.eth.gas_price
+    })
+    
+    # Sign and send
+    signed_achievement_tx = w3.eth.account.sign_transaction(achievement_tx, private_key)
+    achievement_tx_hash = w3.eth.send_raw_transaction(signed_achievement_tx.raw_transaction)
+    print(f"AchievementBadge deployment tx: {achievement_tx_hash.hex()}")
+    
+    # Wait for confirmation
+    achievement_tx_receipt = w3.eth.wait_for_transaction_receipt(achievement_tx_hash)
+    achievement_contract_address = achievement_tx_receipt.contractAddress
+    print(f"AchievementBadge deployed at: {achievement_contract_address}")
+
     # Deploy TaskContract
     print("\n=== Deploying TaskContract ===")
     TaskContract = w3.eth.contract(abi=task_abi, bytecode=task_bytecode)
     
-    # Build transaction for TaskContract (pass RewardContract address)
-    task_tx = TaskContract.constructor(reward_contract_address).build_transaction({
+    # Build transaction for TaskContract (pass RewardContract and AchievementBadge addresses)
+    task_tx = TaskContract.constructor(reward_contract_address, achievement_contract_address).build_transaction({
         'from': account.address,
         'nonce': w3.eth.get_transaction_count(account.address),
         'gas': 3000000,
@@ -176,6 +204,33 @@ def deploy_contracts(w3, private_key, compiled_sol):
     # Verify the role was granted
     has_role = reward_contract_instance.functions.hasRole(minter_role, task_contract_address).call()
     print(f"MINTER_ROLE verification: {has_role}")
+
+    # Grant MINTER_ROLE to TaskContract on AchievementBadge
+    print("\n=== Granting MINTER_ROLE to TaskContract on AchievementBadge ===")
+    achievement_contract_instance = w3.eth.contract(
+        address=achievement_contract_address,
+        abi=achievement_abi
+    )
+    
+    grant_achievement_role_tx = achievement_contract_instance.functions.grantMinterRole(
+        task_contract_address
+    ).build_transaction({
+        'from': account.address,
+        'nonce': w3.eth.get_transaction_count(account.address),
+        'gas': 200000,
+        'gasPrice': w3.eth.gas_price
+    })
+    
+    signed_grant_achievement_tx = w3.eth.account.sign_transaction(grant_achievement_role_tx, private_key)
+    grant_achievement_tx_hash = w3.eth.send_raw_transaction(signed_grant_achievement_tx.raw_transaction)
+    print(f"GrantMinterRole tx: {grant_achievement_tx_hash.hex()}")
+    
+    grant_achievement_tx_receipt = w3.eth.wait_for_transaction_receipt(grant_achievement_tx_hash)
+    print("MINTER_ROLE granted to TaskContract on AchievementBadge successfully!")
+    
+    # Verify the role was granted
+    has_achievement_role = achievement_contract_instance.functions.hasRole(minter_role, task_contract_address).call()
+    print(f"Achievement MINTER_ROLE verification: {has_achievement_role}")
     
     # Save deployment info
     deployment_info = {
@@ -189,6 +244,10 @@ def deploy_contracts(w3, private_key, compiled_sol):
             "address": task_contract_address,
             "abi": task_abi
         },
+        "achievementBadgeContract": {
+            "address": achievement_contract_address,
+            "abi": achievement_abi
+        },
         "deploymentBlock": reward_tx_receipt.blockNumber
     }
     
@@ -199,7 +258,9 @@ def deploy_contracts(w3, private_key, compiled_sol):
     print(f"Deployer: {account.address}")
     print(f"RewardContract: {reward_contract_address}")
     print(f"TaskContract: {task_contract_address}")
-    print(f"MINTER_ROLE granted: {has_role}")
+    print(f"AchievementBadgeContract: {achievement_contract_address}")
+    print(f"Reward MINTER_ROLE granted: {has_role}")
+    print(f"Achievement MINTER_ROLE granted: {has_achievement_role}")
     print("Deployment info saved to deployment.json")
     
     return deployment_info
