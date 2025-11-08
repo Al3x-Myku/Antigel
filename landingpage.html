@@ -15,17 +15,19 @@
         
         body {
             font-family: 'Space Grotesk', sans-serif;
-            background: #0a0e1a;
-            color: white;
+            background: #2D2A32;
+            color: #FAFDF6;
             overflow-x: hidden;
             position: relative;
         }
 
-        /* Orange-focused Color Scheme */
+        /* New Color Scheme */
         :root {
-            --orange-primary: #FF8A00;
-            --orange-secondary: #FF6B00;
-            --cyan-accent: #00FFD1;
+            --dark-bg: #2D2A32;
+            --yellow-primary: #DDD92A;
+            --yellow-light: #EAE151;
+            --yellow-pale: #EEEFA8;
+            --cream: #FAFDF6;
         }
 
         /* Particle Snow Effect */
@@ -50,7 +52,7 @@
             position: fixed;
             width: 3px;
             height: 3px;
-            background: rgba(255, 138, 0, 0.6);
+            background: rgba(221, 217, 42, 0.6);
             border-radius: 50%;
             pointer-events: none;
             z-index: 1;
@@ -58,7 +60,7 @@
         }
 
         .particle:nth-child(odd) {
-            background: rgba(0, 255, 209, 0.4);
+            background: rgba(234, 225, 81, 0.4);
         }
 
         /* MODERN PROFESSIONAL ANIMATIONS - Inspired by Stripe, Apple, Vercel */
@@ -100,9 +102,9 @@
             transform: translateY(-8px) scale(1.02);
         }
 
-        /* Gradient text - Orange only */
+        /* Gradient text - Yellow */
         .gradient-text {
-            background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 50%, #FF5500 100%);
+            background: linear-gradient(135deg, var(--yellow-primary) 0%, var(--yellow-light) 50%, var(--yellow-pale) 100%);
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -110,35 +112,35 @@
             animation: shimmer 3s ease-in-out infinite;
         }
 
-        /* Animated gradient border - Orange primary with subtle cyan */
+        /* Animated gradient border - Yellow */
         .gradient-border {
             position: relative;
             padding: 2px;
-            background: linear-gradient(90deg, var(--orange-primary), var(--orange-secondary), var(--cyan-accent), var(--orange-secondary), var(--orange-primary));
+            background: linear-gradient(90deg, var(--yellow-primary), var(--yellow-light), var(--yellow-pale), var(--yellow-light), var(--yellow-primary));
             background-size: 400% 400%;
             animation: borderGlow 4s ease infinite;
             border-radius: 16px;
         }
 
         .gradient-border-inner {
-            background: #0f1419;
+            background: #3a3742;
             border-radius: 14px;
             padding: 2rem;
             height: 100%;
         }
 
-        /* Smooth button effects - Orange primary */
+        /* Smooth button effects - Yellow primary */
         .btn-primary {
-            background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 100%);
-            color: #000000;
+            background: linear-gradient(135deg, var(--yellow-primary) 0%, var(--yellow-light) 100%);
+            color: #2D2A32;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 138, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(221, 217, 42, 0.4);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(255, 138, 0, 0.6);
+            box-shadow: 0 15px 40px rgba(221, 217, 42, 0.6);
         }
 
         /* Scroll reveal system */
@@ -159,26 +161,26 @@
         .delay-5 { animation-delay: 0.5s; }
         .delay-6 { animation-delay: 0.6s; }
 
-        /* Subtle glow - orange */
+        /* Subtle glow - yellow */
         .glow {
-            box-shadow: 0 0 30px rgba(255, 138, 0, 0.6),
-                        0 0 60px rgba(255, 138, 0, 0.4);
+            box-shadow: 0 0 30px rgba(221, 217, 42, 0.6),
+                        0 0 60px rgba(221, 217, 42, 0.4);
         }
 
-        /* Background grid - orange tint */
+        /* Background grid - yellow tint */
         .grid-bg {
             background-image: 
-                linear-gradient(rgba(255, 138, 0, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 138, 0, 0.05) 1px, transparent 1px);
+                linear-gradient(rgba(221, 217, 42, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(221, 217, 42, 0.05) 1px, transparent 1px);
             background-size: 50px 50px;
         }
 
-        /* Glass morphism - subtle cyan tint */
+        /* Glass morphism - yellow tint */
         .glass {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(221, 217, 42, 0.1);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 209, 0.1);
-            box-shadow: 0 4px 6px rgba(0, 255, 209, 0.05);
+            border: 1px solid rgba(221, 217, 42, 0.2);
+            box-shadow: 0 4px 6px rgba(221, 217, 42, 0.1);
         }
 
         .material-symbols-outlined {
@@ -208,7 +210,7 @@
             <h1 class="text-6xl md:text-8xl font-bold mb-6 scroll-reveal">
                 Complete <span class="gradient-text">Quests</span>,<br/>Earn Rewards
             </h1>
-            <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto scroll-reveal delay-1">
+            <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto scroll-reveal delay-1">
                 The decentralized platform where communities create tasks and contributors earn crypto rewards on-chain
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center scroll-reveal delay-2">
@@ -234,12 +236,12 @@
                 <div class="gradient-border card-hover scroll-reveal delay-1">
                     <div class="gradient-border-inner">
                         <div class="flex items-start gap-4">
-                            <div class="p-3 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-400/20">
-                                <span class="material-symbols-outlined text-3xl text-orange-400">account_balance_wallet</span>
+                            <div class="p-3 rounded-xl" style="background: linear-gradient(135deg, rgba(221, 217, 42, 0.2), rgba(234, 225, 81, 0.2));">
+                                <span class="material-symbols-outlined text-3xl" style="color: #DDD92A;">account_balance_wallet</span>
                             </div>
                             <div>
                                 <h3 class="text-2xl font-bold mb-3">Decentralized & Trustless</h3>
-                                <p class="text-gray-400 leading-relaxed">
+                                <p class="text-gray-300 leading-relaxed">
                                     All tasks and rewards managed on-chain through smart contracts. Complete transparency, no middlemen, zero platform fees.
                                 </p>
                             </div>
@@ -251,12 +253,12 @@
                 <div class="gradient-border card-hover scroll-reveal delay-2">
                     <div class="gradient-border-inner">
                         <div class="flex items-start gap-4">
-                            <div class="p-3 rounded-xl bg-gradient-to-br from-orange-600/20 to-orange-500/20">
-                                <span class="material-symbols-outlined text-3xl text-orange-500">verified</span>
+                            <div class="p-3 rounded-xl" style="background: linear-gradient(135deg, rgba(234, 225, 81, 0.2), rgba(238, 239, 168, 0.2));">
+                                <span class="material-symbols-outlined text-3xl" style="color: #EAE151;">verified</span>
                             </div>
                             <div>
                                 <h3 class="text-2xl font-bold mb-3">Verified Rewards</h3>
-                                <p class="text-gray-400 leading-relaxed">
+                                <p class="text-gray-300 leading-relaxed">
                                     Community-verified task completion ensures quality. Earn tokens and NFT badges for your verified contributions.
                                 </p>
                             </div>
@@ -276,32 +278,32 @@
             <div class="grid md:grid-cols-3 gap-12">
                 <!-- Step 1 -->
                 <div class="text-center scroll-reveal delay-1">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-400/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-3xl text-orange-400">login</span>
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(221, 217, 42, 0.2), rgba(234, 225, 81, 0.2));">
+                        <span class="material-symbols-outlined text-3xl" style="color: #DDD92A;">login</span>
                     </div>
                     <div class="text-5xl font-bold gradient-text mb-4">01</div>
                     <h3 class="text-2xl font-bold mb-3">Connect Wallet</h3>
-                    <p class="text-gray-400">Connect your MetaMask wallet on Sepolia testnet to get started</p>
+                    <p class="text-gray-300">Connect your MetaMask wallet on Sepolia testnet to get started</p>
                 </div>
 
                 <!-- Step 2 -->
                 <div class="text-center scroll-reveal delay-2">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-600/20 to-orange-500/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-3xl text-orange-500">add_task</span>
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(234, 225, 81, 0.2), rgba(238, 239, 168, 0.2));">
+                        <span class="material-symbols-outlined text-3xl" style="color: #EAE151;">add_task</span>
                     </div>
                     <div class="text-5xl font-bold gradient-text mb-4">02</div>
                     <h3 class="text-2xl font-bold mb-3">Create or Claim</h3>
-                    <p class="text-gray-400">Post new quests for your community or claim existing ones to complete</p>
+                    <p class="text-gray-300">Post new quests for your community or claim existing ones to complete</p>
                 </div>
 
                 <!-- Step 3 -->
                 <div class="text-center scroll-reveal delay-3">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500/20 to-cyan-400/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-3xl text-cyan-400">workspace_premium</span>
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(238, 239, 168, 0.2), rgba(250, 253, 246, 0.2));">
+                        <span class="material-symbols-outlined text-3xl" style="color: #EEEFA8;">workspace_premium</span>
                     </div>
                     <div class="text-5xl font-bold gradient-text mb-4">03</div>
                     <h3 class="text-2xl font-bold mb-3">Earn Rewards</h3>
-                    <p class="text-gray-400">Complete tasks and get verified to earn tokens and NFT badges</p>
+                    <p class="text-gray-300">Complete tasks and get verified to earn tokens and NFT badges</p>
                 </div>
             </div>
         </div>
@@ -313,7 +315,7 @@
             <h2 class="text-5xl md:text-6xl font-bold mb-6 scroll-reveal">
                 Ready to Start Your <span class="gradient-text">Quest</span>?
             </h2>
-            <p class="text-xl text-gray-400 mb-12 scroll-reveal delay-1">
+            <p class="text-xl text-gray-300 mb-12 scroll-reveal delay-1">
                 Join thousands of contributors earning rewards for their work
             </p>
             <a href="index.html" class="btn-primary px-12 py-5 rounded-full font-bold text-xl inline-flex items-center gap-3 glow scroll-reveal delay-2">
@@ -328,17 +330,17 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-2xl font-bold gradient-text">SideQuests</div>
             <div class="flex gap-6">
-                <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                <a href="#" class="hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">
                     <span class="material-symbols-outlined">mail</span>
                 </a>
-                <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                <a href="#" class="hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
-                <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                <a href="#" class="hover:text-yellow-400 transition-colors" style="color: #EEEFA8;">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 </a>
             </div>
-            <p class="text-gray-500 text-sm">© 2025 SideQuests. All rights reserved.</p>
+            <p style="color: #EEEFA8;" class="text-sm">© 2025 SideQuests. All rights reserved.</p>
         </div>
     </footer>
 
