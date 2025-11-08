@@ -176,6 +176,38 @@
             letter-spacing: 1px;
         }
 
+        /* Message boxes */
+        .message-box {
+            padding: 16px 20px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            margin: 16px 0 !important;
+            border: 1px solid !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        .message-error {
+            background: linear-gradient(135deg, rgba(234, 225, 81, 0.15), rgba(221, 217, 42, 0.15)) !important;
+            color: #EAE151 !important;
+            border-color: rgba(234, 225, 81, 0.4) !important;
+        }
+
+        .message-success {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(74, 222, 128, 0.15)) !important;
+            color: #4ade80 !important;
+            border-color: rgba(34, 197, 94, 0.4) !important;
+        }
+
+        .message-info {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.15)) !important;
+            color: #60a5fa !important;
+            border-color: rgba(96, 165, 250, 0.4) !important;
+        }
+
         .fade-in {
             animation: fadeUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
         }
@@ -270,18 +302,11 @@
                         </div>
                     </div>
 
-                    <div id="errorMessage" class="hidden mt-6 p-4 rounded-xl" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
-                        <div class="flex items-start gap-3">
-                            <span class="material-symbols-outlined">error</span>
-                            <div>
-                                <p class="font-semibold mb-1">Error</p>
-                                <p id="errorText" class="text-sm"></p>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
+
+            <!-- Error message will be injected here dynamically -->
+            <div id="errorContainer"></div>
 
             <p class="text-center mt-8" style="color: #EEEFA8;">
                 Don't have an account? 
@@ -323,118 +348,276 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let confirmationResult = null;
+        console.log('🔥 Firebase initialized successfully');
+        console.log('📱 Auth instance:', auth ? 'OK' : 'FAILED');
+        console.log('💾 Firestore instance:', db ? 'OK' : 'FAILED');
 
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
+        let confirmationResult = null;
+        let recaptchaVerifier = null;
 
         function showError(message) {
-            errorText.textContent = message;
-            errorMessage.classList.remove('hidden');
+            console.error('❌ ERROR:', message);
+            const errorContainer = document.getElementById('errorContainer');
+            
+            if (!errorContainer) {
+                console.error('⚠️ Error container not found in DOM');
+                return;
+            }
+            
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message-box message-error';
+            errorDiv.innerHTML = `
+                <span class="material-symbols-outlined">error</span>
+                <div>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            
+            // Clear any existing errors and add new one
+            errorContainer.innerHTML = '';
+            errorContainer.appendChild(errorDiv);
+            
+            // Remove after 5 seconds
             setTimeout(() => {
-                errorMessage.classList.add('hidden');
+                errorDiv.style.opacity = '0';
+                errorDiv.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    errorContainer.innerHTML = '';
+                }, 300);
             }, 5000);
         }
 
         async function checkUserAndRedirect(user) {
+            console.log('🔍 Checking user:', user.uid);
             try {
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists() && userDoc.data().walletAddress) {
-                    window.location.href = 'index.html';
+                console.log('📄 User document exists:', userDoc.exists());
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log('👤 User data:', userData);
+                    console.log('💳 Has wallet:', !!userData.walletAddress);
+                    
+                    if (userData.walletAddress) {
+                        console.log('✅ User complete, redirecting to index.html');
+                        window.location.href = 'index.html';
+                    } else {
+                        console.log('⚠️ User missing wallet, redirecting to register');
+                        showError('Please complete registration first');
+                        setTimeout(() => {
+                            window.location.href = 'register.html';
+                        }, 2000);
+                    }
                 } else {
+                    console.log('⚠️ User document does not exist');
                     showError('Please complete registration first');
                     setTimeout(() => {
                         window.location.href = 'register.html';
                     }, 2000);
                 }
             } catch (error) {
-                console.error('Error checking user:', error);
-                showError('Error verifying account');
+                console.error('💥 Error checking user:', error);
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    stack: error.stack
+                });
+                showError('Error verifying account: ' + error.message);
             }
         }
 
+        // Module scripts are deferred, so DOM is ready
+        console.log('🔍 Setting up event listeners...');
+        
         // Show/Hide Phone Section
-        document.getElementById('showPhoneBtn').addEventListener('click', () => {
-            document.getElementById('phoneSection').classList.remove('hidden');
-            document.getElementById('showPhoneBtn').style.display = 'none';
-        });
+        const showPhoneBtn = document.getElementById('showPhoneBtn');
+        const hidePhoneBtn = document.getElementById('hidePhoneBtn');
+        const phoneSection = document.getElementById('phoneSection');
+        
+        console.log('📱 showPhoneBtn:', showPhoneBtn ? 'FOUND' : 'NOT FOUND');
+        console.log('📱 hidePhoneBtn:', hidePhoneBtn ? 'FOUND' : 'NOT FOUND');
+        console.log('📱 phoneSection:', phoneSection ? 'FOUND' : 'NOT FOUND');
+        
+        if (showPhoneBtn) {
+            showPhoneBtn.addEventListener('click', () => {
+                console.log('👆 Show phone button clicked');
+                if (phoneSection) phoneSection.classList.remove('hidden');
+                showPhoneBtn.style.display = 'none';
+            });
+        }
 
-        document.getElementById('hidePhoneBtn').addEventListener('click', () => {
-            document.getElementById('phoneSection').classList.add('hidden');
-            document.getElementById('showPhoneBtn').style.display = 'block';
-        });
+        if (hidePhoneBtn) {
+            hidePhoneBtn.addEventListener('click', () => {
+                console.log('👆 Hide phone button clicked');
+                if (phoneSection) phoneSection.classList.add('hidden');
+                if (showPhoneBtn) showPhoneBtn.style.display = 'block';
+            });
+        }
 
-        document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-            try {
-                const provider = new GoogleAuthProvider();
-                const result = await signInWithPopup(auth, provider);
-                await checkUserAndRedirect(result.user);
-            } catch (error) {
-                console.error('Google sign in error:', error);
-                showError(error.message);
-            }
-        });
+        // Google Sign In
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        console.log('🔘 googleSignInBtn:', googleSignInBtn ? 'FOUND' : 'NOT FOUND');
+        
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', async () => {
+                console.log('👆 Google sign in button clicked');
+                try {
+                    const provider = new GoogleAuthProvider();
+                    console.log('🔐 Attempting Google sign in...');
+                    const result = await signInWithPopup(auth, provider);
+                    console.log('✅ Google sign in successful!', result.user.email);
+                    await checkUserAndRedirect(result.user);
+                } catch (error) {
+                    console.error('💥 Google sign in error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    showError(error.message);
+                }
+            });
+        }
 
-        document.getElementById('emailSignInBtn').addEventListener('click', async () => {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
+        // Email Sign In
+        const emailSignInBtn = document.getElementById('emailSignInBtn');
+        console.log('🔘 emailSignInBtn:', emailSignInBtn ? 'FOUND' : 'NOT FOUND');
+        
+        if (emailSignInBtn) {
+            emailSignInBtn.addEventListener('click', async () => {
+                console.log('👆 Email sign in button clicked');
+                const emailInput = document.getElementById('emailInput');
+                const passwordInput = document.getElementById('passwordInput');
+                
+                console.log('📧 emailInput:', emailInput ? 'FOUND' : 'NOT FOUND');
+                console.log('🔑 passwordInput:', passwordInput ? 'FOUND' : 'NOT FOUND');
+                
+                if (!emailInput || !passwordInput) {
+                    console.error('⚠️ Input elements missing');
+                    return;
+                }
+                
+                const email = emailInput.value;
+                const password = passwordInput.value;
 
-            if (!email || !password) {
-                showError('Please enter both email and password');
-                return;
-            }
+                console.log('📧 Email:', email ? email : 'EMPTY');
+                console.log('🔑 Password:', password ? '***' : 'EMPTY');
 
-            try {
-                const result = await signInWithEmailAndPassword(auth, email, password);
-                await checkUserAndRedirect(result.user);
-            } catch (error) {
-                console.error('Email sign in error:', error);
-                showError(error.message);
-            }
-        });
+                if (!email || !password) {
+                    console.warn('⚠️ Email or password is empty');
+                    showError('Please enter both email and password');
+                    return;
+                }
 
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'normal',
-            'callback': (response) => {
-                console.log('Recaptcha verified');
-            }
-        });
+                try {
+                    console.log('🔐 Attempting email sign in...');
+                    const result = await signInWithEmailAndPassword(auth, email, password);
+                    console.log('✅ Email sign in successful!', result.user.email);
+                    await checkUserAndRedirect(result.user);
+                } catch (error) {
+                    console.error('💥 Email sign in error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    showError(error.message);
+                }
+            });
+        }
 
-        document.getElementById('phoneSignInBtn').addEventListener('click', async () => {
-            const phoneNumber = document.getElementById('phoneInput').value;
+        // Phone Sign In
+        const phoneSignInBtn = document.getElementById('phoneSignInBtn');
+        console.log('🔘 phoneSignInBtn:', phoneSignInBtn ? 'FOUND' : 'NOT FOUND');
+        
+        if (phoneSignInBtn) {
+            phoneSignInBtn.addEventListener('click', async () => {
+                console.log('👆 Phone sign in button clicked');
+                const phoneInput = document.getElementById('phoneInput');
+                
+                console.log('📞 phoneInput:', phoneInput ? 'FOUND' : 'NOT FOUND');
+                
+                if (!phoneInput) {
+                    console.error('⚠️ Phone input element missing');
+                    return;
+                }
+                
+                const phoneNumber = phoneInput.value;
+                console.log('📞 Phone number:', phoneNumber ? phoneNumber : 'EMPTY');
 
-            if (!phoneNumber) {
-                showError('Please enter a phone number');
-                return;
-            }
+                if (!phoneNumber) {
+                    console.warn('⚠️ Phone number is empty');
+                    showError('Please enter a phone number');
+                    return;
+                }
 
-            try {
-                const appVerifier = window.recaptchaVerifier;
-                confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-                document.getElementById('verificationCodeDiv').classList.remove('hidden');
-                showError('Verification code sent to your phone');
-            } catch (error) {
-                console.error('Phone sign in error:', error);
-                showError(error.message);
-            }
-        });
+                try {
+                    console.log('🔐 Initializing reCAPTCHA...');
+                    // Initialize recaptcha only when needed
+                    if (!recaptchaVerifier) {
+                        recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                            'size': 'normal',
+                            'callback': (response) => {
+                                console.log('✅ Recaptcha verified:', response);
+                            }
+                        });
+                        console.log('✅ reCAPTCHA initialized');
+                    }
+                    
+                    const appVerifier = recaptchaVerifier;
+                    console.log('📱 Sending verification code to:', phoneNumber);
+                    confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                    console.log('✅ Verification code sent!');
+                    
+                    const verificationCodeDiv = document.getElementById('verificationCodeDiv');
+                    if (verificationCodeDiv) {
+                        verificationCodeDiv.classList.remove('hidden');
+                    }
+                    showError('Verification code sent to your phone');
+                } catch (error) {
+                    console.error('💥 Phone sign in error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    showError(error.message);
+                }
+            });
+        }
 
-        document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
-            const code = document.getElementById('verificationCodeInput').value;
+        // Verify Code
+        const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+        console.log('🔘 verifyCodeBtn:', verifyCodeBtn ? 'FOUND' : 'NOT FOUND');
+        
+        if (verifyCodeBtn) {
+            verifyCodeBtn.addEventListener('click', async () => {
+                console.log('👆 Verify code button clicked');
+                const verificationCodeInput = document.getElementById('verificationCodeInput');
+                
+                console.log('🔢 verificationCodeInput:', verificationCodeInput ? 'FOUND' : 'NOT FOUND');
+                
+                if (!verificationCodeInput) {
+                    console.error('⚠️ Verification code input element missing');
+                    return;
+                }
+                
+                const code = verificationCodeInput.value;
+                console.log('🔢 Verification code:', code ? code : 'EMPTY');
 
-            if (!code) {
-                showError('Please enter the verification code');
-                return;
-            }
+                if (!code) {
+                    console.warn('⚠️ Verification code is empty');
+                    showError('Please enter the verification code');
+                    return;
+                }
 
-            try {
-                const result = await confirmationResult.confirm(code);
-                await checkUserAndRedirect(result.user);
-            } catch (error) {
-                console.error('Code verification error:', error);
-                showError(error.message);
-            }
-        });
+                try {
+                    console.log('🔐 Verifying code...');
+                    const result = await confirmationResult.confirm(code);
+                    console.log('✅ Phone verification successful!', result.user.phoneNumber);
+                    await checkUserAndRedirect(result.user);
+                } catch (error) {
+                    console.error('💥 Code verification error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    showError(error.message);
+                }
+            });
+        }
+        
+        console.log('✅ All event listeners attached successfully!');
     </script>
 
     <script>

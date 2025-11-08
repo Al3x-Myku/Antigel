@@ -198,27 +198,36 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
-        /* Status badges */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
+        /* Message boxes */
+        .message-box {
+            padding: 16px 20px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            margin: 16px 0 !important;
+            border: 1px solid !important;
+            backdrop-filter: blur(10px) !important;
         }
 
-        .status-connected {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.3);
+        .message-error {
+            background: linear-gradient(135deg, rgba(234, 225, 81, 0.15), rgba(221, 217, 42, 0.15)) !important;
+            color: #EAE151 !important;
+            border-color: rgba(234, 225, 81, 0.4) !important;
         }
 
-        .status-disconnected {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+        .message-success {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(74, 222, 128, 0.15)) !important;
+            color: #4ade80 !important;
+            border-color: rgba(34, 197, 94, 0.4) !important;
+        }
+
+        .message-info {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.15)) !important;
+            color: #60a5fa !important;
+            border-color: rgba(96, 165, 250, 0.4) !important;
         }
 
         /* Divider */
@@ -379,6 +388,10 @@
                     <div id="step2" class="space-y-8 hidden">
                         <h2 class="text-3xl font-bold mb-8">Step 2: Link MetaMask Wallet</h2>
                         
+                        <p class="text-base mb-6" style="color: #EEEFA8;">
+                            Connect your MetaMask wallet first. We'll verify it's available before creating your account.
+                        </p>
+
                         <!-- Wallet Address Display -->
                         <div id="walletAddressDiv" class="hidden p-6 rounded-xl" style="background: rgba(221, 217, 42, 0.15); border: 2px solid rgba(221, 217, 42, 0.3);">
                             <p class="text-sm font-semibold mb-3" style="color: #EEEFA8;">Wallet Address:</p>
@@ -391,16 +404,55 @@
                             Connect MetaMask
                         </button>
 
-                        <!-- Complete Registration Button -->
-                        <button id="completeRegistrationBtn" class="btn-primary w-full py-5 px-6 rounded-xl hidden flex items-center justify-center gap-2 text-lg font-semibold" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            Complete Registration
+                        <!-- Next to Onboarding Button -->
+                        <button id="goToStep3Btn" class="btn-primary w-full py-5 px-6 rounded-xl hidden flex items-center justify-center gap-2 text-lg font-semibold">
+                            Next: Complete Profile
+                            <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
 
                         <!-- Back Button -->
                         <button id="backToStep1Btn" class="btn-secondary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-2 text-base font-semibold">
                             <span class="material-symbols-outlined">arrow_back</span>
                             Back to Authentication
+                        </button>
+                    </div>
+
+                    <!-- Step 3: Onboarding (Skills) -->
+                    <div id="step3" class="space-y-8 hidden">
+                        <h2 class="text-3xl font-bold mb-8">Step 3: Tell us about yourself</h2>
+                        
+                        <p class="text-base mb-6" style="color: #EEEFA8;">
+                            Tell us about your skills and what you can do. Share your expertise, experience, and what makes you unique!
+                        </p>
+
+                        <!-- Big Skills Textarea -->
+                        <div class="space-y-4">
+                            <label for="skillsTextarea" class="text-lg font-semibold" style="color: #EAE151;">
+                                Your Skills & Expertise
+                            </label>
+                            <textarea 
+                                id="skillsTextarea" 
+                                rows="8"
+                                placeholder="Example: I'm a full-stack web developer with 5 years of experience in React and Node.js. I also do graphic design and have created logos for multiple startups. I'm passionate about blockchain technology and have built several smart contracts..."
+                                class="w-full bg-white/10 border-2 border-[#DDD92A]/30 rounded-2xl px-6 py-5 text-lg focus:outline-none focus:border-[#DDD92A] focus:ring-2 focus:ring-[#DDD92A]/20 transition-all resize-none !important" 
+                                style="font-size: 18px !important; padding: 24px !important; line-height: 1.6 !important;"
+                            ></textarea>
+                            <p class="text-sm" style="color: #EEEFA8; opacity: 0.7;">
+                                <span class="material-symbols-outlined text-sm" style="vertical-align: middle;">info</span>
+                                Minimum 50 characters required
+                            </p>
+                        </div>
+
+                        <!-- Complete Registration Button -->
+                        <button id="completeRegistrationBtn" class="btn-primary w-full py-5 px-6 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Complete Registration
+                        </button>
+
+                        <!-- Back Button -->
+                        <button id="backToStep2Btn" class="btn-secondary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-2 text-base font-semibold">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Back to Wallet
                         </button>
                     </div>
 
@@ -417,19 +469,11 @@
                         </a>
                     </div>
 
-                    <!-- Error Message -->
-                    <div id="errorMessage" class="hidden mt-6 p-4 rounded-xl" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
-                        <div class="flex items-start gap-3">
-                            <span class="material-symbols-outlined">error</span>
-                            <div>
-                                <p class="font-semibold mb-1">Error</p>
-                                <p id="errorText" class="text-sm"></p>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
+
+            <!-- Error message will be injected here dynamically -->
+            <div id="errorContainer"></div>
 
             <!-- Already have an account -->
             <p class="text-center mt-8" style="color: #EEEFA8;">
@@ -458,7 +502,11 @@
             setDoc, 
             getDoc,
             updateDoc,
-            serverTimestamp 
+            serverTimestamp,
+            collection,
+            query,
+            where,
+            getDocs
         } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
         // Firebase configuration
@@ -483,37 +531,68 @@
         let walletAddress = null;
         let confirmationResult = null;
 
-        // DOM Elements
+        // DOM Elements (with safety checks)
         const step1 = document.getElementById('step1');
         const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
         const successMessage = document.getElementById('successMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
         const userInfo = document.getElementById('userInfo');
         const walletAddressDiv = document.getElementById('walletAddressDiv');
         const goToStep2Btn = document.getElementById('goToStep2Btn');
+        const goToStep3Btn = document.getElementById('goToStep3Btn');
         const step1Indicator = document.getElementById('step1Indicator');
         const step2Indicator = document.getElementById('step2Indicator');
 
         // Error handling
         function showError(message) {
+            console.error('❌ ERROR:', message);
+            const errorContainer = document.getElementById('errorContainer');
+            
+            if (!errorContainer) {
+                console.error('⚠️ Error container not found in DOM');
+                return;
+            }
+            
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message-box message-error';
+            
             // Check for unauthorized domain error
             if (message.includes('auth/unauthorized-domain')) {
-                errorText.innerHTML = `
-                    <strong>Domain Not Authorized</strong><br><br>
-                    To fix this error, follow these steps:<br>
-                    1. Go to <a href="https://console.firebase.google.com/project/taskmatch-openhack2025/authentication/settings" target="_blank" class="underline font-semibold">Firebase Console</a><br>
-                    2. Navigate to Authentication → Settings → Authorized domains<br>
-                    3. Click "Add domain"<br>
-                    4. Add: <code class="bg-black/30 px-2 py-1 rounded">localhost</code> and <code class="bg-black/30 px-2 py-1 rounded">${window.location.hostname}</code><br>
-                    5. Save and try again
+                errorDiv.innerHTML = `
+                    <span class="material-symbols-outlined">error</span>
+                    <div>
+                        <p class="text-sm">
+                            <strong>Domain Not Authorized</strong><br><br>
+                            To fix this error, follow these steps:<br>
+                            1. Go to <a href="https://console.firebase.google.com/project/taskmatch-openhack2025/authentication/settings" target="_blank" class="underline font-semibold">Firebase Console</a><br>
+                            2. Navigate to Authentication → Settings → Authorized domains<br>
+                            3. Click "Add domain"<br>
+                            4. Add: <code class="bg-black/30 px-2 py-1 rounded">localhost</code> and <code class="bg-black/30 px-2 py-1 rounded">${window.location.hostname}</code><br>
+                            5. Save and try again
+                        </p>
+                    </div>
                 `;
             } else {
-                errorText.textContent = message;
+                errorDiv.innerHTML = `
+                    <span class="material-symbols-outlined">error</span>
+                    <div>
+                        <p class="text-sm">${message}</p>
+                    </div>
+                `;
             }
-            errorMessage.classList.remove('hidden');
+            
+            // Clear any existing errors and add new one
+            errorContainer.innerHTML = '';
+            errorContainer.appendChild(errorDiv);
+            
+            // Remove after timeout
             setTimeout(() => {
-                errorMessage.classList.add('hidden');
+                errorDiv.style.opacity = '0';
+                errorDiv.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    errorContainer.innerHTML = '';
+                }, 300);
             }, 10000); // Longer timeout for detailed instructions
         }
 
@@ -686,11 +765,24 @@
 
             try {
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                walletAddress = accounts[0];
+                const tempWalletAddress = accounts[0];
                 
+                // Check if wallet is already registered BEFORE allowing connection
+                const usersRef = collection(db, 'users');
+                const walletQuery = query(usersRef, where('walletAddress', '==', tempWalletAddress));
+                const existingWallets = await getDocs(walletQuery);
+                
+                if (!existingWallets.empty) {
+                    showError('This wallet is already linked to another account. Please use a different wallet or sign in to your existing account.');
+                    return;
+                }
+
+                // Wallet is valid and not registered - proceed
+                walletAddress = tempWalletAddress;
                 document.getElementById('walletAddress').textContent = walletAddress;
                 walletAddressDiv.classList.remove('hidden');
-                document.getElementById('completeRegistrationBtn').classList.remove('hidden');
+                goToStep3Btn.classList.remove('hidden');
+                document.getElementById('connectWalletBtn').classList.add('hidden');
                 
             } catch (error) {
                 console.error('Wallet connection error:', error);
@@ -698,20 +790,57 @@
             }
         });
 
-        // Complete Registration - Save to Firestore
+        // Go to Step 3 (Onboarding)
+        goToStep3Btn.addEventListener('click', () => {
+            step2.classList.add('hidden');
+            step3.classList.remove('hidden');
+        });
+
+        // Back to Step 2
+        document.getElementById('backToStep2Btn').addEventListener('click', () => {
+            step3.classList.add('hidden');
+            step2.classList.remove('hidden');
+        });
+
+        // Complete Registration - Save to Firestore with Skills
         document.getElementById('completeRegistrationBtn').addEventListener('click', async () => {
             if (!currentUser || !walletAddress) {
-                showError('Please complete both steps before continuing');
+                showError('Please complete all steps before continuing');
                 return;
             }
 
             try {
-                // Create user document in Firestore
+                // Get skills from textarea
+                const skillsTextarea = document.getElementById('skillsTextarea');
+                const skillsText = skillsTextarea ? skillsTextarea.value.trim() : '';
+
+                // Validate minimum length (50 characters)
+                if (skillsText.length < 50) {
+                    showError('Please write at least 50 characters about your skills');
+                    return;
+                }
+
+                // Wallet duplicate check is already done during connection, but double-check here
+                const usersRef = collection(db, 'users');
+                const walletQuery = query(usersRef, where('walletAddress', '==', walletAddress));
+                const existingWallets = await getDocs(walletQuery);
+                
+                if (!existingWallets.empty) {
+                    // Check if it's not the current user
+                    const isDifferentUser = existingWallets.docs.some(doc => doc.id !== currentUser.uid);
+                    if (isDifferentUser) {
+                        showError('This wallet is already linked to another account. Please use a different wallet or sign in to your existing account.');
+                        return;
+                    }
+                }
+
+                // Create user document in Firestore with skills text
                 await setDoc(doc(db, 'users', currentUser.uid), {
                     uid: currentUser.uid,
                     email: currentUser.email || null,
                     phoneNumber: currentUser.phoneNumber || null,
                     walletAddress: walletAddress,
+                    skills: skillsText, // Store as single text string
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp(),
                     // Additional fields that can be updated later
@@ -725,8 +854,10 @@
                     preferences: {}
                 });
 
+                console.log('✅ User registered successfully with skills');
+
                 // Show success message
-                step2.classList.add('hidden');
+                step3.classList.add('hidden');
                 successMessage.classList.remove('hidden');
                 
             } catch (error) {
