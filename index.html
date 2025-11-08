@@ -94,10 +94,41 @@
                     <span class="mx-1 text-white/20">•</span>
                     <span id="userBalance" class="text-white/90 text-xs font-mono"></span>
                 </div>
+                <!-- Token Management Buttons -->
+                <button id="addHLPToken" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 text-xs font-medium leading-normal tracking-[0.015em]" title="Add HLP Token to MetaMask">
+                    <span class="material-symbols-outlined text-sm mr-1">add_card</span>
+                    <span class="truncate">HLP</span>
+                </button>
+                <button id="addNFTToken" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 text-xs font-medium leading-normal tracking-[0.015em]" title="Add Achievement NFTs to MetaMask">
+                    <span class="material-symbols-outlined text-sm mr-1">emoji_events</span>
+                    <span class="truncate">NFT</span>
+                </button>
                 <button id="disconnectWallet" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 hover:bg-white/20 text-white text-sm font-bold leading-normal tracking-[0.015em]">
                     <span class="truncate">Disconnect</span>
                 </button>
-                <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-white/10 hover:bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+                <!-- Mobile-friendly dropdown for token management -->
+                <div class="relative sm:hidden">
+                    <button id="mobileMenuBtn" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-white/10 hover:bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+                        <span class="material-symbols-outlined text-xl">more_vert</span>
+                    </button>
+                    <div id="mobileDropdown" class="absolute right-0 top-12 hidden bg-[#1c1d27] border border-gray-600 rounded-lg shadow-lg min-w-[200px] z-50">
+                        <button id="mobileAddHLP" class="w-full flex items-center px-4 py-3 text-blue-200 hover:bg-blue-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">add_card</span>
+                            Add HLP Token
+                        </button>
+                        <button id="mobileAddNFT" class="w-full flex items-center px-4 py-3 text-purple-200 hover:bg-purple-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">emoji_events</span>
+                            Add Achievement NFTs
+                        </button>
+                        <div class="border-t border-gray-600"></div>
+                        <button id="mobileDisconnect" class="w-full flex items-center px-4 py-3 text-red-200 hover:bg-red-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">logout</span>
+                            Disconnect Wallet
+                        </button>
+                    </div>
+                </div>
+                <!-- Desktop notification button -->
+                <button class="hidden sm:flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-white/10 hover:bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
                     <span class="material-symbols-outlined text-xl">notifications</span>
                 </button>
                 <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAM3aqSFMwPhnnBGZw35sWWb_mzWAExLvlRpTKGDk4WoqIvRAI_a5O7Z121wCafikJL8-1R-VB0_H-fQupjEcz6NoIyc6faF5WO1StgIyQNl6tILG9ZRodpx_X9A1aFLCCAP7amTRVKRPgjZDc_NdVDzXsOhSCsG8nEy_yhNuaNQ6qnMTve7PPiiqnGFgq1mkjqRjQ22R-y8XB7UShaIwhbuj-286aPfMOxzMPj6valE0QfO70PtIYoPfN56m59MRCK1XxyC3-3");'></div>
@@ -217,7 +248,24 @@
                     
                     <!-- Token Rewards -->
                     <div class="mb-8">
-                        <h4 class="text-white text-md font-semibold mb-4">💰 Tokens</h4>
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-white text-md font-semibold">💰 Tokens</h4>
+                            
+                            <!-- MetaMask Helper Info -->
+                            <div id="metamaskTokenHelper" class="hidden bg-blue-600/10 border border-blue-600/20 rounded-lg px-3 py-2 text-xs text-blue-200">
+                                <span class="material-symbols-outlined text-sm mr-1">info</span>
+                                Add tokens to MetaMask using the 
+                                <span class="inline-flex items-center mx-1 px-1 bg-blue-600/20 rounded text-xs">
+                                    <span class="material-symbols-outlined text-xs mr-0.5">add_card</span>HLP
+                                </span>
+                                and
+                                <span class="inline-flex items-center mx-1 px-1 bg-purple-600/20 rounded text-xs">
+                                    <span class="material-symbols-outlined text-xs mr-0.5">emoji_events</span>NFT
+                                </span>
+                                buttons above
+                            </div>
+                        </div>
+                        
                         <div id="rewardsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <p class="text-center py-8 col-span-3">Connect wallet to view rewards</p>
                         </div>
@@ -313,6 +361,156 @@
             }
             
             return null;
+        }
+
+        // Function to suggest adding HLP Token to MetaMask
+        async function suggestAddHLPToken() {
+            if (!window.ethereum || !window.ethereum.isMetaMask) {
+                console.log('MetaMask not available for token suggestion');
+                return false;
+            }
+
+            try {
+                // First check if token is already added by checking user balance
+                const tokenContract = new ethers.Contract(REWARD_CONTRACT_ADDRESS, REWARD_CONTRACT_ABI, provider);
+                const tokenName = await tokenContract.name();
+                const tokenSymbol = await tokenContract.symbol();
+                const tokenDecimals = await tokenContract.decimals();
+
+                const wasAdded = await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20',
+                        options: {
+                            address: REWARD_CONTRACT_ADDRESS,
+                            symbol: tokenSymbol,
+                            decimals: tokenDecimals,
+                            image: 'https://raw.githubusercontent.com/Al3x-Myku/Antigel/main/assets/hlp-token-logo.png' // You can update this to your actual token logo URL
+                        },
+                    },
+                });
+
+                if (wasAdded) {
+                    console.log(`✅ ${tokenSymbol} token added to MetaMask successfully!`);
+                    
+                    // Show success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                    notification.innerHTML = `
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                        <span>${tokenSymbol} token added to MetaMask!</span>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 4000);
+                    
+                    return true;
+                } else {
+                    console.log(`❌ User declined to add ${tokenSymbol} token to MetaMask`);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error suggesting HLP token:', error);
+                return false;
+            }
+        }
+
+        // Function to suggest adding Achievement NFT to MetaMask
+        async function suggestAddAchievementNFT() {
+            if (!window.ethereum || !window.ethereum.isMetaMask) {
+                console.log('MetaMask not available for NFT suggestion');
+                return false;
+            }
+
+            try {
+                const wasAdded = await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC721',
+                        options: {
+                            address: ACHIEVEMENT_CONTRACT_ADDRESS,
+                            tokenId: '1', // You might want to use a dynamic token ID if user has badges
+                        },
+                    },
+                });
+
+                if (wasAdded) {
+                    console.log('✅ Achievement NFT collection added to MetaMask successfully!');
+                    
+                    // Show success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 left-4 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                    notification.innerHTML = `
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        <span>Achievement NFTs added to MetaMask!</span>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 4000);
+                    
+                    return true;
+                } else {
+                    console.log('❌ User declined to add Achievement NFT to MetaMask');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error suggesting Achievement NFT:', error);
+                return false;
+            }
+        }
+
+        // Function to suggest adding all tokens to MetaMask
+        async function suggestAddTokensToMetaMask() {
+            if (!window.ethereum || !window.ethereum.isMetaMask) {
+                console.log('MetaMask not available for token suggestions');
+                return;
+            }
+
+            // Wait a moment after connection to ensure everything is ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            try {
+                // Ask user if they want to add tokens
+                const addTokens = confirm(
+                    '🪙 Add Tokens to MetaMask?\n\n' +
+                    'Would you like to add HLP reward tokens and Achievement NFTs to your MetaMask wallet?\n\n' +
+                    'This will make it easier to view your rewards and achievements directly in MetaMask.\n\n' +
+                    'Click OK to add tokens, or Cancel to skip.'
+                );
+
+                if (!addTokens) {
+                    console.log('User chose not to add tokens to MetaMask');
+                    return;
+                }
+
+                // Add HLP Token
+                console.log('Suggesting HLP Token...');
+                await suggestAddHLPToken();
+
+                // Wait a moment between suggestions
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Add Achievement NFT Collection
+                console.log('Suggesting Achievement NFTs...');
+                await suggestAddAchievementNFT();
+
+            } catch (error) {
+                console.error('Error in token suggestion flow:', error);
+            }
+        }
+
+        // Function to manually trigger token addition (can be called from UI buttons)
+        async function addTokenToMetaMask(tokenType = 'HLP') {
+            if (tokenType === 'HLP') {
+                return await suggestAddHLPToken();
+            } else if (tokenType === 'NFT') {
+                return await suggestAddAchievementNFT();
+            }
+            return false;
         }
 
         // Login with MetaMask
@@ -447,9 +645,7 @@
                 }, 3000);
 
                 // Suggest adding tokens to MetaMask
-                setTimeout(async () => {
-                    await suggestAddingTokensToMetaMask();
-                }, 2000);
+                await suggestAddTokensToMetaMask();
 
                 await loadTasks();
                 await loadRewards();
@@ -489,6 +685,109 @@
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = '<span class="material-symbols-outlined">account_balance_wallet</span> Connect Wallet';
             }
+        });
+
+        // Add HLP Token to MetaMask
+        document.getElementById('addHLPToken').addEventListener('click', async () => {
+            const button = document.getElementById('addHLPToken');
+            const originalContent = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<span class="material-symbols-outlined animate-pulse text-sm">sync</span>';
+                button.disabled = true;
+                
+                const success = await addTokenToMetaMask('HLP');
+                
+                if (success) {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-green-400">check</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">close</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error adding HLP token:', error);
+                button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">error</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 2000);
+            }
+        });
+
+        // Add NFT Collection to MetaMask
+        document.getElementById('addNFTToken').addEventListener('click', async () => {
+            const button = document.getElementById('addNFTToken');
+            const originalContent = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<span class="material-symbols-outlined animate-pulse text-sm">sync</span>';
+                button.disabled = true;
+                
+                const success = await addTokenToMetaMask('NFT');
+                
+                if (success) {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-green-400">check</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">close</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error adding NFT collection:', error);
+                button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">error</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 2000);
+            }
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('mobileDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Close mobile dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('mobileDropdown');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Mobile HLP Token button
+        document.getElementById('mobileAddHLP').addEventListener('click', async () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            await addTokenToMetaMask('HLP');
+        });
+
+        // Mobile NFT Token button
+        document.getElementById('mobileAddNFT').addEventListener('click', async () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            await addTokenToMetaMask('NFT');
+        });
+
+        // Mobile disconnect button
+        document.getElementById('mobileDisconnect').addEventListener('click', () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            // Trigger the same disconnect logic
+            document.getElementById('disconnectWallet').click();
         });
 
         // Disconnect Wallet
@@ -898,6 +1197,12 @@
                 const balance = await rewardContract.balanceOf(userAddress);
                 const rewardListDiv = document.getElementById('rewardsList');
                 
+                // Show the MetaMask helper info
+                const helperDiv = document.getElementById('metamaskTokenHelper');
+                if (helperDiv) {
+                    helperDiv.classList.remove('hidden');
+                }
+                
                 rewardListDiv.innerHTML = `
                     <div class="bg-gray-700/50 rounded-lg p-6 text-center border border-gray-600">
                         <h3 class="text-3xl font-bold text-primary mb-2">${balance}</h3>
@@ -1146,80 +1451,6 @@
                 });
             }
         }
-
-        // Add HLP Token to MetaMask
-        async function addHLPTokenToMetaMask() {
-            try {
-                const wasAdded = await window.ethereum.request({
-                    method: 'wallet_watchAsset',
-                    params: {
-                        type: 'ERC20',
-                        options: {
-                            address: REWARD_CONTRACT_ADDRESS,
-                            symbol: 'HLP',
-                            decimals: 18,
-                            image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzIiIGZpbGw9IiMxMzM3ZWMiLz4KPHR0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkhMUDwvdGV4dD4KPC9zdmc+'
-                        },
-                    },
-                });
-
-                if (wasAdded) {
-                    console.log('HLP token added to MetaMask!');
-                } else {
-                    console.log('HLP token not added to MetaMask');
-                }
-            } catch (error) {
-                console.log('Error adding HLP token to MetaMask:', error);
-            }
-        }
-
-        // Add Achievement NFT Contract to MetaMask
-        async function addAchievementNFTToMetaMask() {
-            try {
-                const wasAdded = await window.ethereum.request({
-                    method: 'wallet_watchAsset',
-                    params: {
-                        type: 'ERC721',
-                        options: {
-                            address: ACHIEVEMENT_CONTRACT_ADDRESS,
-                            symbol: 'SQAB',
-                        },
-                    },
-                });
-
-                if (wasAdded) {
-                    console.log('Achievement NFT contract added to MetaMask!');
-                } else {
-                    console.log('Achievement NFT contract not added to MetaMask');
-                }
-            } catch (error) {
-                console.log('Error adding Achievement NFT contract to MetaMask:', error);
-            }
-        }
-
-        // Suggest adding tokens to MetaMask
-        async function suggestAddingTokensToMetaMask() {
-            const shouldAdd = confirm(
-                '🎯 Add SideQuests Tokens to MetaMask?\n\n' +
-                'Would you like to add HLP tokens and Achievement NFTs to your MetaMask wallet?\n\n' +
-                '✅ HLP Token (Your earned tokens)\n' +
-                '🏆 Achievement Badges (Your NFT collection)\n\n' +
-                'This will make them visible in your MetaMask wallet.'
-            );
-
-            if (shouldAdd) {
-                await addHLPTokenToMetaMask();
-                
-                // Wait a moment before adding NFTs
-                setTimeout(async () => {
-                    await addAchievementNFTToMetaMask();
-                }, 1000);
-            }
-        }
-
-        // Manual functions for adding tokens (can be called from UI)
-        window.addHLPTokenToMetaMask = addHLPTokenToMetaMask;
-        window.addAchievementNFTToMetaMask = addAchievementNFTToMetaMask;
 
         // Initialize event listeners
         setupMetaMaskListeners();
