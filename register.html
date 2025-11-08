@@ -137,25 +137,53 @@
             transform: translateY(-2px);
         }
 
-        /* Input styles */
+        /* Input styles - BIGGER & BETTER SPACING */
         input, select {
-            background: rgba(250, 253, 246, 0.05);
-            border: 2px solid rgba(221, 217, 42, 0.2);
-            color: var(--cream);
-            border-radius: 12px;
-            padding: 12px 16px;
-            width: 100%;
-            transition: all 0.3s ease;
+            background: rgba(250, 253, 246, 0.08) !important;
+            border: 2px solid rgba(221, 217, 42, 0.3) !important;
+            color: var(--cream) !important;
+            border-radius: 16px !important;
+            padding: 18px 24px !important;
+            width: 100% !important;
+            transition: all 0.3s ease !important;
+            font-size: 18px !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.5px !important;
+            line-height: 1.5 !important;
+            min-height: 60px !important;
         }
 
         input:focus, select:focus {
-            outline: none;
-            border-color: var(--yellow-primary);
-            background: rgba(250, 253, 246, 0.1);
+            outline: none !important;
+            border-color: var(--yellow-primary) !important;
+            background: rgba(250, 253, 246, 0.12) !important;
+            box-shadow: 0 0 0 4px rgba(221, 217, 42, 0.1) !important;
+            transform: translateY(-2px) !important;
         }
 
         input::placeholder {
-            color: rgba(250, 253, 246, 0.4);
+            color: rgba(250, 253, 246, 0.5) !important;
+            font-weight: 400 !important;
+            letter-spacing: 0.2px !important;
+        }
+
+        /* Label styles - BIGGER & BOLDER */
+        label {
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.5px !important;
+            color: var(--yellow-pale) !important;
+            display: block !important;
+            margin-bottom: 12px !important;
+        }
+
+        /* Input containers - MORE SPACING */
+        .space-y-4 > div {
+            margin-bottom: 28px !important;
+        }
+
+        .space-y-4 > div:last-child {
+            margin-bottom: 0;
         }
 
         /* Glass morphism */
@@ -240,21 +268,6 @@
     <div class="min-h-screen flex items-center justify-center px-6 py-24">
         <div class="w-full max-w-2xl fade-in">
             
-            <!-- Firebase Setup Notice (can be removed after setup) -->
-            <div class="mb-8 p-4 rounded-xl" style="background: rgba(234, 225, 81, 0.2); border: 1px solid rgba(234, 225, 81, 0.3);">
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined" style="color: #EAE151;">info</span>
-                    <div>
-                        <p class="font-semibold mb-2" style="color: #EAE151;">First Time Setup Required</p>
-                        <p class="text-sm" style="color: #EEEFA8;">
-                            If you see an "unauthorized-domain" error, you need to add your domain to Firebase:<br>
-                            <strong>Firebase Console → Authentication → Settings → Authorized domains</strong><br>
-                            Add: <code class="bg-black/20 px-1 rounded">localhost</code> and your current domain.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Header -->
             <div class="text-center mb-12">
                 <h1 class="text-5xl md:text-6xl font-bold mb-4">
@@ -281,17 +294,11 @@
                     </div>
 
                     <!-- Step 1: Firebase Authentication -->
-                    <div id="step1" class="space-y-6">
-                        <h2 class="text-2xl font-bold mb-6">Step 1: Create Firebase Account</h2>
+                    <div id="step1" class="space-y-8">
+                        <h2 class="text-3xl font-bold mb-8">Step 1: Create Firebase Account</h2>
                         
-                        <!-- Auth Status -->
-                        <div id="authStatus" class="status-badge status-disconnected">
-                            <span class="material-symbols-outlined text-sm">cancel</span>
-                            <span>Not Authenticated</span>
-                        </div>
-
                         <!-- Google Sign In -->
-                        <button id="googleSignInBtn" class="btn-primary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-lg">
+                        <button id="googleSignInBtn" class="btn-primary w-full py-5 px-6 rounded-xl flex items-center justify-center gap-3 text-lg font-semibold">
                             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -306,89 +313,92 @@
                         <!-- Email/Password Sign Up -->
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium mb-2" style="color: #EEEFA8;">Email</label>
+                                <label class="block mb-3">Email</label>
                                 <input type="email" id="emailInput" placeholder="your.email@example.com" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-2" style="color: #EEEFA8;">Password</label>
+                                <label class="block mb-3">Password</label>
                                 <input type="password" id="passwordInput" placeholder="••••••••" />
                             </div>
-                            <button id="emailSignUpBtn" class="btn-secondary w-full py-3 px-6 rounded-xl flex items-center justify-center gap-2">
+                            <button id="emailSignUpBtn" class="btn-secondary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-2 text-base font-semibold">
                                 <span class="material-symbols-outlined">mail</span>
                                 Sign up with Email
                             </button>
                         </div>
 
-                        <div class="divider"><span>OR</span></div>
+                        <!-- Mobile/Phone Option Link -->
+                        <div class="text-center">
+                            <button id="showPhoneBtn" class="text-sm font-medium hover:underline" style="color: #DDD92A;">
+                                📱 Sign up with phone number instead
+                            </button>
+                        </div>
 
-                        <!-- Phone Sign In -->
-                        <div class="space-y-4">
+                        <!-- Phone Sign In (hidden initially) -->
+                        <div id="phoneSection" class="space-y-4 hidden">
+                            <div class="divider"><span>PHONE</span></div>
                             <div>
-                                <label class="block text-sm font-medium mb-2" style="color: #EEEFA8;">Phone Number</label>
+                                <label class="block mb-3">Phone Number</label>
                                 <input type="tel" id="phoneInput" placeholder="+1 234 567 8900" />
                             </div>
                             <div id="recaptcha-container"></div>
-                            <button id="phoneSignInBtn" class="btn-secondary w-full py-3 px-6 rounded-xl flex items-center justify-center gap-2">
+                            <button id="phoneSignInBtn" class="btn-secondary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-2 text-base font-semibold">
                                 <span class="material-symbols-outlined">phone</span>
-                                Sign in with Phone
+                                Send Verification Code
+                            </button>
+                            <button id="hidePhoneBtn" class="text-sm font-medium hover:underline w-full text-center" style="color: #EEEFA8;">
+                                ← Back to other options
                             </button>
                         </div>
 
                         <!-- Verification Code Input (hidden initially) -->
                         <div id="verificationCodeDiv" class="space-y-4 hidden">
                             <div>
-                                <label class="block text-sm font-medium mb-2" style="color: #EEEFA8;">Verification Code</label>
+                                <label class="block mb-3">Verification Code</label>
                                 <input type="text" id="verificationCodeInput" placeholder="123456" />
                             </div>
-                            <button id="verifyCodeBtn" class="btn-primary w-full py-3 px-6 rounded-xl">
+                            <button id="verifyCodeBtn" class="btn-primary w-full py-4 px-6 rounded-xl font-semibold">
                                 Verify Code
                             </button>
                         </div>
 
                         <!-- User Info Display -->
-                        <div id="userInfo" class="hidden mt-6 p-4 rounded-xl" style="background: rgba(221, 217, 42, 0.1); border: 1px solid rgba(221, 217, 42, 0.2);">
-                            <p class="text-sm font-medium mb-2" style="color: #EEEFA8;">Logged in as:</p>
-                            <p id="userEmail" class="font-semibold"></p>
-                            <p id="userId" class="text-sm mt-1" style="color: #EEEFA8;"></p>
+                        <div id="userInfo" class="hidden mt-8 p-6 rounded-xl" style="background: rgba(221, 217, 42, 0.15); border: 2px solid rgba(221, 217, 42, 0.3);">
+                            <p class="text-sm font-semibold mb-3" style="color: #EEEFA8;">Logged in as:</p>
+                            <p id="userEmail" class="font-bold text-lg mb-2"></p>
+                            <p id="userId" class="text-sm" style="color: #EEEFA8;"></p>
                         </div>
 
                         <!-- Next Step Button -->
-                        <button id="goToStep2Btn" class="btn-primary w-full py-4 px-6 rounded-xl hidden mt-6 flex items-center justify-center gap-2 text-lg">
+                        <button id="goToStep2Btn" class="btn-primary w-full py-5 px-6 rounded-xl hidden mt-8 flex items-center justify-center gap-2 text-lg font-semibold">
                             Next: Link Wallet
                             <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
                     </div>
 
                     <!-- Step 2: Link Wallet -->
-                    <div id="step2" class="space-y-6 hidden">
-                        <h2 class="text-2xl font-bold mb-6">Step 2: Link MetaMask Wallet</h2>
+                    <div id="step2" class="space-y-8 hidden">
+                        <h2 class="text-3xl font-bold mb-8">Step 2: Link MetaMask Wallet</h2>
                         
-                        <!-- Wallet Status -->
-                        <div id="walletStatus" class="status-badge status-disconnected">
-                            <span class="material-symbols-outlined text-sm">cancel</span>
-                            <span>Wallet Not Connected</span>
-                        </div>
-
                         <!-- Wallet Address Display -->
-                        <div id="walletAddressDiv" class="hidden p-4 rounded-xl" style="background: rgba(221, 217, 42, 0.1); border: 1px solid rgba(221, 217, 42, 0.2);">
-                            <p class="text-sm font-medium mb-2" style="color: #EEEFA8;">Wallet Address:</p>
-                            <p id="walletAddress" class="font-mono font-semibold break-all"></p>
+                        <div id="walletAddressDiv" class="hidden p-6 rounded-xl" style="background: rgba(221, 217, 42, 0.15); border: 2px solid rgba(221, 217, 42, 0.3);">
+                            <p class="text-sm font-semibold mb-3" style="color: #EEEFA8;">Wallet Address:</p>
+                            <p id="walletAddress" class="font-mono font-bold text-lg break-all"></p>
                         </div>
 
                         <!-- Connect Wallet Button -->
-                        <button id="connectWalletBtn" class="btn-primary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-lg">
+                        <button id="connectWalletBtn" class="btn-primary w-full py-5 px-6 rounded-xl flex items-center justify-center gap-3 text-lg font-semibold">
                             <span class="material-symbols-outlined">account_balance_wallet</span>
                             Connect MetaMask
                         </button>
 
                         <!-- Complete Registration Button -->
-                        <button id="completeRegistrationBtn" class="btn-primary w-full py-4 px-6 rounded-xl hidden flex items-center justify-center gap-2 text-lg" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <button id="completeRegistrationBtn" class="btn-primary w-full py-5 px-6 rounded-xl hidden flex items-center justify-center gap-2 text-lg font-semibold" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
                             <span class="material-symbols-outlined">check_circle</span>
                             Complete Registration
                         </button>
 
                         <!-- Back Button -->
-                        <button id="backToStep1Btn" class="btn-secondary w-full py-3 px-6 rounded-xl flex items-center justify-center gap-2">
+                        <button id="backToStep1Btn" class="btn-secondary w-full py-4 px-6 rounded-xl flex items-center justify-center gap-2 text-base font-semibold">
                             <span class="material-symbols-outlined">arrow_back</span>
                             Back to Authentication
                         </button>
@@ -479,8 +489,6 @@
         const successMessage = document.getElementById('successMessage');
         const errorMessage = document.getElementById('errorMessage');
         const errorText = document.getElementById('errorText');
-        const authStatus = document.getElementById('authStatus');
-        const walletStatus = document.getElementById('walletStatus');
         const userInfo = document.getElementById('userInfo');
         const walletAddressDiv = document.getElementById('walletAddressDiv');
         const goToStep2Btn = document.getElementById('goToStep2Btn');
@@ -509,25 +517,16 @@
             }, 10000); // Longer timeout for detailed instructions
         }
 
-        function updateAuthStatus(isAuthenticated) {
-            if (isAuthenticated) {
-                authStatus.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span><span>Authenticated</span>';
-                authStatus.className = 'status-badge status-connected';
-            } else {
-                authStatus.innerHTML = '<span class="material-symbols-outlined text-sm">cancel</span><span>Not Authenticated</span>';
-                authStatus.className = 'status-badge status-disconnected';
-            }
-        }
+        // Show/Hide Phone Section
+        document.getElementById('showPhoneBtn').addEventListener('click', () => {
+            document.getElementById('phoneSection').classList.remove('hidden');
+            document.getElementById('showPhoneBtn').style.display = 'none';
+        });
 
-        function updateWalletStatus(isConnected) {
-            if (isConnected) {
-                walletStatus.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span><span>Wallet Connected</span>';
-                walletStatus.className = 'status-badge status-connected';
-            } else {
-                walletStatus.innerHTML = '<span class="material-symbols-outlined text-sm">cancel</span><span>Wallet Not Connected</span>';
-                walletStatus.className = 'status-badge status-disconnected';
-            }
-        }
+        document.getElementById('hidePhoneBtn').addEventListener('click', () => {
+            document.getElementById('phoneSection').classList.add('hidden');
+            document.getElementById('showPhoneBtn').style.display = 'block';
+        });
 
         // Google Sign In
         document.getElementById('googleSignInBtn').addEventListener('click', async () => {
@@ -536,7 +535,6 @@
                 const result = await signInWithPopup(auth, provider);
                 currentUser = result.user;
                 
-                updateAuthStatus(true);
                 document.getElementById('userEmail').textContent = currentUser.email;
                 document.getElementById('userId').textContent = `User ID: ${currentUser.uid}`;
                 userInfo.classList.remove('hidden');
@@ -570,7 +568,6 @@
                 const result = await createUserWithEmailAndPassword(auth, email, password);
                 currentUser = result.user;
                 
-                updateAuthStatus(true);
                 document.getElementById('userEmail').textContent = currentUser.email;
                 document.getElementById('userId').textContent = `User ID: ${currentUser.uid}`;
                 userInfo.classList.remove('hidden');
@@ -627,7 +624,6 @@
                 const result = await confirmationResult.confirm(code);
                 currentUser = result.user;
                 
-                updateAuthStatus(true);
                 document.getElementById('userEmail').textContent = currentUser.phoneNumber;
                 document.getElementById('userId').textContent = `User ID: ${currentUser.uid}`;
                 userInfo.classList.remove('hidden');
@@ -694,7 +690,6 @@
                 
                 document.getElementById('walletAddress').textContent = walletAddress;
                 walletAddressDiv.classList.remove('hidden');
-                updateWalletStatus(true);
                 document.getElementById('completeRegistrationBtn').classList.remove('hidden');
                 
             } catch (error) {
