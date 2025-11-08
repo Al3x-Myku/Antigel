@@ -1,279 +1,227 @@
-import solcx
 import json
 import os
-import time
-from solcx import compile_standard, install_solc
 from web3 import Web3
-from dotenv import load_dotenv
+from solcx import compile_standard, install_solc
+from pathlib import Path
 
-def compile_contracts():
-    """
-    Installs solc 0.8.20 and compiles both contracts,
-    handling OpenZeppelin imports.
-    """
-    
-    # 1. Install and set the correct Solidity compiler version
-    print("Installing Solc 0.8.20...")
-    try:
-        install_solc('0.8.20')
-        solcx.set_solc_version('0.8.20')
-    except Exception as e:
-        print(f"Error installing or setting solc: {e}")
-        return None, None, None, None
+# Configuration
+INFURA_URL = "https://sepolia.infura.io/v3/713dcbe5e2254d718e5040c2ae716c3f"
+SOLC_VERSION = "0.8.20"
 
-    # 2. Define the compiler input structure
-    print("Reading contract source files...")
-    try:
-        with open("contracts/RewardContract.sol", "r") as f:
-            reward_source = f.read()
-        with open("contracts/TaskContract.sol", "r") as f:
-            task_source = f.read()
-    except FileNotFoundError as e:
-        print(f"Error: {e}. Make sure contracts are in a 'contracts/' directory.")
-        return None, None, None, None
+# Get the base directory
+BASE_DIR = Path(__file__).parent.resolve()
+CONTRACTS_DIR = BASE_DIR / "contracts"
+NODE_MODULES_DIR = BASE_DIR / "node_modules"
 
-    input_json = {
-        "language": "Solidity",
-        "sources": {
-            "RewardContract.sol": {"content": reward_source},
-            "TaskContract.sol": {"content": task_source},
-        },
-        "settings": {
-            # Define import remappings for OpenZeppelin
-            "remappings": [
-                "@openzeppelin/=" + os.path.abspath("node_modules/@openzeppelin/")
-            ],
-            # Define output selection
-            "outputSelection": {
-                "*": {
-                    "*": ["abi", "evm.bytecode.object"]
-                }
-            },
-        },
-    }
-
-    # 3. Compile the contracts
-    print("Compiling contracts...")
-    try:
-        compiled_sol = compile_standard(
-            input_json,
-            allow_paths=[
-                "contracts/",
-                "node_modules/"
-            ]
-        )
-    except Exception as e:
-        print(f"Compilation Failed: {e}")
-        return None, None, None, None
-    
-    # 4. Extract ABI and Bytecode for each contract
-    try:
-        rc_data = compiled_sol["contracts"]["RewardContract.sol"]["RewardContract"]
-        rc_abi = rc_data["abi"]
-        rc_bytecode = rc_data["evm"]["bytecode"]["object"]
-        
-        tc_data = compiled_sol["contracts"]["TaskContract.sol"]["TaskContract"]
-        tc_abi = tc_data["abi"]
-        tc_bytecode = tc_data["evm"]["bytecode"]["object"]
-    except KeyError as e:
-        print(f"Error extracting ABI/Bytecode. Compilation output may be incomplete: {e}")
-        return None, None, None, None
-    
-    print("Compilation successful.")
-    return rc_abi, rc_bytecode, tc_abi, tc_bytecode
-
-def send_tx(w3, tx, deployer_acct, description):
-    """
-    Signs and sends a transaction, waits for the receipt,
-    and handles errors.
-    """
-    try:
-        # Estimate gas
-        tx['gas'] = w3.eth.estimate_gas(tx)
-        
-        # Sign the transaction
-        signed_txn = w3.eth.account.sign_transaction(tx, private_key=deployer_acct.key)
-        
-        # Send the transaction
-        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-        print(f"  Sending {description} (Tx: {tx_hash.hex()})...")
-        
-        # Wait for the transaction receipt
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=300)
-        
-        if receipt.status == 0:
-            print(f"  !! {description} FAILED. Transaction reverted. !!")
-            return None
-            
-        print(f"  ... {description} successful.")
-        return receipt
-        
-    except Exception as e:
-        print(f"  !! Error during {description}: {e} !!")
-        return None
-
-def deploy_contracts(w3, deployer_acct, rc_abi, rc_bytecode, tc_abi, tc_bytecode):
-    """
-    Deploys both contracts in a two-stage process.
-    """
-    
-    print(f"\nDeploying from account: {deployer_acct.address}")
-    
-    # --- STAGE 1: Deploy RewardContract ---
-    print("Deploying RewardContract...")
-    RewardContract = w3.eth.contract(abi=rc_abi, bytecode=rc_bytecode)
-    
-    construct_txn = RewardContract.constructor(deployer_acct.address).build_transaction({
-        "from": deployer_acct.address,
-        "nonce": w3.eth.get_transaction_count(deployer_acct.address),
-        "gasPrice": w3.eth.gas_price
-    })
-    
-    rc_receipt = send_tx(w3, construct_txn, deployer_acct, "RewardContract Deployment")
-    if rc_receipt is None:
-        return None, None
-        
-    reward_address = rc_receipt.contractAddress
-    print(f"  RewardContract deployed at: {reward_address}")
-
-    # --- STAGE 2: Deploy TaskContract ---
-    # Wait a moment for the nonce to be correct
-    time.sleep(5) 
-    
-    print("\nDeploying TaskContract...")
-    TaskContract = w3.eth.contract(abi=tc_abi, bytecode=tc_bytecode)
-    
-    construct_txn = TaskContract.constructor(reward_address).build_transaction({
-        "from": deployer_acct.address,
-        "nonce": w3.eth.get_transaction_count(deployer_acct.address),
-        "gasPrice": w3.eth.gas_price
-    })
-    
-    tc_receipt = send_tx(w3, construct_txn, deployer_acct, "TaskContract Deployment")
-    if tc_receipt is None:
-        return reward_address, None
-
-    task_address = tc_receipt.contractAddress
-    print(f"  TaskContract deployed at: {task_address}")
-    
-    return reward_address, task_address
-
-def configure_permissions(w3, deployer_acct, rc_abi, reward_address, task_address):
-    """
-    Grants the MINTER_ROLE from RewardContract to TaskContract.
-    """
-    
-    print("\nConfiguring contract permissions...")
-    
-    # 1. Get an instance of the deployed RewardContract
-    rc_instance = w3.eth.contract(address=reward_address, abi=rc_abi)
-
-    # 2. Get the MINTER_ROLE identifier (a bytes32 value)
-    try:
-        MINTER_ROLE = rc_instance.functions.MINTER_ROLE().call()
-        print(f"  MINTER_ROLE hash: {MINTER_ROLE.hex()}")
-    except Exception as e:
-        print(f"  Error calling MINTER_ROLE(): {e}")
+def check_dependencies():
+    """Check if OpenZeppelin contracts are installed"""
+    oz_path = NODE_MODULES_DIR / "@openzeppelin" / "contracts"
+    if not oz_path.exists():
+        print("Error: OpenZeppelin contracts not found!")
+        print(f"Expected path: {oz_path}")
+        print("Please run: npm install @openzeppelin/contracts")
         return False
-
-    # 3. Grant the MINTER_ROLE to the TaskContract's address
-    try:
-        # Wait a moment for the nonce to be correct
-        time.sleep(5) 
-
-        grant_txn = rc_instance.functions.grantRole(MINTER_ROLE, task_address).build_transaction({
-            "from": deployer_acct.address,
-            "nonce": w3.eth.get_transaction_count(deployer_acct.address),
-            "gasPrice": w3.eth.gas_price
-        })
-        
-        receipt = send_tx(w3, grant_txn, deployer_acct, "Grant MINTER_ROLE")
-        if receipt is None:
-            return False
-            
-    except Exception as e:
-        print(f"  Error building grantRole transaction: {e}")
-        return False
-
-    print("  Permissions configured successfully.")
+    print("Dependencies found.")
     return True
 
-def generate_artifacts_file(rc_abi, reward_address, tc_abi, task_address):
-    """
-    Generates the JSON artifact file - the formal "hand-off"
-    to the Go backend.
-    """
+def read_contract_file(filename):
+    """Read a contract source file"""
+    filepath = CONTRACTS_DIR / filename
+    with open(filepath, 'r') as f:
+        return f.read()
+
+def compile_contracts():
+    """Compile the smart contracts with proper import resolution"""
+    print(f"Installing Solc {SOLC_VERSION}...")
+    install_solc(SOLC_VERSION)
     
-    print("\nGenerating deployment_artifacts.json...")
+    print("Reading contract source files...")
+    reward_contract_source = read_contract_file("RewardContract.sol")
+    task_contract_source = read_contract_file("TaskContract.sol")
     
-    artifacts = {
-        "RewardContract": {
-            "address": reward_address,
-            "abi": rc_abi
+    print("Compiling contracts...")
+    
+    # Prepare the compilation input with proper settings
+    compiled_sol = compile_standard(
+        {
+            "language": "Solidity",
+            "sources": {
+                "RewardContract.sol": {"content": reward_contract_source},
+                "TaskContract.sol": {"content": task_contract_source}
+            },
+            "settings": {
+                # This is the key part - remapping @openzeppelin to the actual path
+                "remappings": [
+                    f"@openzeppelin/={NODE_MODULES_DIR}/@openzeppelin/"
+                ],
+                "optimizer": {
+                    "enabled": True,
+                    "runs": 200
+                },
+                "outputSelection": {
+                    "*": {
+                        "*": [
+                            "abi",
+                            "metadata",
+                            "evm.bytecode",
+                            "evm.bytecode.sourceMap",
+                            "evm.deployedBytecode",
+                            "evm.deployedBytecode.sourceMap"
+                        ]
+                    }
+                }
+            }
         },
-        "TaskContract": {
-            "address": task_address,
-            "abi": tc_abi
+        solc_version=SOLC_VERSION,
+        allow_paths=str(BASE_DIR)
+    )
+    
+    return compiled_sol
+
+def deploy_contracts(w3, private_key, compiled_sol):
+    """Deploy the contracts to the network"""
+    account = w3.eth.account.from_key(private_key)
+    
+    print(f"\nDeploying from account: {account.address}")
+    print(f"Account balance: {w3.from_wei(w3.eth.get_balance(account.address), 'ether')} ETH")
+    
+    # Extract contract data
+    reward_contract = compiled_sol['contracts']['RewardContract.sol']['RewardContract']
+    task_contract = compiled_sol['contracts']['TaskContract.sol']['TaskContract']
+    
+    reward_bytecode = reward_contract['evm']['bytecode']['object']
+    reward_abi = reward_contract['abi']
+    
+    task_bytecode = task_contract['evm']['bytecode']['object']
+    task_abi = task_contract['abi']
+    
+    # Deploy RewardContract
+    print("\n=== Deploying RewardContract ===")
+    RewardContract = w3.eth.contract(abi=reward_abi, bytecode=reward_bytecode)
+    
+    # Build transaction for RewardContract (admin = deployer address)
+    reward_tx = RewardContract.constructor(account.address).build_transaction({
+        'from': account.address,
+        'nonce': w3.eth.get_transaction_count(account.address),
+        'gas': 3000000,
+        'gasPrice': w3.eth.gas_price
+    })
+    
+    # Sign and send
+    signed_reward_tx = w3.eth.account.sign_transaction(reward_tx, private_key)
+    reward_tx_hash = w3.eth.send_raw_transaction(signed_reward_tx.raw_transaction)
+    print(f"RewardContract deployment tx: {reward_tx_hash.hex()}")
+    
+    # Wait for confirmation
+    reward_tx_receipt = w3.eth.wait_for_transaction_receipt(reward_tx_hash)
+    reward_contract_address = reward_tx_receipt.contractAddress
+    print(f"RewardContract deployed at: {reward_contract_address}")
+    
+    # Deploy TaskContract
+    print("\n=== Deploying TaskContract ===")
+    TaskContract = w3.eth.contract(abi=task_abi, bytecode=task_bytecode)
+    
+    # Build transaction for TaskContract (pass RewardContract address)
+    task_tx = TaskContract.constructor(reward_contract_address).build_transaction({
+        'from': account.address,
+        'nonce': w3.eth.get_transaction_count(account.address),
+        'gas': 2000000,
+        'gasPrice': w3.eth.gas_price
+    })
+    
+    # Sign and send
+    signed_task_tx = w3.eth.account.sign_transaction(task_tx, private_key)
+    task_tx_hash = w3.eth.send_raw_transaction(signed_task_tx.raw_transaction)
+    print(f"TaskContract deployment tx: {task_tx_hash.hex()}")
+    
+    # Wait for confirmation
+    task_tx_receipt = w3.eth.wait_for_transaction_receipt(task_tx_hash)
+    task_contract_address = task_tx_receipt.contractAddress
+    print(f"TaskContract deployed at: {task_contract_address}")
+    
+    # Grant MINTER_ROLE to TaskContract
+    print("\n=== Granting MINTER_ROLE to TaskContract ===")
+    reward_contract_instance = w3.eth.contract(
+        address=reward_contract_address,
+        abi=reward_abi
+    )
+    
+    # Calculate MINTER_ROLE hash
+    minter_role = w3.keccak(text="MINTER_ROLE")
+    
+    grant_role_tx = reward_contract_instance.functions.grantRole(
+        minter_role,
+        task_contract_address
+    ).build_transaction({
+        'from': account.address,
+        'nonce': w3.eth.get_transaction_count(account.address),
+        'gas': 100000,
+        'gasPrice': w3.eth.gas_price
+    })
+    
+    signed_grant_tx = w3.eth.account.sign_transaction(grant_role_tx, private_key)
+    grant_tx_hash = w3.eth.send_raw_transaction(signed_grant_tx.raw_transaction)
+    print(f"GrantRole tx: {grant_tx_hash.hex()}")
+    
+    grant_tx_receipt = w3.eth.wait_for_transaction_receipt(grant_tx_hash)
+    print("MINTER_ROLE granted successfully!")
+    
+    # Save deployment info
+    deployment_info = {
+        "network": "sepolia",
+        "rewardContract": {
+            "address": reward_contract_address,
+            "abi": reward_abi
+        },
+        "taskContract": {
+            "address": task_contract_address,
+            "abi": task_abi
         }
     }
     
-    try:
-        with open("deployment_artifacts.json", "w") as f:
-            json.dump(artifacts, f, indent=2)
-        print("Artifact file generated.")
-    except Exception as e:
-        print(f"Error writing artifact file: {e}")
-
-# --- Main execution script ---
-if __name__ == "__main__":
-    load_dotenv()
+    with open('deployment.json', 'w') as f:
+        json.dump(deployment_info, f, indent=2)
     
-    # 1. Connect to the EVM node
-    INFURA_URL = os.getenv("SEPOLIA_URL")
-    PRIVATE_KEY = os.getenv("SEPOLIA_PRIVATE_KEY")
+    print("\n=== Deployment Summary ===")
+    print(f"RewardContract: {reward_contract_address}")
+    print(f"TaskContract: {task_contract_address}")
+    print("Deployment info saved to deployment.json")
     
-    if not INFURA_URL or not PRIVATE_KEY:
-        print("Error: INFURA_URL and PRIVATE_KEY must be set in .env file")
-        exit(1)
-    if not PRIVATE_KEY.startswith("0x"):
-        print("Error: PRIVATE_KEY in .env file must start with 0x")
-        exit(1)
+    return deployment_info
 
-    try:
-        w3 = Web3(Web3.HTTPProvider(INFURA_URL))
-        if not w3.is_connected():
-            print(f"Error: Failed to connect to Web3 provider at {INFURA_URL}")
-            exit(1)
-    except Exception as e:
-        print(f"Error connecting to Web3: {e}")
-        exit(1)
-
+def main():
+    print("Checking for OpenZeppelin dependencies...")
+    if not check_dependencies():
+        return
+    
     print(f"Successfully connected to {INFURA_URL}")
-    deployer_acct = w3.eth.account.from_key(PRIVATE_KEY)
+    
+    try:
+        # Compile contracts
+        compiled_sol = compile_contracts()
+        print("Compilation successful!")
+        
+        # Connect to Web3
+        w3 = Web3(Web3.HTTPProvider(INFURA_URL))
+        
+        if not w3.is_connected():
+            print("Error: Could not connect to Ethereum network")
+            return
+        
+        # Get private key from environment or prompt
+        private_key = os.getenv('PRIVATE_KEY')
+        if not private_key:
+            private_key = input("Enter your private key (without 0x prefix): ")
+            if not private_key.startswith('0x'):
+                private_key = '0x' + private_key
+        
+        # Deploy contracts
+        deploy_contracts(w3, private_key, compiled_sol)
+        
+    except Exception as e:
+        print(f"Compilation Failed: {e}")
+        import traceback
+        traceback.print_exc()
 
-    # 2. Compile
-    (rc_abi, rc_bytecode, tc_abi, tc_bytecode) = compile_contracts()
-    if rc_abi is None:
-        exit(1)
-    
-    # 3. Deploy
-    (reward_address, task_address) = deploy_contracts(
-        w3, deployer_acct, rc_abi, rc_bytecode, tc_abi, tc_bytecode
-    )
-    if reward_address is None or task_address is None:
-        print("Deployment failed. Exiting.")
-        exit(1)
-    
-    # 4. Configure
-    success = configure_permissions(w3, deployer_acct, rc_abi, reward_address, task_address)
-    if not success:
-        print("Permission configuration failed. Exiting.")
-        exit(1)
-    
-    # 5. Generate Artifacts
-    generate_artifacts_file(rc_abi, reward_address, tc_abi, task_address)
-    
-    print("\n--- DEPLOYMENT COMPLETE ---")
-    print(f"RewardContract: {reward_address}")
-    print(f"TaskContract:   {task_address}")
-    print("Artifact file: deployment_artifacts.json")
+if __name__ == "__main__":
+    main()
