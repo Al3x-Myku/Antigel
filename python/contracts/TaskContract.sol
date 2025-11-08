@@ -8,6 +8,7 @@ import "./AchievementBadge.sol";
 contract TaskContract is Ownable {
     struct TaskStruct {
         uint256 id;
+        string title;
         string description;
         uint256 reward;
         bool completed;
@@ -27,7 +28,7 @@ contract TaskContract is Ownable {
     address public achievementBadge;
     
     // Events
-    event TaskCreated(uint256 indexed taskId, string description, uint256 reward, address creator);
+    event TaskCreated(uint256 indexed taskId, string title, string description, uint256 reward, address creator);
     event TaskApplied(uint256 indexed taskId, address applicant);
     event TaskAssigned(uint256 indexed taskId, address worker);
     event TaskCompleted(uint256 indexed taskId, address worker, uint256 reward);
@@ -40,11 +41,12 @@ contract TaskContract is Ownable {
         taskCounter = 0;
     }
     
-    function createTask(string memory _description, uint256 _reward) public {
+    function createTask(string memory _title, string memory _description, uint256 _reward) public {
         taskCounter++;
         
         tasks[taskCounter] = TaskStruct({
             id: taskCounter,
+            title: _title,
             description: _description,
             reward: _reward,
             completed: false,
@@ -60,7 +62,7 @@ contract TaskContract is Ownable {
             badgeContract.updateTaskCreation(msg.sender);
         }
         
-        emit TaskCreated(taskCounter, _description, _reward, msg.sender);
+        emit TaskCreated(taskCounter, _title, _description, _reward, msg.sender);
     }
     
     function applyForTask(uint256 _taskId) public {
