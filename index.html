@@ -83,6 +83,7 @@
                     <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Dashboard</a>
                     <a class="text-white text-sm font-medium leading-normal" href="#">Quests</a>
                     <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Communities</a>
+                    <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Achievements</a>
                     <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Rewards</a>
                 </div>
             </div>
@@ -212,9 +213,30 @@
                 </div>
 
                 <div class="mt-8 bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
-                    <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-4">My Rewards</h3>
-                    <div id="rewardsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <p class="text-center py-8 col-span-3">Connect wallet to view rewards</p>
+                    <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-4">My Rewards & Achievements</h3>
+                    
+                    <!-- Token Rewards -->
+                    <div class="mb-8">
+                        <h4 class="text-white text-md font-semibold mb-4">💰 Tokens</h4>
+                        <div id="rewardsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <p class="text-center py-8 col-span-3">Connect wallet to view rewards</p>
+                        </div>
+                    </div>
+
+                    <!-- User Stats -->
+                    <div class="mb-8">
+                        <h4 class="text-white text-md font-semibold mb-4">📊 Statistics</h4>
+                        <div id="userStats" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <p class="text-center py-8 col-span-5">Connect wallet to view stats</p>
+                        </div>
+                    </div>
+
+                    <!-- Achievement Badges -->
+                    <div>
+                        <h4 class="text-white text-md font-semibold mb-4">🏆 Achievement Badges</h4>
+                        <div id="achievementsList" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <p class="text-center py-8 col-span-4">Connect wallet to view achievements</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -235,29 +257,73 @@
 
     <script>
         // Contract addresses and ABIs from deployment.json
-        const REWARD_CONTRACT_ADDRESS = "0x05b9635A081086540954e7e965db5EA2714be86d";
-        const TASK_CONTRACT_ADDRESS = "0x826a184E74fF54130B7Cb27EE5Ec8c15Df5c5d47";
+        const REWARD_CONTRACT_ADDRESS = "0x81Dad8CD9C33c29A532bb1Fc2f0465AC98B92cF2";
+        const TASK_CONTRACT_ADDRESS = "0x89859493D3519d51BC856f268423aA61cfc889aD";
+        const ACHIEVEMENT_CONTRACT_ADDRESS = "0xC41451BBb7511202DC34aaa161527604e279d5D5";
         
         const TASK_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"applicant","type":"address"}],"name":"TaskApplied","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"TaskAssigned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"}],"name":"TaskCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"TaskCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"TaskCreated","type":"event"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"applyForTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"},{"internalType":"address","name":"_worker","type":"address"}],"name":"assignTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"cancelTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"completeTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_description","type":"string"},{"internalType":"uint256","name":"_reward","type":"uint256"}],"name":"createTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTask","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"internalType":"struct TaskContract.TaskStruct","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTaskApplicants","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTasksCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserTasks","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"hasApplied","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"rewardToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"}],"name":"setRewardToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint2Message"}],"name":"taskApplicants","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"taskCounter","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tasks","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type"
 :"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"userTasks","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
         
         const REWARD_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINTER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"grantMinterRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"revokeMinterRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 
+        const ACHIEVEMENT_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"uint8","name":"achievementType","type":"uint8"}],"name":"BadgeMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint8","name":"achievementType","type":"uint8"}],"name":"MilestoneReached","type":"event"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserBadges","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserStats","outputs":[{"internalType":"uint256","name":"_tasksCompleted","type":"uint256"},{"internalType":"uint256","name":"_tokensEarned","type":"uint256"},{"internalType":"uint256","name":"_tasksCreated","type":"uint256"},{"internalType":"uint256","name":"_currentStreak","type":"uint256"},{"internalType":"uint256","name":"_maxStreak","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"badges","outputs":[{"internalType":"uint8","name":"achievementType","type":"uint8"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"imageURI","type":"string"},{"internalType":"uint256","name":"mintedAt","type":"uint256"},{"internalType":"uint256","name":"rarity","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+
         let provider;
         let signer;
         let userAddress;
         let taskContract;
         let rewardContract;
+        let achievementContract;
 
     const statusLabels = ['Created', 'InProgress', 'Completed', 'Verified'];
     const statusColors = ['bg-blue-600', 'bg-yellow-500', 'bg-purple-600', 'bg-green-600'];
 
+    // Achievement type mapping (matches the contract enum)
+    const achievementTypes = {
+        0: { name: 'First Quest', icon: '🎯', description: 'Complete your first task' },
+        1: { name: 'Getting Started', icon: '⭐', description: 'Complete 5 tasks' },
+        2: { name: 'Task Hunter', icon: '🔥', description: 'Complete 10 tasks' },
+        3: { name: 'Dedicated Worker', icon: '💪', description: 'Complete 25 tasks' },
+        4: { name: 'Veteran Quester', icon: '🏅', description: 'Complete 50 tasks' },
+        5: { name: 'Quest Master', icon: '👑', description: 'Complete 100 tasks' },
+        6: { name: 'Early Adopter', icon: '🚀', description: 'One of first 100 users' },
+        7: { name: 'Token Collector', icon: '💰', description: 'Earn 100 HLP tokens' },
+        8: { name: 'Wealth Builder', icon: '💎', description: 'Earn 500 HLP tokens' },
+        9: { name: 'Token Whale', icon: '🐋', description: 'Earn 1000 HLP tokens' },
+        10: { name: 'Community Builder', icon: '🏗️', description: 'Create 10 tasks' },
+        11: { name: 'Mentor', icon: '👨‍🏫', description: 'Have 10 tasks completed by others' },
+        12: { name: 'Week Warrior', icon: '⚡', description: 'Complete tasks 7 days in a row' },
+        13: { name: 'Monthly Champion', icon: '🔥', description: 'Complete tasks 30 days in a row' },
+        14: { name: 'Top Performer', icon: '🥇', description: 'Top 10 performer monthly' },
+        15: { name: 'Helpful Reviewer', icon: '🤝', description: 'Review/verify 50 tasks' }
+    };
+
+        // Function to detect MetaMask
+        async function detectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                return window.ethereum;
+            }
+            
+            // Wait for MetaMask to load (up to 3 seconds)
+            for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (typeof window.ethereum !== 'undefined') {
+                    return window.ethereum;
+                }
+            }
+            
+            return null;
+        }
+
         // Login with MetaMask
         document.getElementById('loginButton').addEventListener('click', async () => {
-            if (typeof window.ethereum === 'undefined') {
+            const ethereum = await detectMetaMask();
+            
+            if (!ethereum) {
                 const installMetaMask = confirm(
                     '🦊 MetaMask Not Found!\n\n' +
                     'MetaMask extension is required to use this application.\n\n' +
+                    'If you have MetaMask installed, please refresh the page.\n\n' +
                     'Click OK to visit MetaMask website for installation instructions.'
                 );
                 
@@ -265,6 +331,11 @@
                     window.open('https://metamask.io/download/', '_blank');
                 }
                 return;
+            }
+
+            // Check if MetaMask is the provider we want to use
+            if (ethereum.isMetaMask) {
+                window.ethereum = ethereum;
             }
 
             const loginBtn = document.getElementById('loginButton');
@@ -348,6 +419,7 @@
                 
                 taskContract = new ethers.Contract(TASK_CONTRACT_ADDRESS, TASK_CONTRACT_ABI, signer);
                 rewardContract = new ethers.Contract(REWARD_CONTRACT_ADDRESS, REWARD_CONTRACT_ABI, signer);
+                achievementContract = new ethers.Contract(ACHIEVEMENT_CONTRACT_ADDRESS, ACHIEVEMENT_CONTRACT_ABI, signer);
 
                 loginBtn.innerHTML = '<span class="material-symbols-outlined animate-pulse">sync</span> Loading...';
 
@@ -374,8 +446,14 @@
                     successMsg.remove();
                 }, 3000);
 
+                // Suggest adding tokens to MetaMask
+                setTimeout(async () => {
+                    await suggestAddingTokensToMetaMask();
+                }, 2000);
+
                 await loadTasks();
                 await loadRewards();
+                await loadAchievements();
             } catch (error) {
                 console.error('Connection error:', error);
                 
@@ -421,6 +499,7 @@
             userAddress = null;
             taskContract = null;
             rewardContract = null;
+            achievementContract = null;
             
             // Show login screen, hide main app
             document.getElementById('loginScreen').classList.remove('hidden');
@@ -769,6 +848,7 @@
                 setTimeout(() => {
                     loadTasks();
                     loadRewards();
+                    loadAchievements();
                     resultDiv.classList.add('hidden');
                 }, 2000);
             } catch (error) {
@@ -826,6 +906,113 @@
                 `;
             } catch (error) {
                 console.error('Load rewards error:', error);
+            }
+        }
+
+        // Load Achievements
+        async function loadAchievements() {
+            if (!achievementContract || !userAddress) return;
+
+            try {
+                // Load user stats
+                const stats = await achievementContract.getUserStats(userAddress);
+                const statsDiv = document.getElementById('userStats');
+                
+                statsDiv.innerHTML = `
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-blue-400 mb-1">${stats._tasksCompleted}</h3>
+                        <p class="text-xs text-gray-400">Tasks Completed</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-green-400 mb-1">${stats._tokensEarned}</h3>
+                        <p class="text-xs text-gray-400">Tokens Earned</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-purple-400 mb-1">${stats._tasksCreated}</h3>
+                        <p class="text-xs text-gray-400">Tasks Created</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-orange-400 mb-1">${stats._currentStreak}</h3>
+                        <p class="text-xs text-gray-400">Current Streak</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-1">${stats._maxStreak}</h3>
+                        <p class="text-xs text-gray-400">Max Streak</p>
+                    </div>
+                `;
+
+                // Load user badges
+                const badgeIds = await achievementContract.getUserBadges(userAddress);
+                const achievementsDiv = document.getElementById('achievementsList');
+                
+                if (badgeIds.length === 0) {
+                    achievementsDiv.innerHTML = `
+                        <div class="col-span-4 text-center py-8 text-gray-400">
+                            <div class="text-6xl mb-4">🎯</div>
+                            <p class="text-lg mb-2">No achievements yet!</p>
+                            <p class="text-sm">Complete tasks to earn your first badge</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                achievementsDiv.innerHTML = '';
+                
+                for (const tokenId of badgeIds) {
+                    try {
+                        const badge = await achievementContract.badges(tokenId);
+                        const rarityColors = {
+                            1: 'border-gray-500 bg-gray-600/20',      // Common
+                            2: 'border-blue-500 bg-blue-600/20',     // Rare  
+                            3: 'border-purple-500 bg-purple-600/20', // Epic
+                            4: 'border-yellow-500 bg-yellow-600/20'  // Legendary
+                        };
+                        
+                        const rarityNames = {
+                            1: 'Common',
+                            2: 'Rare', 
+                            3: 'Epic',
+                            4: 'Legendary'
+                        };
+
+                        const badgeCard = document.createElement('div');
+                        badgeCard.className = `rounded-lg p-4 border-2 ${rarityColors[badge.rarity] || rarityColors[1]} transition hover:scale-105 cursor-pointer`;
+                        
+                        const mintDate = new Date(badge.mintedAt * 1000).toLocaleDateString();
+                        const achievementInfo = achievementTypes[badge.achievementType] || { name: badge.title, icon: '🏆', description: badge.description };
+                        
+                        badgeCard.innerHTML = `
+                            <div class="text-center">
+                                <div class="text-4xl mb-3">${achievementInfo.icon}</div>
+                                <h4 class="text-white font-bold text-sm mb-1">${achievementInfo.name}</h4>
+                                <p class="text-xs text-gray-300 mb-2">${achievementInfo.description}</p>
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-${badge.rarity === 4 ? 'yellow' : badge.rarity === 3 ? 'purple' : badge.rarity === 2 ? 'blue' : 'gray'}-400 font-semibold">
+                                        ${rarityNames[badge.rarity]}
+                                    </span>
+                                    <span class="text-gray-500">${mintDate}</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add click event to show badge details
+                        badgeCard.addEventListener('click', () => {
+                            alert(`🏆 ${achievementInfo.name}\n\n${achievementInfo.description}\n\nRarity: ${rarityNames[badge.rarity]}\nEarned: ${mintDate}\nToken ID: #${tokenId}`);
+                        });
+                        
+                        achievementsDiv.appendChild(badgeCard);
+                    } catch (error) {
+                        console.error(`Error loading badge ${tokenId}:`, error);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Load achievements error:', error);
+                document.getElementById('achievementsList').innerHTML = `
+                    <div class="col-span-4 text-center py-8 text-red-400">
+                        <p>Error loading achievements</p>
+                    </div>
+                `;
             }
         }
 
@@ -893,13 +1080,21 @@
         window.quickAssign = quickAssign;
 
         // Refresh Tasks
-        document.getElementById('refreshTasks').addEventListener('click', loadTasks);
+        document.getElementById('refreshTasks').addEventListener('click', () => {
+            loadTasks();
+            loadRewards();
+            loadAchievements();
+        });
 
         // Check if already connected on page load
         window.addEventListener('load', async () => {
-            if (window.ethereum) {
+            // Wait a moment for extensions to load
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const ethereum = await detectMetaMask();
+            if (ethereum) {
                 try {
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    const accounts = await ethereum.request({ method: 'eth_accounts' });
                     if (accounts.length > 0) {
                         console.log('Auto-connecting to existing wallet connection...');
                         // Auto-login if already connected
@@ -911,43 +1106,123 @@
             }
         });
 
-        // Listen for account changes
-        if (window.ethereum) {
-            window.ethereum.on('accountsChanged', (accounts) => {
-                if (accounts.length === 0) {
-                    // User disconnected
-                    console.log('User disconnected wallet');
-                    document.getElementById('disconnectWallet').click();
-                } else if (userAddress && accounts[0] !== userAddress) {
-                    // Account changed
-                    console.log('Account changed from', userAddress, 'to', accounts[0]);
+        // Setup event listeners for MetaMask
+        async function setupMetaMaskListeners() {
+            const ethereum = await detectMetaMask();
+            if (ethereum) {
+                ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length === 0) {
+                        // User disconnected
+                        console.log('User disconnected wallet');
+                        document.getElementById('disconnectWallet').click();
+                    } else if (userAddress && accounts[0] !== userAddress) {
+                        // Account changed
+                        console.log('Account changed from', userAddress, 'to', accounts[0]);
+                        
+                        // Show notification
+                        const notification = document.createElement('div');
+                        notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                        notification.textContent = '🔄 Account changed, reloading...';
+                        document.body.appendChild(notification);
+                        
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                });
+
+                ethereum.on('chainChanged', (chainId) => {
+                    console.log('Network changed to:', chainId);
                     
                     // Show notification
                     const notification = document.createElement('div');
-                    notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                    notification.textContent = '🔄 Account changed, reloading...';
+                    notification.className = 'fixed top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                    notification.textContent = '🌐 Network changed, reloading...';
                     document.body.appendChild(notification);
                     
                     setTimeout(() => {
                         window.location.reload();
                     }, 1500);
-                }
-            });
-
-            window.ethereum.on('chainChanged', (chainId) => {
-                console.log('Network changed to:', chainId);
-                
-                // Show notification
-                const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                notification.textContent = '🌐 Network changed, reloading...';
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            });
+                });
+            }
         }
+
+        // Add HLP Token to MetaMask
+        async function addHLPTokenToMetaMask() {
+            try {
+                const wasAdded = await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20',
+                        options: {
+                            address: REWARD_CONTRACT_ADDRESS,
+                            symbol: 'HLP',
+                            decimals: 18,
+                            image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzIiIGZpbGw9IiMxMzM3ZWMiLz4KPHR0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkhMUDwvdGV4dD4KPC9zdmc+'
+                        },
+                    },
+                });
+
+                if (wasAdded) {
+                    console.log('HLP token added to MetaMask!');
+                } else {
+                    console.log('HLP token not added to MetaMask');
+                }
+            } catch (error) {
+                console.log('Error adding HLP token to MetaMask:', error);
+            }
+        }
+
+        // Add Achievement NFT Contract to MetaMask
+        async function addAchievementNFTToMetaMask() {
+            try {
+                const wasAdded = await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC721',
+                        options: {
+                            address: ACHIEVEMENT_CONTRACT_ADDRESS,
+                            symbol: 'SQAB',
+                        },
+                    },
+                });
+
+                if (wasAdded) {
+                    console.log('Achievement NFT contract added to MetaMask!');
+                } else {
+                    console.log('Achievement NFT contract not added to MetaMask');
+                }
+            } catch (error) {
+                console.log('Error adding Achievement NFT contract to MetaMask:', error);
+            }
+        }
+
+        // Suggest adding tokens to MetaMask
+        async function suggestAddingTokensToMetaMask() {
+            const shouldAdd = confirm(
+                '🎯 Add SideQuests Tokens to MetaMask?\n\n' +
+                'Would you like to add HLP tokens and Achievement NFTs to your MetaMask wallet?\n\n' +
+                '✅ HLP Token (Your earned tokens)\n' +
+                '🏆 Achievement Badges (Your NFT collection)\n\n' +
+                'This will make them visible in your MetaMask wallet.'
+            );
+
+            if (shouldAdd) {
+                await addHLPTokenToMetaMask();
+                
+                // Wait a moment before adding NFTs
+                setTimeout(async () => {
+                    await addAchievementNFTToMetaMask();
+                }, 1000);
+            }
+        }
+
+        // Manual functions for adding tokens (can be called from UI)
+        window.addHLPTokenToMetaMask = addHLPTokenToMetaMask;
+        window.addAchievementNFTToMetaMask = addAchievementNFTToMetaMask;
+
+        // Initialize event listeners
+        setupMetaMaskListeners();
     </script>
 
 </body>
