@@ -124,39 +124,32 @@
                     <div class="lg:col-span-2 flex flex-col gap-8">
                         <!-- The Basics -->
                         <div class="bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
-                            <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-6">The Basics</h3>
+                            <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-6">Create New Task</h3>
                             <form id="createTaskForm" class="flex flex-col gap-6">
                                 <label class="flex flex-col">
-                                    <p class="text-white text-base font-medium leading-normal pb-2">Quest Metadata URI</p>
-                                    <input id="taskMetadata" placeholder="ipfs://Qm..." class="form-input h-12 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4" />
-                                    <span class="text-xs text-white/50 pt-2">Store your quest description on IPFS and paste the URI.</span>
+                                    <p class="text-white text-base font-medium leading-normal pb-2">Task Description</p>
+                                    <textarea id="taskDescription" placeholder="Describe the task..." rows="4" class="form-input bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4 py-3"></textarea>
+                                    <span class="text-xs text-white/50 pt-2">Provide a clear description of what needs to be done.</span>
                                 </label>
 
-                                <!-- Details & Rewards -->
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <label class="flex flex-col">
-                                        <p class="text-white text-base font-medium leading-normal pb-2">Reward Amount</p>
-                                        <div class="relative">
-                                            <input id="rewardAmount" type="number" value="100" placeholder="100" class="form-input h-12 w-full bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded pl-4 pr-16" />
-                                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                <span class="text-white font-bold">$HELP</span>
-                                            </div>
+                                <!-- Reward Amount -->
+                                <label class="flex flex-col">
+                                    <p class="text-white text-base font-medium leading-normal pb-2">Reward Amount</p>
+                                    <div class="relative">
+                                        <input id="rewardAmount" type="number" value="100" placeholder="100" class="form-input h-12 w-full bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded pl-4 pr-24" />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                            <span class="text-white font-bold">HLP Tokens</span>
                                         </div>
-                                        <span class="text-xs text-white/50 pt-2">Amount in tokens for fungible rewards.</span>
-                                    </label>
-                                    <label class="flex flex-col">
-                                        <p class="text-white text-base font-medium leading-normal pb-2">Reward Token ID</p>
-                                        <input id="rewardId" type="number" value="0" placeholder="0 (Community Token)" class="form-input h-12 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4" />
-                                        <span class="text-xs text-white/50 pt-2">0 = Community Token, 1+ = NFT Badges.</span>
-                                    </label>
-                                </div>
+                                    </div>
+                                    <span class="text-xs text-white/50 pt-2">Amount of HLP tokens to reward upon completion (in wei, e.g., 100 = 100 tokens).</span>
+                                </label>
 
                                 <div id="createTaskResult" class="hidden mt-1 p-3 rounded bg-white/5 border border-white/10 text-sm"></div>
 
-                                <!-- Submit is handled in sticky footer too; keep an in-form button for accessibility -->
+                                <!-- Submit button -->
                                 <div>
                                     <button type="submit" class="flex w-full items-center justify-center gap-2 h-12 rounded-full bg-primary hover:brightness-110 text-white font-bold">
-                                        <span class="material-symbols-outlined">send</span>
+                                        <span class="material-symbols-outlined">add_task</span>
                                         Create Task
                                     </button>
                                 </div>
@@ -166,33 +159,52 @@
                         <!-- Task Actions -->
                         <div class="bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
                             <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-6">Task Actions</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <!-- Claim Task -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Apply for Task -->
                                 <div class="flex flex-col gap-2">
-                                    <label class="text-white text-sm">Claim Task</label>
+                                    <label class="text-white text-sm font-medium">Apply for Task</label>
                                     <div class="flex gap-2">
-                                        <input id="claimTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
-                                        <button id="claimTaskBtn" class="h-12 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold">Claim</button>
+                                        <input id="applyTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
+                                        <button id="applyTaskBtn" class="h-12 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold whitespace-nowrap">Apply</button>
                                     </div>
-                                    <div id="claimResult" class="hidden text-xs"></div>
+                                    <span class="text-xs text-white/50">Apply to work on a task</span>
+                                    <div id="applyResult" class="hidden text-xs"></div>
                                 </div>
-                                <!-- Complete Task -->
+
+                                <!-- Assign Task (Creator Only) -->
                                 <div class="flex flex-col gap-2">
-                                    <label class="text-white text-sm">Complete Task</label>
+                                    <label class="text-white text-sm font-medium">Assign Task</label>
+                                    <div class="flex gap-2">
+                                        <input id="assignTaskId" type="number" placeholder="Task ID" class="form-input h-10 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3 text-sm" />
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input id="assignWorkerAddress" type="text" placeholder="Worker Address (0x...)" class="form-input h-10 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3 text-sm" />
+                                        <button id="assignTaskBtn" class="h-10 px-4 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm whitespace-nowrap">Assign</button>
+                                    </div>
+                                    <span class="text-xs text-white/50">Creator assigns task to applicant</span>
+                                    <div id="assignResult" class="hidden text-xs"></div>
+                                </div>
+
+                                <!-- Complete Task & Mint Rewards (Creator Only) -->
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Complete & Reward</label>
                                     <div class="flex gap-2">
                                         <input id="completeTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
-                                        <button id="completeTaskBtn" class="h-12 px-4 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-white font-bold">Complete</button>
+                                        <button id="completeTaskBtn" class="h-12 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white font-bold whitespace-nowrap">Complete</button>
                                     </div>
+                                    <span class="text-xs text-white/50">Creator completes task & mints rewards</span>
                                     <div id="completeResult" class="hidden text-xs"></div>
                                 </div>
-                                <!-- Verify & Reward -->
+
+                                <!-- Cancel Task (Creator Only) -->
                                 <div class="flex flex-col gap-2">
-                                    <label class="text-white text-sm">Verify & Reward</label>
+                                    <label class="text-white text-sm font-medium">Cancel Task</label>
                                     <div class="flex gap-2">
-                                        <input id="verifyTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
-                                        <button id="verifyTaskBtn" class="h-12 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white font-bold">Verify</button>
+                                        <input id="cancelTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
+                                        <button id="cancelTaskBtn" class="h-12 px-4 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold whitespace-nowrap">Cancel</button>
                                     </div>
-                                    <div id="verifyResult" class="hidden text-xs"></div>
+                                    <span class="text-xs text-white/50">Creator cancels unassigned task</span>
+                                    <div id="cancelResult" class="hidden text-xs"></div>
                                 </div>
                             </div>
                         </div>
@@ -353,24 +365,30 @@
                 return;
             }
 
-            const metadata = document.getElementById('taskMetadata').value;
-            const rewardId = document.getElementById('rewardId').value;
+            const description = document.getElementById('taskDescription').value;
             const rewardAmount = document.getElementById('rewardAmount').value;
+
+            if (!description || !rewardAmount) {
+                alert('Please fill in all fields');
+                return;
+            }
 
             const resultDiv = document.getElementById('createTaskResult');
             resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Creating task...</span>';
 
             try {
-                const amount = ethers.utils.parseEther(rewardAmount);
-                const tx = await taskContract.createTask(metadata, [rewardId], [amount]);
+                const tx = await taskContract.createTask(description, rewardAmount);
                 resultDiv.innerHTML = '<span class="text-blue-400">⏳ Waiting for confirmation...</span>';
                 
                 const receipt = await tx.wait();
                 resultDiv.innerHTML = '<span class="text-green-400">✅ Task created successfully!</span>';
                 
                 document.getElementById('createTaskForm').reset();
-                setTimeout(() => loadTasks(), 2000);
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
             } catch (error) {
                 console.error('Create task error:', error);
                 resultDiv.innerHTML = `<span class="text-red-400">❌ Error: ${error.message}</span>`;
@@ -382,7 +400,7 @@
             if (!taskContract) return;
 
             try {
-                const taskCount = await taskContract.taskCounter();
+                const taskCount = await taskContract.getTasksCount();
                 const taskListDiv = document.getElementById('taskList');
                 
                 if (taskCount.eq(0)) {
@@ -393,39 +411,49 @@
                 taskListDiv.innerHTML = '';
                 
                 for (let i = 1; i <= taskCount.toNumber(); i++) {
-                    const task = await taskContract.getTask(i);
-                    const statusIndex = task.status;
-                    
-                    const taskCard = document.createElement('div');
-                    taskCard.className = 'bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-cyan-500 transition';
-                    taskCard.innerHTML = `
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-semibold text-lg">Task #${i}</h3>
-                            <span class="${statusColors[statusIndex]} text-xs px-2 py-1 rounded-full">${statusLabels[statusIndex]}</span>
-                        </div>
-                        <p class="text-sm text-gray-400 mb-2 break-all">${task.metadataURI}</p>
-                        <div class="text-xs text-gray-500">
-                            <p>Creator: ${task.creator.slice(0, 6)}...${task.creator.slice(-4)}</p>
-                            ${task.completer !== ethers.constants.AddressZero ? `<p>Worker: ${task.completer.slice(0, 6)}...${task.completer.slice(-4)}</p>` : ''}
-                            <p>Reward: ${ethers.utils.formatEther(task.rewardAmounts[0])} tokens (ID: ${task.rewardIds[0]})</p>
-                        </div>
-                    `;
-                    taskListDiv.appendChild(taskCard);
+                    try {
+                        const task = await taskContract.getTask(i);
+                        
+                        const taskCard = document.createElement('div');
+                        taskCard.className = 'bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-primary transition';
+                        
+                        const statusBadge = task.completed ? 
+                            '<span class="bg-green-600 text-xs px-2 py-1 rounded-full">Completed</span>' :
+                            task.worker !== ethers.constants.AddressZero ?
+                            '<span class="bg-yellow-500 text-xs px-2 py-1 rounded-full">Assigned</span>' :
+                            '<span class="bg-blue-600 text-xs px-2 py-1 rounded-full">Open</span>';
+                        
+                        taskCard.innerHTML = `
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg text-white">Task #${i}</h3>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-sm text-gray-300 mb-3">${task.description}</p>
+                            <div class="text-xs text-gray-400 space-y-1">
+                                <p>Creator: ${task.creator.slice(0, 6)}...${task.creator.slice(-4)}</p>
+                                ${task.worker !== ethers.constants.AddressZero ? `<p>Worker: ${task.worker.slice(0, 6)}...${task.worker.slice(-4)}</p>` : '<p>Worker: Not assigned</p>'}
+                                <p class="text-primary font-semibold">Reward: ${task.reward} HLP</p>
+                            </div>
+                        `;
+                        taskListDiv.appendChild(taskCard);
+                    } catch (err) {
+                        console.log(`Task ${i} not found or deleted`);
+                    }
                 }
             } catch (error) {
                 console.error('Load tasks error:', error);
             }
         }
 
-        // Claim Task
-        document.getElementById('claimTaskBtn').addEventListener('click', async () => {
+        // Apply for Task
+        document.getElementById('applyTaskBtn').addEventListener('click', async () => {
             if (!taskContract) {
                 alert('Please connect wallet first');
                 return;
             }
 
-            const taskId = document.getElementById('claimTaskId').value;
-            const resultDiv = document.getElementById('claimResult');
+            const taskId = document.getElementById('applyTaskId').value;
+            const resultDiv = document.getElementById('applyResult');
             
             if (!taskId) {
                 alert('Please enter a task ID');
@@ -433,16 +461,53 @@
             }
 
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Claiming task...</span>';
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Applying for task...</span>';
 
             try {
-                const tx = await taskContract.claimTask(taskId);
+                const tx = await taskContract.applyForTask(taskId);
                 resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
                 await tx.wait();
-                resultDiv.innerHTML = '<span class="text-green-400">✅ Task claimed!</span>';
-                setTimeout(() => loadTasks(), 2000);
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Applied successfully!</span>';
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
             } catch (error) {
-                console.error('Claim error:', error);
+                console.error('Apply error:', error);
+                resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
+            }
+        });
+
+        // Assign Task
+        document.getElementById('assignTaskBtn').addEventListener('click', async () => {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            const taskId = document.getElementById('assignTaskId').value;
+            const workerAddress = document.getElementById('assignWorkerAddress').value;
+            const resultDiv = document.getElementById('assignResult');
+            
+            if (!taskId || !workerAddress) {
+                alert('Please enter task ID and worker address');
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Assigning task...</span>';
+
+            try {
+                const tx = await taskContract.assignTask(taskId, workerAddress);
+                resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
+                await tx.wait();
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task assigned!</span>';
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
+            } catch (error) {
+                console.error('Assign error:', error);
                 resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
             }
         });
@@ -463,29 +528,33 @@
             }
 
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Completing task...</span>';
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Completing task and minting rewards...</span>';
 
             try {
                 const tx = await taskContract.completeTask(taskId);
                 resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
                 await tx.wait();
-                resultDiv.innerHTML = '<span class="text-green-400">✅ Task completed!</span>';
-                setTimeout(() => loadTasks(), 2000);
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task completed & rewards minted!</span>';
+                setTimeout(() => {
+                    loadTasks();
+                    loadRewards();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
             } catch (error) {
                 console.error('Complete error:', error);
                 resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
             }
         });
 
-        // Verify Task
-        document.getElementById('verifyTaskBtn').addEventListener('click', async () => {
+        // Cancel Task
+        document.getElementById('cancelTaskBtn').addEventListener('click', async () => {
             if (!taskContract) {
                 alert('Please connect wallet first');
                 return;
             }
 
-            const taskId = document.getElementById('verifyTaskId').value;
-            const resultDiv = document.getElementById('verifyResult');
+            const taskId = document.getElementById('cancelTaskId').value;
+            const resultDiv = document.getElementById('cancelResult');
             
             if (!taskId) {
                 alert('Please enter a task ID');
@@ -493,64 +562,44 @@
             }
 
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Verifying task and minting rewards...</span>';
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Cancelling task...</span>';
 
             try {
-                const tx = await taskContract.verifyTask(taskId);
+                const tx = await taskContract.cancelTask(taskId);
                 resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
                 await tx.wait();
-                resultDiv.innerHTML = '<span class="text-green-400">✅ Task verified & rewards minted!</span>';
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task cancelled!</span>';
                 setTimeout(() => {
                     loadTasks();
-                    loadRewards();
+                    resultDiv.classList.add('hidden');
                 }, 2000);
             } catch (error) {
-                console.error('Verify error:', error);
+                console.error('Cancel error:', error);
                 resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
             }
         });
 
-        // Refresh Tasks
-        document.getElementById('refreshTasks').addEventListener('click', loadTasks);
-
         // Load Rewards
         async function loadRewards() {
-            if (!rewardContract || !userAddress) return;
+            if (!rewardContract || !account) return;
 
             try {
-                const rewardsDiv = document.getElementById('rewardsList');
-                rewardsDiv.innerHTML = '';
-
-                // Check balances for token IDs 0-10
-                const tokenIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-                let hasRewards = false;
-
-                for (const tokenId of tokenIds) {
-                    const balance = await rewardContract.balanceOf(userAddress, tokenId);
-                    
-                    if (!balance.isZero()) {
-                        hasRewards = true;
-                        const card = document.createElement('div');
-                        card.className = 'bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-lg p-4 border border-purple-500/50';
-                        card.innerHTML = `
-                            <div class="text-center">
-                                <div class="text-4xl mb-2">${tokenId === 0 ? '🪙' : '🏅'}</div>
-                                <h3 class="font-semibold text-lg">${tokenId === 0 ? 'Community Tokens' : `Badge #${tokenId}`}</h3>
-                                <p class="text-2xl font-bold text-cyan-400 mt-2">${ethers.utils.formatEther(balance)}</p>
-                                <p class="text-xs text-gray-400 mt-1">${tokenId === 0 ? 'Fungible Token' : 'NFT Badge'}</p>
-                            </div>
-                        `;
-                        rewardsDiv.appendChild(card);
-                    }
-                }
-
-                if (!hasRewards) {
-                    rewardsDiv.innerHTML = '<p class="text-gray-400 text-center py-8 col-span-3">No rewards yet. Complete and verify tasks to earn!</p>';
-                }
+                const balance = await rewardContract.balanceOf(account);
+                const rewardListDiv = document.getElementById('rewardList');
+                
+                rewardListDiv.innerHTML = `
+                    <div class="bg-gray-700/50 rounded-lg p-6 text-center border border-gray-600">
+                        <h3 class="text-3xl font-bold text-primary mb-2">${balance}</h3>
+                        <p class="text-gray-400">HLP Tokens</p>
+                    </div>
+                `;
             } catch (error) {
                 console.error('Load rewards error:', error);
             }
         }
+
+        // Refresh Tasks
+        document.getElementById('refreshTasks').addEventListener('click', loadTasks);
 
         // Check if already connected on page load
         window.addEventListener('load', async () => {
