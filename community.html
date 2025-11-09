@@ -348,6 +348,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Make auth and db available globally for connectWallet function
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+
         let currentUser = null;
         let communityId = null;
         let communityData = null;
@@ -1185,6 +1189,27 @@
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
                 taskContract = new ethers.Contract(TASK_CONTRACT_ADDRESS, TASK_CONTRACT_ABI, signer);
+
+                // Save wallet address to Firebase user document
+                const auth = window.firebaseAuth;
+                const db = window.firebaseDb;
+                const user = auth ? auth.currentUser : null;
+                
+                if (user && db) {
+                    try {
+                        const userDocRef = doc(db, 'users', user.uid);
+                        await updateDoc(userDocRef, {
+                            walletAddress: userAddress,
+                            lastWalletConnect: new Date().toISOString()
+                        });
+                        console.log('✅ Wallet address saved to Firebase:', userAddress);
+                    } catch (saveError) {
+                        console.error('❌ Error saving wallet address:', saveError);
+                        // Don't fail the whole connection if Firebase save fails
+                    }
+                } else {
+                    console.warn('⚠️ No authenticated user found, wallet address not saved to Firebase');
+                }
 
                 // Update UI
                 document.getElementById('connectWalletBtn').classList.add('hidden');

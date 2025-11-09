@@ -190,25 +190,46 @@
         // Load all communities
         async function loadCommunities() {
             try {
+                console.log('🔍 Loading all communities from Firestore...');
+                console.log('👤 Current user:', currentUser?.uid, currentUser?.email);
+                
                 const communitiesRef = collection(db, 'communities');
                 const q = query(communitiesRef);
+                
+                console.log('📡 Executing Firestore query...');
                 const querySnapshot = await getDocs(q);
+                console.log('📥 Query completed. Documents returned:', querySnapshot.size);
 
                 allCommunities = [];
                 querySnapshot.forEach((doc) => {
+                    const communityData = doc.data();
+                    console.log(`📦 Found community: "${communityData.name}" (ID: ${doc.id})`);
+                    console.log(`   - Access Type: ${communityData.accessType || 'not set'}`);
+                    console.log(`   - Creator: ${communityData.createdBy || 'not set'}`);
+                    console.log(`   - Members: ${communityData.members?.length || 0}`);
                     allCommunities.push({
                         id: doc.id,
-                        ...doc.data()
+                        ...communityData
                     });
                 });
 
-                console.log('✅ Loaded', allCommunities.length, 'communities');
+                console.log('✅ Loaded', allCommunities.length, 'total communities from database');
+                
+                if (allCommunities.length === 0) {
+                    console.warn('⚠️ NO COMMUNITIES FOUND! This might be a Firestore security rules issue.');
+                    console.warn('   Check if your Firestore rules allow: allow read: if true;');
+                }
+                
                 displayCommunities(allCommunities);
             } catch (error) {
                 console.error('❌ Error loading communities:', error);
+                console.error('   Error code:', error.code);
+                console.error('   Error message:', error.message);
                 document.getElementById('communitiesContainer').innerHTML = `
                     <div class="col-span-full text-center py-12">
-                        <p class="text-text-muted-dark">No communities available yet</p>
+                        <p class="text-red-400 font-bold mb-2">Error loading communities</p>
+                        <p class="text-text-muted-dark text-sm">${error.message}</p>
+                        <p class="text-text-muted-dark text-xs mt-2">Check browser console for details</p>
                     </div>
                 `;
             }
@@ -219,10 +240,15 @@
             const container = document.getElementById('communitiesContainer');
             const emptyState = document.getElementById('emptyState');
 
+            console.log('👁️ Displaying communities. Total before filter:', communities.length);
+
             // Filter out invite-only communities from public view
             const visibleCommunities = communities.filter(community => 
                 community.accessType !== 'invite'
             );
+
+            console.log('👁️ Visible communities after filtering invite-only:', visibleCommunities.length);
+            visibleCommunities.forEach(c => console.log(`  - ${c.name} (${c.accessType})`));
 
             if (visibleCommunities.length === 0) {
                 container.innerHTML = '';
@@ -237,6 +263,8 @@
                 const card = createCommunityCard(community);
                 container.appendChild(card);
             });
+
+            console.log('✅ Displayed', visibleCommunities.length, 'community cards');
         }
 
         // Create community card

@@ -50,6 +50,33 @@
         .animate-fadeIn {
             animation: fadeIn 0.2s ease-out;
         }
+
+        /* Custom Scrollbar Styling */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(42, 42, 42, 0.3);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #DDD92A 0%, #EAE151 100%);
+            border-radius: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(90deg, #EAE151 0%, #DDD92A 100%);
+        }
+
+        /* Firefox scrollbar */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #DDD92A rgba(42, 42, 42, 0.3);
+        }
     </style>
     <script>
         tailwind.config = {
@@ -124,6 +151,10 @@
                             <button id="joinCommunityBtn" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-light transition-colors">
                                 <span class="truncate">Join Community</span>
                             </button>
+                            <button id="aiAssistantBtn" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-gradient-to-r from-purple-500 to-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity gap-2">
+                                <span class="material-symbols-outlined text-lg">auto_awesome</span>
+                                <span class="truncate">AI Assistant</span>
+                            </button>
                             <button id="createCommunityBtn" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-card-dark border-2 border-primary text-primary text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/10 transition-colors">
                                 <span class="truncate">Create Community</span>
                             </button>
@@ -181,8 +212,30 @@
                         </div>
 
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 sm:px-6">
-                            <!-- Left Column: Active Quests -->
-                            <div class="lg:col-span-2 flex flex-col gap-4">
+                            <!-- Left Column: AI Recommended + Active Quests -->
+                            <div class="lg:col-span-2 flex flex-col gap-8">
+                                <!-- AI Recommended Tasks -->
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em] flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary">auto_awesome</span>
+                                            AI Recommended Quests
+                                        </h2>
+                                        <button id="refreshAIRecommendations" class="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">refresh</span>
+                                            Refresh
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="aiRecommendedTasksContainer">
+                                        <div class="col-span-full flex items-center justify-center h-32">
+                                            <div class="text-center">
+                                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                                                <p class="text-sm text-text-muted-dark">Analyzing your profile...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Section Header -->
                                 <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">My Active Quests</h2>
                                 
@@ -209,44 +262,26 @@
                             </div>
 
                             <!-- Right Column: Recently Viewed & Trending Communities -->
-                            <div class="lg:col-span-1 flex flex-col gap-8">
+                            <div class="lg:col-span-1 flex flex-col gap-6">
                                 <!-- Recently Viewed Communities -->
-                                <div class="flex flex-col gap-4">
-                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recently Viewed Communities</h2>
-                                    <div class="flex flex-col gap-3 rounded-lg bg-card-dark p-6 border border-border-dark min-h-[150px]" id="recentCommunitiesContainer">
-                                        <div class="flex items-center justify-center h-full">
-                                            <p class="text-sm text-text-muted-dark">No communities viewed yet</p>
+                                <div class="flex flex-col gap-3">
+                                    <h2 class="text-cream text-lg font-bold leading-tight">Recently Viewed Communities</h2>
+                                    <div class="overflow-x-auto custom-scrollbar">
+                                        <div class="flex gap-3 pb-2" id="recentCommunitiesContainer" style="min-height: 120px;">
+                                            <div class="flex items-center justify-center min-w-full h-full">
+                                                <p class="text-sm text-text-muted-dark">No communities viewed yet</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Recently Viewed Tasks -->
-                                <div class="flex flex-col gap-4">
-                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recently Viewed Quests</h2>
-                                    <div class="flex flex-col gap-3 rounded-lg bg-card-dark p-6 border border-border-dark min-h-[150px]" id="recentTasksContainer">
-                                        <div class="flex items-center justify-center h-full">
-                                            <p class="text-sm text-text-muted-dark">No quests viewed yet</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- AI Recommended Tasks -->
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex items-center justify-between">
-                                        <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em] flex items-center gap-2">
-                                            <span class="material-symbols-outlined text-primary">auto_awesome</span>
-                                            AI Recommended
-                                        </h2>
-                                        <button id="refreshAIRecommendations" class="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-sm">refresh</span>
-                                            Refresh
-                                        </button>
-                                    </div>
-                                    <div class="flex flex-col gap-3 rounded-lg bg-gradient-to-br from-card-dark to-primary/5 p-6 border-2 border-primary/30 min-h-[200px]" id="aiRecommendedTasksContainer">
-                                        <div class="flex items-center justify-center h-full">
-                                            <div class="text-center">
-                                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-                                                <p class="text-sm text-text-muted-dark">Analyzing your profile...</p>
+                                <div class="flex flex-col gap-3">
+                                    <h2 class="text-cream text-lg font-bold leading-tight">Recently Viewed Quests</h2>
+                                    <div class="overflow-x-auto custom-scrollbar">
+                                        <div class="flex gap-3 pb-2" id="recentTasksContainer" style="min-height: 120px;">
+                                            <div class="flex items-center justify-center min-w-full h-full">
+                                                <p class="text-sm text-text-muted-dark">No quests viewed yet</p>
                                             </div>
                                         </div>
                                     </div>
@@ -278,6 +313,36 @@
                 <button id="confirmLogoutBtn" class="flex-1 px-6 py-3 rounded-xl bg-primary text-background-dark font-bold hover:bg-primary-light transition-colors">
                     Logout
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div id="aiAssistantModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-card-dark border-2 border-primary rounded-2xl w-full max-w-5xl h-[80vh] flex flex-col shadow-2xl animate-fadeIn">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-border-dark">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center size-10 rounded-full bg-gradient-to-r from-purple-500 to-primary">
+                        <span class="material-symbols-outlined text-background-dark text-2xl">auto_awesome</span>
+                    </div>
+                    <div>
+                        <h3 class="text-cream text-xl font-bold">AI Task Assistant</h3>
+                        <p class="text-text-muted-dark text-sm">Powered by TaskChain Dojo</p>
+                    </div>
+                </div>
+                <button id="closeAiAssistantBtn" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-2xl text-cream">close</span>
+                </button>
+            </div>
+            
+            <!-- Modal Body - iframe container -->
+            <div class="flex-1 p-6 overflow-hidden">
+                <iframe
+                    id="taskchain-ai-iframe"
+                    src="http://localhost:3000/taskchain?embed=1"
+                    style="width: 100%; height: 100%; border: none; border-radius: 12px; background: #1a1820;"
+                ></iframe>
             </div>
         </div>
     </div>
@@ -348,6 +413,10 @@
 
             console.log('✅ User authenticated:', user.uid);
 
+            // DEBUG: Show user info
+            console.log('👤 User Email:', user.email);
+            console.log('👤 User Display Name:', user.displayName);
+
             // Update UI with user info
             const welcomeText = document.getElementById('welcomeText');
             const displayName = user.displayName || user.email?.split('@')[0] || 'there';
@@ -390,6 +459,67 @@
                 window.location.href = '/communities';
             });
 
+            // AI Assistant Modal
+            const aiAssistantBtn = document.getElementById('aiAssistantBtn');
+            const aiAssistantModal = document.getElementById('aiAssistantModal');
+            const closeAiAssistantBtn = document.getElementById('closeAiAssistantBtn');
+            const aiIframe = document.getElementById('taskchain-ai-iframe');
+            const dojoOrigin = "http://localhost:3000";
+
+            // Store user profile data globally for iframe
+            let userProfileData = null;
+
+            // Open AI Assistant Modal
+            aiAssistantBtn.addEventListener('click', () => {
+                aiAssistantModal.classList.remove('hidden');
+                // Send profile data after modal opens
+                setTimeout(() => sendProfileToIframe(), 300);
+            });
+
+            // Close AI Assistant Modal
+            closeAiAssistantBtn.addEventListener('click', () => {
+                aiAssistantModal.classList.add('hidden');
+            });
+
+            // Close on background click
+            aiAssistantModal.addEventListener('click', (e) => {
+                if (e.target === aiAssistantModal) {
+                    aiAssistantModal.classList.add('hidden');
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !aiAssistantModal.classList.contains('hidden')) {
+                    aiAssistantModal.classList.add('hidden');
+                }
+            });
+
+            // Function to send user profile to iframe
+            function sendProfileToIframe() {
+                if (!aiIframe.contentWindow || !userProfileData) {
+                    console.warn('⚠️ Cannot send profile: iframe or user data not ready');
+                    return;
+                }
+                
+                console.log('📤 Sending user profile to TaskChain Dojo:', userProfileData);
+                aiIframe.contentWindow.postMessage(
+                    {
+                        type: "TASKCHAIN_USER_PROFILE",
+                        payload: userProfileData,
+                    },
+                    dojoOrigin
+                );
+            }
+
+            // Send profile when iframe loads
+            aiIframe.addEventListener('load', () => {
+                console.log('✅ TaskChain iframe loaded');
+                sendProfileToIframe();
+                // Retry after a short delay to avoid race conditions
+                setTimeout(sendProfileToIframe, 500);
+            });
+
             // Logout modal elements
             const logoutModal = document.getElementById('logoutModal');
             const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
@@ -423,11 +553,13 @@
             // Load user data from Firestore
             try {
                 const userDocRef = doc(db, 'users', user.uid);
+                console.log('📄 Fetching user document from Firestore...');
                 const userDoc = await getDoc(userDocRef);
                 
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     console.log('✅ User data loaded:', userData);
+                    console.log('💼 Wallet Address:', userData.walletAddress || 'NOT SET - Connect MetaMask in a community page');
 
                     // Update tasks completed
                     const tasksCompleted = userData.tasksCompleted || 0;
@@ -464,6 +596,22 @@
 
                     // Load AI recommendations
                     await loadAIRecommendations(user.uid);
+
+                    // Build user profile for AI Assistant iframe
+                    userProfileData = {
+                        displayName: user.displayName || userData.name || user.email?.split('@')[0] || 'User',
+                        email: user.email || userData.email || '',
+                        walletAddress: userData.walletAddress || '',
+                        photoURL: user.photoURL || userData.photoURL || '',
+                        tasksCompleted: userData.tasksCompleted || 0,
+                        tasksCreated: userData.tasksCreated || 0,
+                        reputation: userData.reputation || 0,
+                        skills: userData.skills || userData.bio || 'No skills listed yet',
+                        badges: userData.badges || [],
+                        uid: user.uid,
+                        id: user.uid
+                    };
+                    console.log('🤖 AI Assistant profile ready:', userProfileData);
 
                 } else {
                     console.warn('⚠️ User document does not exist in Firestore');
@@ -516,65 +664,175 @@
 
         // Load tasks based on tab (in-progress or posted)
         async function loadTasks(userId, tabType) {
+            console.log(`📋 Loading ${tabType} tasks for user: ${userId}`);
+            
             try {
-                const tasksRef = collection(db, 'tasks');
-                let q;
-                
-                if (tabType === 'in-progress') {
-                    // Tasks assigned to the user that are in progress
-                    // Simplified query - just filter by assignedTo first
-                    q = query(
-                        tasksRef,
-                        where('assignedTo', '==', userId),
-                        limit(50)
-                    );
-                } else if (tabType === 'posted') {
-                    // Tasks created by the user
-                    q = query(
-                        tasksRef,
-                        where('createdBy', '==', userId),
-                        orderBy('createdAt', 'desc'),
-                        limit(10)
-                    );
-                }
-
-                const querySnapshot = await getDocs(q);
-                
-                // Filter in-progress tasks in memory (temporary workaround)
-                let tasks = [];
-                if (tabType === 'in-progress') {
-                    querySnapshot.forEach((doc) => {
-                        const task = doc.data();
-                        if (task.status === 'in-progress' || !task.status) {
-                            tasks.push({ id: doc.id, data: task });
-                        }
-                    });
-                    // Sort by createdAt
-                    tasks.sort((a, b) => {
-                        const timeA = a.data.createdAt?.seconds || 0;
-                        const timeB = b.data.createdAt?.seconds || 0;
-                        return timeB - timeA;
-                    });
-                    tasks = tasks.slice(0, 10); // Limit to 10
-                } else {
-                    querySnapshot.forEach((doc) => {
-                        tasks.push({ id: doc.id, data: doc.data() });
-                    });
-                }
-                
                 const tasksContainer = document.getElementById('activeTasksContainer');
                 const inProgressCount = document.getElementById('inProgressCount');
                 const postedByMeCount = document.getElementById('postedByMeCount');
+
+                // Show loading state
+                tasksContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p class="text-text-muted-dark">Loading tasks...</p>
+                    </div>
+                `;
+
+                let allTasks = [];
+
+                // ===== LOAD FIREBASE TASKS =====
+                try {
+                    const tasksRef = collection(db, 'tasks');
+                    let q;
+                    
+                    if (tabType === 'in-progress') {
+                        // Tasks assigned to the user
+                        q = query(
+                            tasksRef,
+                            where('assignedTo', '==', userId),
+                            limit(50)
+                        );
+                        console.log('🔍 Querying Firebase for tasks assigned to user...');
+                    } else if (tabType === 'posted') {
+                        // Tasks created by the user
+                        q = query(
+                            tasksRef,
+                            where('createdBy', '==', userId),
+                            limit(50)
+                        );
+                        console.log('🔍 Querying Firebase for tasks created by user...');
+                    }
+
+                    const querySnapshot = await getDocs(q);
+                    console.log(`📦 Firebase returned ${querySnapshot.size} tasks`);
+                    
+                    if (querySnapshot.empty) {
+                        console.warn(`⚠️ No tasks found in Firebase for ${tabType} tab`);
+                        console.log(`   Looking for: ${tabType === 'in-progress' ? 'assignedTo' : 'createdBy'} == ${userId}`);
+                    }
+                    
+                    // Filter and collect Firebase tasks
+                    querySnapshot.forEach((doc) => {
+                        const task = doc.data();
+                        if (tabType === 'in-progress') {
+                            // Only show tasks that are actually in progress or open
+                            if (task.status === 'in-progress' || task.status === 'open' || !task.status) {
+                                allTasks.push({ 
+                                    id: doc.id, 
+                                    data: task,
+                                    source: 'firebase',
+                                    createdAt: task.createdAt?.seconds || 0
+                                });
+                                console.log(`✅ Added Firebase task: ${task.title}`);
+                            }
+                        } else {
+                            // Show all posted tasks regardless of status
+                            allTasks.push({ 
+                                id: doc.id, 
+                                data: task,
+                                source: 'firebase',
+                                createdAt: task.createdAt?.seconds || 0
+                            });
+                            console.log(`✅ Added Firebase task: ${task.title} (${task.status || 'no status'})`);
+                        }
+                    });
+                } catch (firebaseError) {
+                    console.warn('⚠️ Error loading Firebase tasks:', firebaseError.message);
+                }
+
+                // ===== LOAD BLOCKCHAIN TASKS =====
+                try {
+                    // Check if we have ethers and a provider
+                    if (typeof ethers !== 'undefined') {
+                        const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161');
+                        const taskContractAddress = '0x77bD0b58d5786587614a00688Ddc9db7A592449E';
+                        const taskContractABI = [{"inputs":[{"internalType":"address","name":"_rewardContract","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":true,"internalType":"address","name":"applicant","type":"address"}],"name":"TaskApplied","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"TaskCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"TaskCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"string","name":"title","type":"string"},{"indexed":false,"internalType":"address","name":"creator","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"TaskCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"verifier","type":"address"}],"name":"TaskVerified","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"WorkerAssigned","type":"event"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"applyForTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"},{"internalType":"address","name":"_worker","type":"address"}],"name":"assignWorker","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"cancelTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"completeTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_title","type":"string"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"uint256","name":"_reward","type":"uint256"}],"name":"createTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTask","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"creator","type":"address"},{"internalType":"address","name":"worker","type":"address"}],"internalType":"struct TaskContract.Task","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTaskApplicants","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextTaskId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rewardContract","outputs":[{"internalType":"contract RewardContract","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tasks","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"creator","type":"address"},{"internalType":"address","name":"worker","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"verifyTask","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+                        
+                        const taskContract = new ethers.Contract(taskContractAddress, taskContractABI, provider);
+                        const nextTaskId = await taskContract.nextTaskId();
+                        
+                        // Get user's wallet address from localStorage or Firebase
+                        const userDocRef = doc(db, 'users', userId);
+                        const userDoc = await getDoc(userDocRef);
+                        const userWalletAddress = userDoc.exists() ? userDoc.data().walletAddress : null;
+
+                        console.log(`🔍 Dashboard checking blockchain tasks for user wallet: ${userWalletAddress || 'NOT SET'}`);
+                        console.log(`📊 Total blockchain tasks to check: ${nextTaskId - 1}`);
+
+                        if (!userWalletAddress) {
+                            console.warn('⚠️ No wallet address found. User needs to connect MetaMask in a community page first.');
+                        }
+
+                        // Load blockchain tasks
+                        for (let i = 1; i < nextTaskId; i++) {
+                            try {
+                                const task = await taskContract.getTask(i);
+                                
+                                // Skip canceled tasks (worker = 0x000...dEaD)
+                                if (task.worker.toLowerCase() === '0x000000000000000000000000000000000000dead') {
+                                    continue;
+                                }
+
+                                let shouldInclude = false;
+
+                                if (tabType === 'in-progress') {
+                                    // Show tasks where user is the assigned worker and not completed
+                                    if (userWalletAddress && 
+                                        task.worker.toLowerCase() === userWalletAddress.toLowerCase() && 
+                                        !task.completed) {
+                                        shouldInclude = true;
+                                        console.log(`✅ Found in-progress blockchain task #${i}: ${task.title}`);
+                                    }
+                                } else if (tabType === 'posted') {
+                                    // Show tasks created by the user
+                                    if (userWalletAddress && 
+                                        task.creator.toLowerCase() === userWalletAddress.toLowerCase()) {
+                                        shouldInclude = true;
+                                        console.log(`✅ Found posted blockchain task #${i}: ${task.title}`);
+                                    }
+                                }
+
+                                if (shouldInclude) {
+                                    allTasks.push({
+                                        id: i.toString(),
+                                        data: {
+                                            title: task.title,
+                                            description: task.description,
+                                            reward: ethers.utils.formatEther(task.reward),
+                                            status: task.completed ? 'completed' : (task.worker === ethers.constants.AddressZero ? 'open' : 'in-progress'),
+                                            communityName: 'Blockchain Task',
+                                            imageUrl: null,
+                                            deadline: null
+                                        },
+                                        source: 'blockchain',
+                                        createdAt: 0 // Blockchain tasks don't have timestamps
+                                    });
+                                }
+                            } catch (err) {
+                                console.log(`Skipping task ${i}:`, err.message);
+                            }
+                        }
+                    }
+                } catch (blockchainError) {
+                    console.warn('Could not load blockchain tasks:', blockchainError.message);
+                }
+
+                // Sort by createdAt (newest first)
+                allTasks.sort((a, b) => b.createdAt - a.createdAt);
+                
+                // Limit to 20 tasks
+                allTasks = allTasks.slice(0, 20);
                 
                 // Update the appropriate tab count
-                const taskCount = tasks.length;
+                const taskCount = allTasks.length;
                 if (tabType === 'in-progress') {
                     inProgressCount.textContent = `In Progress (${taskCount})`;
                 } else {
                     postedByMeCount.textContent = `Posted by Me (${taskCount})`;
                 }
                 
-                if (tasks.length === 0) {
+                if (allTasks.length === 0) {
                     const emptyMessage = tabType === 'in-progress' 
                         ? 'No active quests yet. Start exploring!' 
                         : 'You haven\'t posted any quests yet.';
@@ -589,12 +847,12 @@
                 }
 
                 tasksContainer.innerHTML = '';
-                tasks.forEach(({ id, data }) => {
-                    const taskCard = createTaskCard(data, id, tabType);
+                allTasks.forEach(({ id, data, source }) => {
+                    const taskCard = createTaskCard(data, id, tabType, source);
                     tasksContainer.appendChild(taskCard);
                 });
 
-                console.log('✅ Loaded', tasks.length, tabType, 'tasks');
+                console.log('✅ Loaded', allTasks.length, tabType, 'tasks (Firebase + Blockchain)');
             } catch (error) {
                 console.error('❌ Error loading tasks:', error);
                 const tasksContainer = document.getElementById('activeTasksContainer');
@@ -615,17 +873,28 @@
         }
 
         // Create task card element
-        function createTaskCard(task, taskId, tabType) {
+        function createTaskCard(task, taskId, tabType, source = 'firebase') {
             const card = document.createElement('div');
             card.className = 'flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer';
-            card.onclick = () => window.location.href = `/task/${taskId}`;
+            
+            // Different click handlers based on source
+            if (source === 'blockchain') {
+                card.onclick = () => {
+                    alert('Blockchain task details coming soon!');
+                    // TODO: Navigate to blockchain task details page
+                };
+            } else {
+                card.onclick = () => window.location.href = `/task/${taskId}`;
+            }
 
             // Different display based on tab type
             let statusBadge = '';
+            let sourceBadge = source === 'blockchain' ? '<span class="text-xs px-2 py-1 rounded-full bg-primary/30 text-primary font-semibold border border-primary">⛓️ BLOCKCHAIN</span>' : '';
+            
             if (tabType === 'posted') {
                 const statusColors = {
-                    'open': 'bg-primary/20 text-primary',
-                    'in-progress': 'bg-blue-500/20 text-blue-400',
+                    'open': 'bg-blue-500/20 text-blue-400',
+                    'in-progress': 'bg-yellow-500/20 text-yellow-400',
                     'completed': 'bg-green-500/20 text-green-400',
                     'cancelled': 'bg-red-500/20 text-red-400'
                 };
@@ -639,17 +908,18 @@
                     <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" 
                          style='background-image: url("${task.imageUrl || 'https://via.placeholder.com/48?text=Quest'}");'></div>
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <p class="text-cream font-bold">${task.title || 'Untitled Quest'}</p>
+                            ${sourceBadge}
                             ${statusBadge}
                         </div>
-                        <p class="text-sm text-text-muted-dark">for ${task.communityName || 'Unknown Community'}</p>
+                        <p class="text-sm text-text-muted-dark">${task.communityName || 'Unknown Community'}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-6">
                     <div class="text-right">
                         <p class="font-bold text-primary">${task.reward || '0'} HLP</p>
-                        <p class="text-sm text-text-muted-dark">${tabType === 'posted' ? 'Created: ' : 'Due: '}${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</p>
+                        <p class="text-sm text-text-muted-dark">${tabType === 'posted' ? 'Created' : 'Due'}: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</p>
                     </div>
                     <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
                 </div>
@@ -912,9 +1182,9 @@
             
             if (history.length === 0) {
                 container.innerHTML = `
-                    <div class="flex items-center justify-center h-full py-8">
+                    <div class="flex items-center justify-center min-w-full h-full">
                         <div class="text-center">
-                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">communities</span>
+                            <span class="material-symbols-outlined text-3xl text-text-muted-dark mb-2">communities</span>
                             <p class="text-sm text-text-muted-dark">No communities viewed yet</p>
                         </div>
                     </div>
@@ -926,17 +1196,17 @@
             history.slice(0, 5).forEach(community => {
                 const communityCard = document.createElement('a');
                 communityCard.href = `/community/${community.id}`;
-                communityCard.className = 'flex items-start gap-3 p-3 rounded-lg hover:bg-background-dark transition-colors cursor-pointer border border-transparent hover:border-primary/30';
+                communityCard.className = 'flex-shrink-0 w-48 flex flex-col gap-2 p-3 rounded-lg bg-card-dark border border-border-dark hover:border-primary/50 transition-all cursor-pointer';
                 
                 const timeAgo = getTimeAgo(new Date(community.viewedAt));
                 
                 communityCard.innerHTML = `
-                    <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <span class="material-symbols-outlined text-primary">groups</span>
+                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary text-xl">groups</span>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-cream font-semibold text-sm truncate">${community.name}</p>
-                        <p class="text-text-muted-dark text-xs truncate">${community.description || 'Community'}</p>
+                        <p class="text-text-muted-dark text-xs line-clamp-2" style="min-height: 2.5rem;">${community.description || 'Community'}</p>
                         <p class="text-text-muted-dark text-xs mt-1">${timeAgo}</p>
                     </div>
                 `;
@@ -952,9 +1222,9 @@
             
             if (history.length === 0) {
                 container.innerHTML = `
-                    <div class="flex items-center justify-center h-full py-8">
+                    <div class="flex items-center justify-center min-w-full h-full">
                         <div class="text-center">
-                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">assignment</span>
+                            <span class="material-symbols-outlined text-3xl text-text-muted-dark mb-2">assignment</span>
                             <p class="text-sm text-text-muted-dark">No quests viewed yet</p>
                         </div>
                     </div>
@@ -966,17 +1236,17 @@
             history.slice(0, 5).forEach(task => {
                 const taskCard = document.createElement('a');
                 taskCard.href = `/task/${task.id}`;
-                taskCard.className = 'flex items-start gap-3 p-3 rounded-lg hover:bg-background-dark transition-colors cursor-pointer border border-transparent hover:border-primary/30';
+                taskCard.className = 'flex-shrink-0 w-48 flex flex-col gap-2 p-3 rounded-lg bg-card-dark border border-border-dark hover:border-primary/50 transition-all cursor-pointer';
                 
                 const timeAgo = getTimeAgo(new Date(task.viewedAt));
                 
                 taskCard.innerHTML = `
-                    <div class="size-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <span class="material-symbols-outlined text-primary">task</span>
+                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary text-xl">task</span>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-cream font-semibold text-sm truncate">${task.title}</p>
-                        <p class="text-text-muted-dark text-xs truncate">${task.description || 'Task'}</p>
+                        <p class="text-text-muted-dark text-xs line-clamp-2" style="min-height: 2.5rem;">${task.description || 'Task'}</p>
                         <div class="flex items-center justify-between mt-1">
                             <span class="text-primary text-xs font-bold">${task.reward || 0} HLP</span>
                             <span class="text-text-muted-dark text-xs">${timeAgo}</span>

@@ -84,7 +84,7 @@ const UserContextBanner: React.FC<{ user: UserProfile | null }> = ({ user }) => 
     user.skills || user.skillset || user.bio || "(no skills string provided)";
 
   return (
-    <div className="mb-3 px-4 py-3 rounded-xl border bg-white/90 shadow-sm text-xs flex flex-col gap-1">
+    <div className="mb-3 px-4 py-3 rounded-xl border border-[#4A4750] bg-[#3A3740] shadow-sm text-xs flex flex-col gap-1">
       <div className="flex items-center gap-2">
         {user.photoURL && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -95,21 +95,21 @@ const UserContextBanner: React.FC<{ user: UserProfile | null }> = ({ user }) => 
           />
         )}
         <div className="flex flex-col">
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-[#FAFDF6]">
             Signed in as{" "}
             {user.displayName ||
               user.email ||
               user.walletAddress ||
               "Unknown user"}
           </span>
-          <span className="text-[10px] text-gray-500">
+          <span className="text-[10px] text-[#B0ADB5]">
             Wallet: {user.walletAddress || "N/A"} · Completed:{" "}
             {user.tasksCompleted ?? 0} · Created:{" "}
             {user.tasksCreated ?? 0} · Rep: {user.reputation ?? 0}
           </span>
         </div>
       </div>
-      <div className="mt-1 text-gray-700">
+      <div className="mt-1 text-[#FAFDF6]">
         <span className="font-medium">Skillset:</span>{" "}
         <span>{skillsPreview}</span>
       </div>
@@ -217,12 +217,12 @@ const TaskchainAgenticChat: React.FC = () => {
 
   // Layout: embed vs direct
   const containerClass = isEmbedded
-    ? "h-screen w-screen flex flex-col p-3 gap-2 bg-slate-50"
-    : "min-h-screen w-full flex justify-center bg-slate-50 p-6";
+    ? "h-screen w-screen flex flex-col p-3 gap-2 bg-[#2D2A32]"
+    : "min-h-screen w-full flex justify-center bg-[#2D2A32] p-6";
 
   const chatWrapperClass = isEmbedded
     ? "flex-1 min-h-0"
-    : "w-full max-w-4xl h-[80vh] rounded-2xl border bg-white shadow-sm overflow-hidden";
+    : "w-full max-w-4xl h-[80vh] rounded-2xl border border-[#4A4750] bg-[#3A3740] shadow-sm overflow-hidden";
 
   // Key to reset per identity (optional but nice)
   const copilotKey = useMemo(() => {

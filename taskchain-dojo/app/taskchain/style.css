@@ -1,7 +1,7 @@
 /* CopilotChat outer container */
 
 .copilotKitChat {
-  background-color: #ffffff !important;
+  background-color: #2D2A32 !important;
   border: none !important;
   border-radius: 0;
   box-shadow: none !important;
@@ -29,14 +29,15 @@
   gap: 0.35rem;
   padding: 0.22rem 0.75rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #eef2ff, #e0f2fe);
-  border: 1px solid #d4d4ff;
+  background: linear-gradient(135deg, #4A4750, #3A3740);
+  border: 1px solid #DDD92A;
   font-size: 0.7rem;
-  color: #111827;
+  color: #FAFDF6;
 }
 
 .tc-tool-icon {
   font-size: 0.8rem;
+  color: #DDD92A;
 }
 
 .tc-tool-label {
@@ -52,11 +53,11 @@
   margin: 0.35rem 0;
   padding: 0.6rem 0.9rem;
   border-radius: 0.9rem;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: #3A3740;
+  border: 1px solid #4A4750;
   max-width: 420px;
   font-size: 0.78rem;
-  color: #111827;
+  color: #FAFDF6;
 }
 
 .tc-tool-header {
@@ -72,10 +73,10 @@
   gap: 0.25rem;
   padding: 0.12rem 0.55rem;
   border-radius: 999px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: #4A4750;
+  border: 1px solid #DDD92A;
   font-size: 0.65rem;
-  color: #1f2937;
+  color: #DDD92A;
 }
 
 .tc-tool-chip-text {
@@ -86,11 +87,12 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #9ca3af;
+  color: #B0ADB5;
 }
 
 .tc-tool-body {
   margin-top: 0.05rem;
   white-space: pre-wrap;
   line-height: 1.35;
+  color: #FAFDF6;
 }
