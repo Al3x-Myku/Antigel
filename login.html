@@ -317,40 +317,56 @@
     </div>
 
     <script type="module">
+        // Import Firebase modules directly
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
         import { 
-            getAuth, 
+            getAuth,
             signInWithPopup, 
             GoogleAuthProvider,
             signInWithEmailAndPassword,
             signInWithPhoneNumber,
-            RecaptchaVerifier
+            RecaptchaVerifier,
+            setPersistence,
+            browserLocalPersistence,
+            onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
             authDomain: "taskmatch-openhack2025.firebaseapp.com",
             projectId: "taskmatch-openhack2025",
             storageBucket: "taskmatch-openhack2025.firebasestorage.app",
-            messagingSenderId: "248164216629",
-            appId: "1:248164216629:web:16b5982c9a7beae2b5a67c",
-            measurementId: "G-WWN061CS59"
+            messagingSenderId: "1071810532798",
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
+            measurementId: "G-Y0XPDPZFY8"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
-        const db = getFirestore(app);
 
-        console.log('🔥 Firebase initialized successfully');
-        console.log('📱 Auth instance:', auth ? 'OK' : 'FAILED');
-        console.log('💾 Firestore instance:', db ? 'OK' : 'FAILED');
+        // Enable session persistence
+        setPersistence(auth, browserLocalPersistence)
+            .then(() => {
+                console.log('✅ Session persistence enabled');
+            })
+            .catch((error) => {
+                console.error('⚠️ Session persistence error:', error);
+            });
+
+        console.log('✅ Firebase initialized');
+        console.log('✅ Auth:', auth ? 'OK' : 'FAILED');
+
+        // Check if already logged in (non-blocking)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('🔍 User already logged in, redirecting to dashboard');
+                window.location.href = '/dashboard';
+            } else {
+                console.log('👤 No user logged in, showing login page');
+            }
+        });
 
         let confirmationResult = null;
         let recaptchaVerifier = null;
@@ -390,8 +406,8 @@
 
         async function checkUserAndRedirect(user) {
             console.log('🔍 User logged in:', user.uid);
-            console.log('✅ Redirecting to main app');
-            window.location.href = '/app';
+            console.log('✅ Redirecting to dashboard');
+            window.location.href = '/dashboard';
         }
 
         // Module scripts are deferred, so DOM is ready

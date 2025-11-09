@@ -487,14 +487,15 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
         import { 
-            getAuth, 
+            getAuth,
             signInWithPopup, 
             GoogleAuthProvider,
             createUserWithEmailAndPassword,
             signInWithPhoneNumber,
-            RecaptchaVerifier
+            RecaptchaVerifier,
+            setPersistence,
+            browserLocalPersistence
         } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
         import { 
             getFirestore, 
@@ -509,7 +510,7 @@
             getDocs
         } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-        // Firebase configuration
+        // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
             authDomain: "taskmatch-openhack2025.firebaseapp.com",
@@ -520,11 +521,18 @@
             measurementId: "G-WWN061CS59"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Enable persistence
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error('Failed to enable persistence:', error);
+        });
+        
+        console.log('✅ Firebase initialized');
+        console.log('✅ Auth:', auth ? 'OK' : 'FAILED');
+        console.log('✅ DB:', db ? 'OK' : 'FAILED');
 
         // Global variables
         let currentUser = null;
@@ -608,21 +616,37 @@
         });
 
         // Google Sign In
-        document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-            try {
-                const provider = new GoogleAuthProvider();
-                const result = await signInWithPopup(auth, provider);
-                currentUser = result.user;
-                
-                // Go directly to step 2 (wallet linking)
-                step1.classList.add('hidden');
-                step2.classList.remove('hidden');
-                
-            } catch (error) {
-                console.error('Google sign in error:', error);
-                showError(error.message);
-            }
-        });
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        console.log('🔍 googleSignInBtn:', googleSignInBtn ? 'FOUND ✅' : 'NOT FOUND ❌');
+        
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', async () => {
+                console.log('🔵 Google Sign In button clicked');
+                try {
+                    console.log('🔵 Creating GoogleAuthProvider...');
+                    const provider = new GoogleAuthProvider();
+                    console.log('🔵 Calling signInWithPopup...');
+                    const result = await signInWithPopup(auth, provider);
+                    console.log('✅ Google sign in successful:', result.user.email);
+                    currentUser = result.user;
+                    
+                    console.log('🔵 Hiding step1, showing step2...');
+                    // Go directly to step 2 (wallet linking)
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    console.log('✅ Moved to step 2');
+                    
+                } catch (error) {
+                    console.error('❌ Google sign in error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    showError(error.message);
+                }
+            });
+            console.log('✅ Google sign-in listener attached');
+        } else {
+            console.error('❌ Could not find googleSignInBtn element');
+        }
 
         // Email Sign Up
         document.getElementById('emailSignUpBtn').addEventListener('click', async () => {

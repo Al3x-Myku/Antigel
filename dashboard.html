@@ -250,47 +250,29 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { requireAuth, logout } from './auth.js';
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUB3bsWDfitlfweFyLQnqlL1foTg3IiqU",
-            authDomain: "taskmatch-openhack2025.firebaseapp.com",
-            projectId: "taskmatch-openhack2025",
-            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
-            messagingSenderId: "1085072427435",
-            appId: "1:1085072427435:web:e31a9bf2ecc3a7a3a44dc3",
-            measurementId: "G-V4F74J4B2M"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Check authentication state
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                console.log('❌ No user authenticated, redirecting to login');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            console.log('✅ User authenticated:', user.uid);
-            
-            // Update welcome text with user's name
+        // Require authentication - if not logged in, redirect to login
+        requireAuth('/login').then((user) => {
+            // Update UI with user info
             const welcomeText = document.getElementById('welcomeText');
             const displayName = user.displayName || user.email?.split('@')[0] || 'there';
             welcomeText.textContent = `Welcome back, ${displayName}!`;
             
-            // Update avatar if available
             const userAvatar = document.getElementById('userAvatar');
             if (user.photoURL) {
                 userAvatar.style.backgroundImage = `url("${user.photoURL}")`;
             }
             
-            console.log('👤 Dashboard loaded!');
+            // Add logout handler to avatar (click to logout)
+            userAvatar.addEventListener('click', () => {
+                if (confirm('Do you want to logout?')) {
+                    logout();
+                }
+            });
+            userAvatar.style.cursor = 'pointer';
+            
+            console.log('✅ Dashboard loaded for:', user.email);
         });
     </script>
 </body>

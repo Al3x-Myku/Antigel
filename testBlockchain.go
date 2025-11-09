@@ -388,7 +388,7 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "register.html")
 }
 
-func appPageHandler(w http.ResponseWriter, r *http.Request) {
+func dashboardPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -397,7 +397,7 @@ func appPageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	http.ServeFile(w, r, "index.html")
+	http.ServeFile(w, r, "dashboard.html")
 }
 
 // Static assets handler (for CSS, JS, images, etc.)
@@ -449,7 +449,7 @@ func main() {
 	http.HandleFunc("/", landingPageHandler)
 	http.HandleFunc("/login", loginPageHandler)
 	http.HandleFunc("/register", registerPageHandler)
-	http.HandleFunc("/app", appPageHandler)
+	http.HandleFunc("/dashboard", dashboardPageHandler)
 
 	// Static assets (CSS, JS, images, etc.)
 	http.HandleFunc("/static/", staticAssetsHandler)
@@ -460,9 +460,9 @@ func main() {
 	log.Printf("🏠 Landing page available at: http://localhost%s/", port)
 	log.Printf("🔐 Login page available at: http://localhost%s/login", port)
 	log.Printf("📝 Register page available at: http://localhost%s/register", port)
-	log.Printf("💻 Main app available at: http://localhost%s/app", port)
+	log.Printf("� Dashboard available at: http://localhost%s/dashboard", port)
 	log.Printf("🌐 API endpoints available at /api/*")
-	log.Printf("� Static assets available at /static/*")
+	log.Printf("📁 Static assets available at /static/*")
 
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
