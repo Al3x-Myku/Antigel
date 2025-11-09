@@ -455,8 +455,15 @@
                     // Load active tasks (tasks user is working on) - default tab
                     await loadTasks(user.uid, 'in-progress');
 
+                    // Load recent history
+                    await loadRecentCommunities();
+                    await loadRecentTasks();
+
                     // Load notifications for admin
                     await loadNotifications(user.uid);
+
+                    // Load AI recommendations
+                    await loadAIRecommendations(user.uid);
 
                 } else {
                     console.warn('⚠️ User document does not exist in Firestore');
@@ -850,6 +857,263 @@
                 notificationsDropdown.classList.add('hidden');
             }
         });
+
+        // ===== HISTORY TRACKING =====
+        
+        // Save to history in localStorage
+        function saveToHistory(type, item) {
+            const historyKey = `${type}History`;
+            let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            
+            // Remove if already exists
+            history = history.filter(h => h.id !== item.id);
+            
+            // Add to beginning
+            history.unshift({
+                ...item,
+                viewedAt: new Date().toISOString()
+            });
+            
+            // Keep only last 10 items
+            history = history.slice(0, 10);
+            
+            localStorage.setItem(historyKey, JSON.stringify(history));
+        }
+
+        // Get history from localStorage
+        function getHistory(type) {
+            const historyKey = `${type}History`;
+            return JSON.parse(localStorage.getItem(historyKey) || '[]');
+        }
+
+        // Track community visit (call this when user visits a community page)
+        window.trackCommunityVisit = function(communityId, communityName, communityDescription) {
+            saveToHistory('community', {
+                id: communityId,
+                name: communityName,
+                description: communityDescription
+            });
+        };
+
+        // Track task visit (call this when user visits a task page)
+        window.trackTaskVisit = function(taskId, taskTitle, taskDescription, taskReward) {
+            saveToHistory('task', {
+                id: taskId,
+                title: taskTitle,
+                description: taskDescription,
+                reward: taskReward
+            });
+        };
+
+        // Load recent communities
+        async function loadRecentCommunities() {
+            const container = document.getElementById('recentCommunitiesContainer');
+            const history = getHistory('community');
+            
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full py-8">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">communities</span>
+                            <p class="text-sm text-text-muted-dark">No communities viewed yet</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            history.slice(0, 5).forEach(community => {
+                const communityCard = document.createElement('a');
+                communityCard.href = `/community/${community.id}`;
+                communityCard.className = 'flex items-start gap-3 p-3 rounded-lg hover:bg-background-dark transition-colors cursor-pointer border border-transparent hover:border-primary/30';
+                
+                const timeAgo = getTimeAgo(new Date(community.viewedAt));
+                
+                communityCard.innerHTML = `
+                    <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary">groups</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-cream font-semibold text-sm truncate">${community.name}</p>
+                        <p class="text-text-muted-dark text-xs truncate">${community.description || 'Community'}</p>
+                        <p class="text-text-muted-dark text-xs mt-1">${timeAgo}</p>
+                    </div>
+                `;
+                
+                container.appendChild(communityCard);
+            });
+        }
+
+        // Load recent tasks
+        async function loadRecentTasks() {
+            const container = document.getElementById('recentTasksContainer');
+            const history = getHistory('task');
+            
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full py-8">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">assignment</span>
+                            <p class="text-sm text-text-muted-dark">No quests viewed yet</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            history.slice(0, 5).forEach(task => {
+                const taskCard = document.createElement('a');
+                taskCard.href = `/task/${task.id}`;
+                taskCard.className = 'flex items-start gap-3 p-3 rounded-lg hover:bg-background-dark transition-colors cursor-pointer border border-transparent hover:border-primary/30';
+                
+                const timeAgo = getTimeAgo(new Date(task.viewedAt));
+                
+                taskCard.innerHTML = `
+                    <div class="size-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary">task</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-cream font-semibold text-sm truncate">${task.title}</p>
+                        <p class="text-text-muted-dark text-xs truncate">${task.description || 'Task'}</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-primary text-xs font-bold">${task.reward || 0} HLP</span>
+                            <span class="text-text-muted-dark text-xs">${timeAgo}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(taskCard);
+            });
+        }
+
+        // Helper function to get "time ago" string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Load AI recommendations
+        async function loadAIRecommendations(userId) {
+            const container = document.getElementById('aiRecommendedTasksContainer');
+            
+            try {
+                // Get user data for personalization
+                const userDocRef = doc(db, 'users', userId);
+                const userDoc = await getDoc(userDocRef);
+                const userData = userDoc.data() || {};
+                
+                // Get user's skills and interests
+                const userSkills = userData.skills || [];
+                const userInterests = userData.interests || [];
+                
+                // Query tasks (we'll filter them based on user profile)
+                const tasksRef = collection(db, 'tasks');
+                const q = query(
+                    tasksRef,
+                    where('status', '==', 'open'),
+                    limit(20)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                let recommendedTasks = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const task = doc.data();
+                    // Simple scoring: match skills or interests
+                    let score = 0;
+                    if (userSkills.some(skill => task.title?.toLowerCase().includes(skill.toLowerCase()))) {
+                        score += 2;
+                    }
+                    if (userInterests.some(interest => task.title?.toLowerCase().includes(interest.toLowerCase()))) {
+                        score += 1;
+                    }
+                    
+                    recommendedTasks.push({ id: doc.id, data: task, score });
+                });
+                
+                // Sort by score and take top 3
+                recommendedTasks.sort((a, b) => b.score - a.score);
+                recommendedTasks = recommendedTasks.slice(0, 3);
+                
+                if (recommendedTasks.length === 0) {
+                    // Fallback: show random tasks
+                    const allTasks = [];
+                    querySnapshot.forEach((doc) => {
+                        allTasks.push({ id: doc.id, data: doc.data() });
+                    });
+                    recommendedTasks = allTasks.slice(0, 3);
+                }
+                
+                if (recommendedTasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-4xl text-primary mb-2">auto_awesome</span>
+                                <p class="text-sm text-text-muted-dark">No recommendations yet</p>
+                                <p class="text-xs text-text-muted-dark mt-1">Complete more tasks to get personalized suggestions!</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = '';
+                recommendedTasks.forEach(({ id, data, score }) => {
+                    const taskCard = document.createElement('a');
+                    taskCard.href = `/task/${id}`;
+                    taskCard.className = 'flex flex-col gap-2 p-4 rounded-lg bg-background-dark/50 hover:bg-background-dark border border-primary/20 hover:border-primary transition-all cursor-pointer';
+                    
+                    taskCard.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-cream font-bold text-sm line-clamp-2">${data.title || 'Untitled Task'}</p>
+                            ${score > 0 ? '<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold flex-shrink-0">Match!</span>' : ''}
+                        </div>
+                        <p class="text-text-muted-dark text-xs line-clamp-2">${data.description || 'No description'}</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-primary font-bold text-sm">${data.reward || 0} HLP</span>
+                            <span class="text-xs text-text-muted-dark">AI suggested</span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(taskCard);
+                });
+                
+            } catch (error) {
+                console.error('Error loading AI recommendations:', error);
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">error</span>
+                            <p class="text-sm text-text-muted-dark">Could not load recommendations</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Refresh AI recommendations button
+        document.getElementById('refreshAIRecommendations')?.addEventListener('click', async () => {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                document.getElementById('aiRecommendedTasksContainer').innerHTML = `
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                            <p class="text-sm text-text-muted-dark">Refreshing...</p>
+                        </div>
+                    </div>
+                `;
+                await loadAIRecommendations(currentUser.uid);
+            }
+        });
+
     </script>
 </body>
 </html>

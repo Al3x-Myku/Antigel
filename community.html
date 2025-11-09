@@ -160,71 +160,13 @@
                 </div>
             </div>
 
-            <!-- Create Blockchain Task Section (Admin Only) -->
-            <div id="createTaskSection" class="hidden glass rounded-lg p-6">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="size-10 rounded-full gradient-primary flex items-center justify-center">
-                        <span class="material-symbols-outlined text-background-dark text-2xl">link</span>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold">Create Blockchain Task</h2>
-                        <p class="text-text-muted-dark text-sm">Deploy task on-chain with smart contracts</p>
-                    </div>
-                </div>
-                
-                <div class="mb-4 p-3 bg-blue-500/10 border border-blue-500 rounded-lg">
-                    <p class="text-blue-400 text-sm">
-                        <strong>ℹ️ Admin Feature:</strong> This section is only visible to community admins. You can create tasks that will be stored on the Sepolia blockchain.
-                    </p>
-                </div>
-                
-                <div id="walletStatus" class="mb-4 p-3 bg-background-dark/50 rounded-lg border border-border-dark">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-text-muted-dark">Wallet Status:</span>
-                        <button id="connectWalletBtn" onclick="connectWallet()" 
-                                class="px-4 py-2 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-opacity">
-                            Connect MetaMask
-                        </button>
-                        <span id="walletAddress" class="hidden text-sm text-primary font-mono"></span>
-                    </div>
-                </div>
-
-                <form id="blockchainTaskForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Task Title</label>
-                        <input type="text" id="taskTitle" required
-                               class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                               placeholder="Enter task title">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Task Description</label>
-                        <textarea id="taskDescription" required rows="4"
-                                  class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
-                                  placeholder="Describe the task requirements"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Reward Amount (HLP)</label>
-                        <input type="number" id="taskReward" required step="0.001" min="0"
-                               class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                               placeholder="100">
-                    </div>
-
-                    <button type="submit" id="createTaskBtn"
-                            class="w-full px-6 py-4 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined">rocket_launch</span>
-                        Deploy Task to Blockchain
-                    </button>
-                </form>
-
-                <div id="transactionStatus" class="hidden mt-4 p-4 rounded-lg border">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                        <span class="font-medium" id="statusText">Processing transaction...</span>
-                    </div>
-                    <a id="txLink" target="_blank" class="text-sm text-primary hover:underline hidden"></a>
-                </div>
+            <!-- Create Blockchain Task Button (Admin Only) -->
+            <div id="createTaskSection" class="hidden">
+                <button onclick="openCreateTaskModal()" 
+                        class="w-full px-6 py-4 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Create Blockchain Task
+                </button>
             </div>
 
             <!-- Tasks Section -->
@@ -310,6 +252,80 @@
         </div>
     </div>
 
+    <!-- Create Blockchain Task Modal -->
+    <div id="createTaskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="glass rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="size-10 rounded-full gradient-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-background-dark text-2xl">link</span>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold">Create Blockchain Task</h3>
+                        <p class="text-text-muted-dark text-sm">Deploy task on-chain with smart contracts</p>
+                    </div>
+                </div>
+                <button onclick="closeCreateTaskModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+
+            <div class="mb-4 p-3 bg-blue-500/10 border border-blue-500 rounded-lg">
+                <p class="text-blue-400 text-sm">
+                    <strong>ℹ️ Blockchain Task:</strong> This task will be stored on the Sepolia blockchain and rewards will be paid in HLP tokens.
+                </p>
+            </div>
+            
+            <div id="walletStatus" class="mb-4 p-3 bg-background-dark/50 rounded-lg border border-border-dark">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-text-muted-dark">Wallet Status:</span>
+                    <button id="connectWalletBtn" onclick="connectWallet()" 
+                            class="px-4 py-2 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-opacity text-sm">
+                        Connect MetaMask
+                    </button>
+                    <span id="walletAddress" class="hidden text-sm text-primary font-mono"></span>
+                </div>
+            </div>
+
+            <form id="blockchainTaskForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Task Title</label>
+                    <input type="text" id="taskTitle" required
+                           class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                           placeholder="Enter task title">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Task Description</label>
+                    <textarea id="taskDescription" required rows="4"
+                              class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                              placeholder="Describe the task requirements"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Reward Amount (HLP)</label>
+                    <input type="number" id="taskReward" required step="0.001" min="0"
+                           class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                           placeholder="100">
+                </div>
+
+                <button type="submit" id="createTaskBtn"
+                        class="w-full px-6 py-4 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                    Deploy Task to Blockchain
+                </button>
+            </form>
+
+            <div id="transactionStatus" class="hidden mt-4 p-4 rounded-lg border">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                    <span class="font-medium" id="statusText">Processing transaction...</span>
+                </div>
+                <a id="txLink" target="_blank" class="text-sm text-primary hover:underline hidden"></a>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
@@ -372,6 +388,28 @@
                 }
 
                 communityData = { id: communitySnap.id, ...communitySnap.data() };
+                
+                // Track community visit for history
+                if (window.opener?.trackCommunityVisit) {
+                    window.opener.trackCommunityVisit(
+                        communityData.id,
+                        communityData.name,
+                        communityData.description
+                    );
+                } else {
+                    // Store in localStorage directly if not opened from dashboard
+                    const historyKey = 'communityHistory';
+                    let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+                    history = history.filter(h => h.id !== communityData.id);
+                    history.unshift({
+                        id: communityData.id,
+                        name: communityData.name,
+                        description: communityData.description,
+                        viewedAt: new Date().toISOString()
+                    });
+                    history = history.slice(0, 10);
+                    localStorage.setItem(historyKey, JSON.stringify(history));
+                }
                 
                 // Check user permissions
                 isMember = communityData.members && communityData.members.includes(currentUser.uid);
@@ -655,6 +693,31 @@
             titleEl.textContent = task.title || 'Untitled Task';
             idEl.textContent = `Task #${taskId} • On-Chain`;
 
+            // Track task view for history
+            const taskReward = ethers.utils.formatEther(task.reward || '0');
+            if (window.opener?.trackTaskVisit) {
+                window.opener.trackTaskVisit(
+                    taskId.toString(),
+                    task.title,
+                    task.description,
+                    taskReward
+                );
+            } else {
+                // Store in localStorage directly if not opened from dashboard
+                const historyKey = 'taskHistory';
+                let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+                history = history.filter(h => h.id !== taskId.toString());
+                history.unshift({
+                    id: taskId.toString(),
+                    title: task.title,
+                    description: task.description,
+                    reward: taskReward,
+                    viewedAt: new Date().toISOString()
+                });
+                history = history.slice(0, 10);
+                localStorage.setItem(historyKey, JSON.stringify(history));
+            }
+
             // Get applicants
             let applicants = [];
             try {
@@ -866,6 +929,17 @@
 
         window.closeBlockchainTaskModal = function() {
             document.getElementById('blockchainTaskModal').classList.add('hidden');
+        };
+
+        window.openCreateTaskModal = function() {
+            document.getElementById('createTaskModal').classList.remove('hidden');
+        };
+
+        window.closeCreateTaskModal = function() {
+            document.getElementById('createTaskModal').classList.add('hidden');
+            // Reset form
+            document.getElementById('blockchainTaskForm').reset();
+            document.getElementById('transactionStatus').classList.add('hidden');
         };
 
         window.applyForBlockchainTask = async function(taskId) {
