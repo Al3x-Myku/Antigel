@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Dashboard - SideQuests</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        
+        /* Tab animations */
+        .admin-tab {
+            transition: all 0.2s ease;
+        }
+        
+        /* Smooth height transitions */
+        .collapsible {
+            transition: max-height 0.3s ease;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#DDD92A",
+                        "primary-light": "#EAE151",
+                        "primary-pale": "#EEEFA8",
+                        "secondary": "#DDD92A",
+                        "background-dark": "#2D2A32",
+                        "card-dark": "#3A3740",
+                        "border-dark": "#4A4750",
+                        "text-muted-dark": "#B0ADB5",
+                        "cream": "#FAFDF6",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-dark text-cream">
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <div class="flex flex-1 justify-center py-5">
+                <div class="layout-content-container flex flex-col w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+                    
+                    <!-- Header -->
+                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark px-4 sm:px-6 py-4 mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="size-6 text-primary">
+                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <a href="/dashboard" class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-2" style="color: #EEEFA8;">
+                                <span class="material-symbols-outlined">arrow_back</span>
+                                Back to Dashboard
+                            </a>
+                        </div>
+                    </header>
+
+                    <main class="flex flex-col gap-8">
+                        <!-- Community Hero - REDUCED HEIGHT -->
+                        <div class="relative rounded-xl overflow-hidden">
+                            <div id="communityBanner" class="h-48 bg-center bg-cover bg-no-repeat" style="background-image: url('https://via.placeholder.com/1200x200?text=Community+Banner')"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-6">
+                                <div class="flex items-end justify-between gap-4">
+                                    <div class="flex-1 min-w-0">
+                                        <h1 id="communityName" class="text-cream text-3xl font-bold leading-tight tracking-[-0.033em] mb-1 truncate">Loading...</h1>
+                                        <p id="communityDescription" class="text-text-muted-dark text-sm font-normal leading-normal line-clamp-2">Loading community details...</p>
+                                    </div>
+                                    <!-- Action Buttons -->
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <!-- Leave Community Button -->
+                                    <button id="adminSettingsBtn" class="hidden bg-card-dark hover:bg-primary/10 border-2 border-primary text-primary px-6 py-3 rounded-lg font-bold transition-colors flex items-center gap-2">
+                                        <span class="material-symbols-outlined">settings</span>
+                                        Settings
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Bar -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
+                                <p class="text-text-muted-dark text-sm font-medium">Members</p>
+                                <p class="text-cream text-2xl font-bold" id="memberCount">0</p>
+                            </div>
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
+                                <p class="text-text-muted-dark text-sm font-medium">Active Tasks</p>
+                                <p class="text-cream text-2xl font-bold" id="activeTasks">0</p>
+                            </div>
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
+                                <p class="text-text-muted-dark text-sm font-medium">Completed</p>
+                                <p class="text-cream text-2xl font-bold" id="completedTasks">0</p>
+                            </div>
+                            <div id="hlpBalanceCard" class="hidden flex-col gap-1 rounded-lg bg-card-dark p-4 border border-primary">
+                                <p class="text-text-muted-dark text-sm font-medium">Prize Pool</p>
+                                <p class="text-primary text-2xl font-bold" id="hlpBalance">0 HLP</p>
+                            </div>
+                        </div>
+
+                        <!-- Main Content Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- Left Column: Tasks -->
+                            <div class="lg:col-span-2 flex flex-col gap-6">
+                                <!-- Create Task Section -->
+                                <div id="createTaskSection" class="rounded-lg bg-card-dark p-6 border border-border-dark">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h2 class="text-cream text-2xl font-bold">Create New Task</h2>
+                                        <button id="toggleCreateTask" class="text-primary hover:text-primary-light transition-colors">
+                                            <span class="material-symbols-outlined text-3xl">add_circle</span>
+                                        </button>
+                                    </div>
+                                    <div id="createTaskForm" class="hidden space-y-4">
+                                        <div>
+                                            <label class="block text-text-muted-dark text-sm font-medium mb-2">Task Title</label>
+                                            <input type="text" id="taskTitle" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="What needs to be done?" maxlength="100">
+                                        </div>
+                                        <div>
+                                            <label class="block text-text-muted-dark text-sm font-medium mb-2">Description</label>
+                                            <textarea id="taskDescription" rows="3" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none" placeholder="Describe the task in detail..." maxlength="500"></textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-text-muted-dark text-sm font-medium mb-2">Reward (HLP)</label>
+                                            <input type="number" id="taskReward" min="0" step="1" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="0">
+                                        </div>
+                                        <button id="submitTask" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                                            Create Task on Blockchain
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tasks List -->
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-cream text-2xl font-bold">Community Tasks</h2>
+                                        <select id="taskFilter" class="bg-card-dark border border-border-dark rounded-lg px-4 py-2 text-cream text-sm">
+                                            <option value="all">All Tasks</option>
+                                            <option value="open">Open</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                    </div>
+                                    <div id="tasksContainer" class="flex flex-col gap-4">
+                                        <!-- Loading state -->
+                                        <div class="text-center py-12">
+                                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                                            <p class="text-text-muted-dark">Loading tasks...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Shop Section (Prize Pool Only) -->
+                                <div id="shopSection" class="hidden flex flex-col gap-4">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-cream text-2xl font-bold">Community Shop</h2>
+                                        <button id="manageShopBtn" class="hidden bg-primary hover:bg-primary-light text-background-dark px-4 py-2 rounded-lg font-bold text-sm transition-colors">
+                                            Manage Shop
+                                        </button>
+                                    </div>
+                                    <div id="shopItemsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <p class="col-span-full text-center text-text-muted-dark py-8">No shop items available</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Members & Info -->
+                            <div class="lg:col-span-1 flex flex-col gap-6">
+                                <!-- Community Info -->
+                                <div class="rounded-lg bg-card-dark p-6 border border-border-dark">
+                                    <h3 class="text-cream text-lg font-bold mb-4">About</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-primary">category</span>
+                                            <span class="text-text-muted-dark" id="communityType">Loading...</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-primary">lock_open</span>
+                                            <span class="text-text-muted-dark" id="communityAccess">Loading...</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-primary">calendar_today</span>
+                                            <span class="text-text-muted-dark" id="communityCreated">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Members List -->
+                                <div class="rounded-lg bg-card-dark p-6 border border-border-dark">
+                                    <h3 class="text-cream text-lg font-bold mb-4">Members</h3>
+                                    <div id="membersContainer" class="space-y-3 max-h-96 overflow-y-auto">
+                                        <p class="text-text-muted-dark text-sm">Loading members...</p>
+                                    </div>
+                                </div>
+
+                                <!-- Invite Section (Invite-Only) -->
+                                <div id="inviteSection" class="hidden rounded-lg bg-card-dark p-6 border border-border-dark">
+                                    <h3 class="text-cream text-lg font-bold mb-4">Invite Members</h3>
+                                    <div class="space-y-3">
+                                        <input type="email" id="inviteEmail" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Enter email address">
+                                        <button id="sendInviteBtn" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-4 rounded-lg transition-colors">
+                                            Send Invitation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Settings Modal -->
+    <div id="adminModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-card-dark border-2 border-border-dark rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="sticky top-0 bg-card-dark border-b border-border-dark p-6 flex items-center justify-between">
+                <h2 class="text-cream text-2xl font-bold">Community Settings</h2>
+                <button id="closeAdminModal" class="text-text-muted-dark hover:text-cream transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Tab Navigation -->
+                <div class="flex border-b border-border-dark">
+                    <button class="admin-tab px-4 py-2 font-bold border-b-2 border-primary text-primary" data-tab="general">General</button>
+                    <button class="admin-tab px-4 py-2 font-bold border-b-2 border-transparent text-text-muted-dark hover:text-cream" data-tab="members">Members</button>
+                    <button id="shopTab" class="admin-tab hidden px-4 py-2 font-bold border-b-2 border-transparent text-text-muted-dark hover:text-cream" data-tab="shop">Shop</button>
+                    <button id="poolTab" class="admin-tab hidden px-4 py-2 font-bold border-b-2 border-transparent text-text-muted-dark hover:text-cream" data-tab="pool">Prize Pool</button>
+                </div>
+
+                <!-- General Tab -->
+                <div id="generalTab" class="tab-content space-y-4">
+                    <div>
+                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Community Name</label>
+                        <input type="text" id="editName" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
+                    </div>
+                    <div>
+                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Description</label>
+                        <textarea id="editDescription" rows="4" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Banner Image URL</label>
+                        <input type="text" id="editImageUrl" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
+                    </div>
+                    <button id="saveGeneralSettings" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                        Save Changes
+                    </button>
+                </div>
+
+                <!-- Members Tab -->
+                <div id="membersTab" class="tab-content hidden space-y-4">
+                    <div id="adminMembersList" class="space-y-3">
+                        <p class="text-text-muted-dark">Loading members...</p>
+                    </div>
+                </div>
+
+                <!-- Shop Tab (Prize Pool Only) -->
+                <div id="shopTabContent" class="tab-content hidden space-y-4">
+                    <button id="addShopItem" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                        Add New Item
+                    </button>
+                    <div id="shopItemsList" class="space-y-3">
+                        <p class="text-text-muted-dark">No shop items yet</p>
+                    </div>
+                </div>
+
+                <!-- Prize Pool Tab (Prize Pool Only) -->
+                <div id="poolTabContent" class="tab-content hidden space-y-4">
+                    <div class="rounded-lg bg-background-dark p-4 border border-primary">
+                        <p class="text-text-muted-dark text-sm mb-2">Current Prize Pool</p>
+                        <p class="text-primary text-4xl font-bold" id="adminPrizePool">0 HLP</p>
+                    </div>
+                    <div>
+                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Add Funds</label>
+                        <input type="number" id="addFunds" min="0" step="1" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream" placeholder="Amount in HLP">
+                    </div>
+                    <button id="depositFunds" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                        Deposit Funds
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Item Modal -->
+    <div id="shopItemModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-card-dark border-2 border-border-dark rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 class="text-cream text-xl font-bold mb-4">Add Shop Item</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Item Name</label>
+                    <input type="text" id="shopItemName" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
+                </div>
+                <div>
+                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Description</label>
+                    <textarea id="shopItemDesc" rows="3" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Price (HLP)</label>
+                    <input type="number" id="shopItemPrice" min="0" step="1" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
+                </div>
+                <div>
+                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Image URL</label>
+                    <input type="text" id="shopItemImage" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
+                </div>
+                <div class="flex gap-3">
+                    <button id="cancelShopItem" class="flex-1 bg-background-dark hover:bg-card-dark border border-border-dark text-cream font-bold py-3 px-6 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button id="saveShopItem" class="flex-1 bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                        Save Item
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase & Web3 SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            getDoc,
+            getDocs,
+            collection,
+            query,
+            where,
+            updateDoc,
+            addDoc,
+            deleteDoc,
+            increment,
+            arrayUnion,
+            arrayRemove,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
+            authDomain: "taskmatch-openhack2025.firebaseapp.com",
+            projectId: "taskmatch-openhack2025",
+            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
+            messagingSenderId: "1071810532798",
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
+            measurementId: "G-Y0XPDPZFY8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Blockchain contracts (from index.html)
+        const TASK_CONTRACT_ADDRESS = "0x77bD0b58d5786587614a00688Ddc9db7A592449E";
+        const REWARD_CONTRACT_ADDRESS = "0xFD1b4a56B7Dc1321a674265F68400fE09E7101A5";
+        
+        const TASK_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"},{"internalType":"address","name":"_achievementBadge","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"applicant","type":"address"}],"name":"TaskApplied","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"TaskAssigned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"}],"name":"TaskCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"TaskCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"string","name":"title","type":"string"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"TaskCreated","type":"event"},{"inputs":[],"name":"achievementBadge","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"applyForTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"},{"internalType":"address","name":"_worker","type":"address"}],"name":"assignTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"cancelTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"completeTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_title","type":"string"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"uint256","name":"_reward","type":"uint256"}],"name":"createTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTask","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"internalType":"struct TaskContract.TaskStruct","name":"","type":"tuple"}],"stateMutability":"view","type":"function"}];
+
+        let currentUser = null;
+        let community = null;
+        let communityId = null;
+        let isAdmin = false;
+        let provider = null;
+        let signer = null;
+        let taskContract = null;
+
+        // Get community ID from URL
+        const pathParts = window.location.pathname.split('/');
+        communityId = pathParts[pathParts.length - 1];
+
+        if (!communityId || communityId === 'community') {
+            alert('Invalid community ID');
+            window.location.href = '/communities';
+        }
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = user;
+            console.log('User authenticated:', user.uid);
+            
+            // Initialize Web3 if MetaMask is available
+            await initWeb3();
+            
+            // Load community data
+            await loadCommunity();
+            await loadTasks();
+            await loadMembers();
+            await loadShopItems();
+            
+            // Setup all event listeners after loading
+            setupEventListeners();
+        });
+
+        // Initialize Web3 connection
+        async function initWeb3() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    taskContract = new ethers.Contract(TASK_CONTRACT_ADDRESS, TASK_CONTRACT_ABI, signer);
+                    console.log('Web3 initialized');
+                } catch (error) {
+                    console.error('Error initializing Web3:', error);
+                }
+            }
+        }
+
+        // Load community data
+        async function loadCommunity() {
+            try {
+                const communityRef = doc(db, 'communities', communityId);
+                const communitySnap = await getDoc(communityRef);
+
+                if (!communitySnap.exists()) {
+                    alert('Community not found');
+                    window.location.href = '/communities';
+                    return;
+                }
+
+                community = { id: communitySnap.id, ...communitySnap.data() };
+                isAdmin = community.admins && community.admins.includes(currentUser.uid);
+
+                // Update UI
+                document.getElementById('communityName').textContent = community.name;
+                document.getElementById('communityDescription').textContent = community.description;
+                document.getElementById('communityBanner').style.backgroundImage = `url('${community.imageUrl || 'https://via.placeholder.com/1200x400?text=Community+Banner'}')`;
+                
+                document.getElementById('memberCount').textContent = community.memberCount || 0;
+                document.getElementById('activeTasks').textContent = community.tasksCount || 0;
+                document.getElementById('completedTasks').textContent = community.tasksCompleted || 0;
+
+                // Community type
+                const typeText = community.type === 'prize-pool' ? 'Prize Pool Community' : 'Mutual Aid Community';
+                document.getElementById('communityType').textContent = typeText;
+
+                // Access type
+                const accessText = community.accessType === 'open' ? 'Open to Everyone' : 
+                                  community.accessType === 'approval' ? 'Approval Required' : 'Invite Only';
+                document.getElementById('communityAccess').textContent = accessText;
+
+                // Created date
+                if (community.createdAt) {
+                    const date = community.createdAt.toDate();
+                    document.getElementById('communityCreated').textContent = `Created ${date.toLocaleDateString()}`;
+                }
+
+                // Show/hide prize pool features
+                if (community.type === 'prize-pool') {
+                    document.getElementById('hlpBalanceCard').classList.remove('hidden');
+                    document.getElementById('hlpBalanceCard').classList.add('flex');
+                    document.getElementById('hlpBalance').textContent = `${community.prizePool || 0} HLP`;
+                    
+                    if (community.shopEnabled) {
+                        document.getElementById('shopSection').classList.remove('hidden');
+                        if (isAdmin) {
+                            document.getElementById('manageShopBtn').classList.remove('hidden');
+                            document.getElementById('shopTab').classList.remove('hidden');
+                        }
+                    }
+                    
+                    if (isAdmin) {
+                        document.getElementById('poolTab').classList.remove('hidden');
+                    }
+                }
+
+                // Show admin settings button
+                if (isAdmin) {
+                    document.getElementById('adminSettingsBtn').classList.remove('hidden');
+                }
+
+                // Show/hide create task section based on community type
+                const canCreateTask = community.type === 'mutual-aid' || isAdmin;
+                if (!canCreateTask) {
+                    document.getElementById('createTaskSection').style.display = 'none';
+                }
+
+                // Show invite section for invite-only communities
+                if (community.accessType === 'invite' && (isAdmin || community.members.includes(currentUser.uid))) {
+                    document.getElementById('inviteSection').classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error loading community:', error);
+                alert('Error loading community');
+            }
+        }
+
+        // Load blockchain tasks for this community
+        async function loadTasks() {
+            const container = document.getElementById('tasksContainer');
+            
+            try {
+                // Show loading state
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p class="text-text-muted-dark">Loading tasks...</p>
+                    </div>
+                `;
+
+                if (!taskContract) {
+                    container.innerHTML = `
+                        <div class="text-center py-12 rounded-lg bg-card-dark border-2 border-border-dark">
+                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">account_balance_wallet</span>
+                            <p class="text-text-muted-dark mb-4">Connect MetaMask to view and create tasks</p>
+                            <button onclick="connectMetaMask()" class="bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-6 rounded-lg transition-colors">
+                                Connect Wallet
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Get all tasks from Firebase that belong to this community
+                const tasksQuery = query(collection(db, 'tasks'), where('communityId', '==', communityId));
+                const tasksSnapshot = await getDocs(tasksQuery);
+
+                if (tasksSnapshot.empty) {
+                    container.innerHTML = `
+                        <div class="text-center py-12 rounded-lg bg-card-dark border-2 border-dashed border-border-dark">
+                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">assignment</span>
+                            <p class="text-text-muted-dark mb-2 text-lg font-medium">No tasks yet</p>
+                            <p class="text-text-muted-dark text-sm">Be the first to create a task for this community!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                
+                for (const taskDoc of tasksSnapshot.docs) {
+                    const taskData = taskDoc.data();
+                    const taskCard = createTaskCard(taskData, taskDoc.id);
+                    container.appendChild(taskCard);
+                }
+
+                console.log('Loaded', tasksSnapshot.size, 'tasks');
+
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                container.innerHTML = `
+                    <div class="text-center py-12 rounded-lg bg-card-dark border-2 border-red-500/20">
+                        <span class="material-symbols-outlined text-6xl text-red-400 mb-4">error</span>
+                        <p class="text-red-400 mb-2">Error loading tasks</p>
+                        <p class="text-text-muted-dark text-sm mb-4">${error.message}</p>
+                        <button onclick="location.reload()" class="bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-6 rounded-lg transition-colors">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Connect MetaMask function
+        async function connectMetaMask() {
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask to interact with blockchain tasks');
+                window.open('https://metamask.io/download/', '_blank');
+                return;
+            }
+
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                await initWeb3();
+                await loadTasks();
+            } catch (error) {
+                console.error('Error connecting MetaMask:', error);
+                alert('Failed to connect MetaMask: ' + error.message);
+            }
+        }
+
+        // Make connectMetaMask available globally
+        window.connectMetaMask = connectMetaMask;
+
+        // Create task card element
+        function createTaskCard(task, taskId) {
+            const card = document.createElement('div');
+            card.className = 'rounded-lg bg-card-dark p-6 border border-border-dark hover:border-primary transition-colors';
+
+            const statusColors = {
+                'open': 'bg-blue-500',
+                'in-progress': 'bg-yellow-500',
+                'completed': 'bg-green-500',
+                'cancelled': 'bg-gray-500'
+            };
+
+            const status = task.status || 'open';
+
+            card.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-cream text-xl font-bold mb-2">${task.title}</h3>
+                        <p class="text-text-muted-dark text-sm mb-3">${task.description}</p>
+                    </div>
+                    <span class="text-primary font-bold text-lg whitespace-nowrap ml-4">${task.reward} HLP</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="status-badge text-xs px-3 py-1 rounded-full ${statusColors[status]} text-white font-semibold" data-status="${status}">
+                        ${status.toUpperCase().replace('-', ' ')}
+                    </span>
+                    ${status === 'open' ? `
+                        <button class="apply-task-btn text-primary hover:text-primary-light font-bold text-sm transition-colors" data-task-id="${taskId}">
+                            Apply for Task
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Load members
+        async function loadMembers() {
+            const container = document.getElementById('membersContainer');
+            
+            if (!community || !community.members || community.members.length === 0) {
+                container.innerHTML = '<p class="text-text-muted-dark text-sm text-center py-4">No members yet</p>';
+                return;
+            }
+
+            container.innerHTML = '<p class="text-text-muted-dark text-sm text-center py-2">Loading members...</p>';
+            container.innerHTML = '';
+
+            for (const memberId of community.members) {
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', memberId));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const memberDiv = document.createElement('div');
+                        memberDiv.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-background-dark/50 transition-colors';
+                        
+                        const isAdminMember = community.admins && community.admins.includes(memberId);
+                        const initials = (userData.name || 'A').substring(0, 2).toUpperCase();
+                        
+                        memberDiv.innerHTML = `
+                            <div class="size-10 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center font-bold text-background-dark text-sm">
+                                ${initials}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-cream text-sm font-medium truncate">${userData.name || 'Anonymous User'}</p>
+                                ${isAdminMember ? '<p class="text-primary text-xs font-bold">ADMIN</p>' : '<p class="text-text-muted-dark text-xs">Member</p>'}
+                            </div>
+                            ${isAdminMember ? '<span class="material-symbols-outlined text-primary text-lg">verified</span>' : ''}
+                        `;
+                        
+                        container.appendChild(memberDiv);
+                    }
+                } catch (error) {
+                    console.error('Error loading member:', memberId, error);
+                }
+            }
+        }
+
+        // Load shop items
+        async function loadShopItems() {
+            if (!community || community.type !== 'prize-pool' || !community.shopEnabled) return;
+
+            const container = document.getElementById('shopItemsContainer');
+            
+            try {
+                const shopQuery = query(collection(db, 'communities', communityId, 'shop'));
+                const shopSnapshot = await getDocs(shopQuery);
+
+                if (shopSnapshot.empty) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12 rounded-lg bg-card-dark border-2 border-dashed border-border-dark">
+                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">storefront</span>
+                            <p class="text-text-muted-dark mb-2">No shop items available</p>
+                            ${isAdmin ? '<p class="text-text-muted-dark text-sm">Click "Manage Shop" to add items</p>' : ''}
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                shopSnapshot.forEach(doc => {
+                    const item = doc.data();
+                    const itemCard = document.createElement('div');
+                    itemCard.className = 'rounded-lg bg-background-dark p-4 border-2 border-border-dark hover:border-primary transition-all hover:shadow-lg';
+                    
+                    itemCard.innerHTML = `
+                        <div class="aspect-square bg-center bg-cover bg-no-repeat rounded-lg mb-3" style="background-image: url('${item.imageUrl || 'https://via.placeholder.com/200?text=Item'}')"></div>
+                        <h4 class="text-cream font-bold mb-1 truncate">${item.name}</h4>
+                        <p class="text-text-muted-dark text-sm mb-3 line-clamp-2 min-h-[2.5rem]">${item.description || 'No description'}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-primary font-bold text-lg">${item.price} HLP</span>
+                            <button class="purchase-item-btn text-sm bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-4 rounded-lg transition-colors" data-item-id="${doc.id}" data-item-price="${item.price}" data-item-name="${item.name}">
+                                Buy
+                            </button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(itemCard);
+                });
+
+                // Add purchase handlers
+                document.querySelectorAll('.purchase-item-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const itemId = btn.dataset.itemId;
+                        const itemPrice = btn.dataset.itemPrice;
+                        const itemName = btn.dataset.itemName;
+                        
+                        if (confirm(`Purchase ${itemName} for ${itemPrice} HLP?`)) {
+                            alert('Purchase functionality coming soon! This will deduct HLP from your balance.');
+                        }
+                    });
+                });
+
+                console.log('Loaded', shopSnapshot.size, 'shop items');
+
+            } catch (error) {
+                console.error('Error loading shop items:', error);
+                container.innerHTML = '<p class="col-span-full text-center text-red-400 py-8">Error loading shop items</p>';
+            }
+        }
+
+        // Toggle create task form
+        document.getElementById('toggleCreateTask').addEventListener('click', () => {
+            const form = document.getElementById('createTaskForm');
+            form.classList.toggle('hidden');
+        });
+
+        // Submit task to blockchain
+        document.getElementById('submitTask').addEventListener('click', async () => {
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const reward = document.getElementById('taskReward').value;
+
+            if (!title || !description) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (!taskContract) {
+                alert('Please connect MetaMask first');
+                return;
+            }
+
+            try {
+                const button = document.getElementById('submitTask');
+                button.disabled = true;
+                button.textContent = 'Creating on blockchain...';
+
+                // Create task on blockchain
+                const tx = await taskContract.createTask(title, description, ethers.utils.parseEther(reward || '0'));
+                await tx.wait();
+
+                // Get the task ID from the blockchain
+                const taskCount = await taskContract.getTasksCount();
+                const blockchainTaskId = taskCount.toString();
+
+                // Save task reference in Firebase
+                await addDoc(collection(db, 'tasks'), {
+                    communityId: communityId,
+                    blockchainTaskId: blockchainTaskId,
+                    title: title,
+                    description: description,
+                    reward: parseFloat(reward || 0),
+                    status: 'open',
+                    createdBy: currentUser.uid,
+                    createdAt: serverTimestamp()
+                });
+
+                // Update community task count
+                await updateDoc(doc(db, 'communities', communityId), {
+                    tasksCount: increment(1)
+                });
+
+                alert('Task created successfully on blockchain!');
+                
+                // Reset form
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDescription').value = '';
+                document.getElementById('taskReward').value = '';
+                document.getElementById('createTaskForm').classList.add('hidden');
+                
+                // Reload tasks
+                await loadTasks();
+
+            } catch (error) {
+                console.error('Error creating task:', error);
+                alert('Error creating task: ' + error.message);
+            } finally {
+                const button = document.getElementById('submitTask');
+                button.disabled = false;
+                button.textContent = 'Create Task on Blockchain';
+            }
+        });
+
+        // Send invitation
+        document.getElementById('sendInviteBtn')?.addEventListener('click', async () => {
+            const email = document.getElementById('inviteEmail').value.trim();
+            
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'invitations'), {
+                    communityId: communityId,
+                    communityName: community.name,
+                    email: email,
+                    invitedBy: currentUser.uid,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+
+                alert('Invitation sent successfully!');
+                document.getElementById('inviteEmail').value = '';
+
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                alert('Error sending invitation');
+            }
+        });
+
+        // Admin modal handlers
+        document.getElementById('adminSettingsBtn')?.addEventListener('click', () => {
+            document.getElementById('adminModal').classList.remove('hidden');
+            
+            // Pre-fill form
+            document.getElementById('editName').value = community.name;
+            document.getElementById('editDescription').value = community.description;
+            document.getElementById('editImageUrl').value = community.imageUrl;
+            
+            if (community.type === 'prize-pool') {
+                document.getElementById('adminPrizePool').textContent = `${community.prizePool || 0} HLP`;
+            }
+        });
+
+        document.getElementById('closeAdminModal').addEventListener('click', () => {
+            document.getElementById('adminModal').classList.add('hidden');
+        });
+
+        // Close modal when clicking backdrop
+        document.getElementById('adminModal').addEventListener('click', (e) => {
+            if (e.target.id === 'adminModal') {
+                document.getElementById('adminModal').classList.add('hidden');
+            }
+        });
+
+        // Close shop item modal
+        document.getElementById('shopItemModal').addEventListener('click', (e) => {
+            if (e.target.id === 'shopItemModal') {
+                document.getElementById('shopItemModal').classList.add('hidden');
+            }
+        });
+
+        // Admin tab switching
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update tab styling
+                document.querySelectorAll('.admin-tab').forEach(t => {
+                    t.classList.remove('border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-text-muted-dark');
+                });
+                tab.classList.add('border-primary', 'text-primary');
+                tab.classList.remove('border-transparent', 'text-text-muted-dark');
+                
+                // Show/hide content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(`${tabName}Tab${tabName === 'general' ? '' : 'Content'}`).classList.remove('hidden');
+            });
+        });
+
+        // Save general settings
+        document.getElementById('saveGeneralSettings').addEventListener('click', async () => {
+            try {
+                const newName = document.getElementById('editName').value.trim();
+                const newDesc = document.getElementById('editDescription').value.trim();
+                const newImage = document.getElementById('editImageUrl').value.trim();
+
+                await updateDoc(doc(db, 'communities', communityId), {
+                    name: newName,
+                    description: newDesc,
+                    imageUrl: newImage,
+                    updatedAt: serverTimestamp()
+                });
+
+                alert('Settings saved successfully!');
+                window.location.reload();
+
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings');
+            }
+        });
+
+        // Shop item management
+        document.getElementById('addShopItem')?.addEventListener('click', () => {
+            document.getElementById('shopItemModal').classList.remove('hidden');
+        });
+
+        document.getElementById('cancelShopItem').addEventListener('click', () => {
+            document.getElementById('shopItemModal').classList.add('hidden');
+        });
+
+        document.getElementById('saveShopItem').addEventListener('click', async () => {
+            const name = document.getElementById('shopItemName').value.trim();
+            const desc = document.getElementById('shopItemDesc').value.trim();
+            const price = document.getElementById('shopItemPrice').value;
+            const image = document.getElementById('shopItemImage').value.trim();
+
+            if (!name || !price) {
+                alert('Please fill in required fields');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'communities', communityId, 'shop'), {
+                    name: name,
+                    description: desc,
+                    price: parseFloat(price),
+                    imageUrl: image,
+                    createdAt: serverTimestamp()
+                });
+
+                alert('Shop item added successfully!');
+                document.getElementById('shopItemModal').classList.add('hidden');
+                
+                // Clear form
+                document.getElementById('shopItemName').value = '';
+                document.getElementById('shopItemDesc').value = '';
+                document.getElementById('shopItemPrice').value = '';
+                document.getElementById('shopItemImage').value = '';
+                
+                await loadShopItems();
+
+            } catch (error) {
+                console.error('Error adding shop item:', error);
+                alert('Error adding shop item');
+            }
+        });
+
+        // Deposit funds
+        document.getElementById('depositFunds')?.addEventListener('click', async () => {
+            const amount = document.getElementById('addFunds').value;
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, 'communities', communityId), {
+                    prizePool: increment(parseFloat(amount)),
+                    updatedAt: serverTimestamp()
+                });
+
+                alert('Funds deposited successfully!');
+                window.location.reload();
+
+            } catch (error) {
+                console.error('Error depositing funds:', error);
+                alert('Error depositing funds');
+            }
+        });
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Toggle create task form
+            const toggleBtn = document.getElementById('toggleCreateTask');
+            if (toggleBtn) {
+                // Remove existing listeners by cloning
+                const newToggleBtn = toggleBtn.cloneNode(true);
+                toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+                
+                newToggleBtn.addEventListener('click', () => {
+                    const form = document.getElementById('createTaskForm');
+                    form.classList.toggle('hidden');
+                    
+                    // Rotate icon
+                    const icon = newToggleBtn.querySelector('.material-symbols-outlined');
+                    if (form.classList.contains('hidden')) {
+                        icon.textContent = 'add_circle';
+                    } else {
+                        icon.textContent = 'remove_circle';
+                    }
+                });
+            }
+
+            // Task filter
+            const taskFilter = document.getElementById('taskFilter');
+            if (taskFilter) {
+                taskFilter.addEventListener('change', () => {
+                    filterTasks(taskFilter.value);
+                });
+            }
+
+            // Manage shop button
+            const manageShopBtn = document.getElementById('manageShopBtn');
+            if (manageShopBtn && !manageShopBtn.classList.contains('hidden')) {
+                manageShopBtn.addEventListener('click', () => {
+                    document.getElementById('adminModal').classList.remove('hidden');
+                    // Switch to shop tab
+                    const shopTab = document.querySelector('[data-tab="shop"]');
+                    if (shopTab) shopTab.click();
+                });
+            }
+
+            console.log('Event listeners initialized');
+        }
+
+        // Filter tasks by status
+        function filterTasks(status) {
+            const taskCards = document.querySelectorAll('#tasksContainer > div');
+            taskCards.forEach(card => {
+                if (status === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const statusBadge = card.querySelector('.status-badge');
+                    if (statusBadge && statusBadge.dataset.status === status) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

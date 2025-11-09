@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community Dashboard - SideQuests</title>
+    <title>Community - SideQuests</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,21 +12,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
     <style>
         .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        
-        /* Tab animations */
-        .admin-tab {
-            transition: all 0.2s ease;
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-        
-        /* Smooth height transitions */
-        .collapsible {
-            transition: max-height 0.3s ease;
+        /* Gradient backgrounds */
+        .gradient-primary {
+            background: linear-gradient(135deg, #DDD92A 0%, #EAE151 100%);
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, #3A3740 0%, #2D2A32 100%);
+        }
+        /* Dropdown animation */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .dropdown-menu {
+            animation: slideDown 0.2s ease-out;
+        }
+        /* Glassmorphism */
+        .glass {
+            background: rgba(58, 55, 64, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
     <script>
@@ -36,8 +55,6 @@
                     colors: {
                         "primary": "#DDD92A",
                         "primary-light": "#EAE151",
-                        "primary-pale": "#EEEFA8",
-                        "secondary": "#DDD92A",
                         "background-dark": "#2D2A32",
                         "card-dark": "#3A3740",
                         "border-dark": "#4A4750",
@@ -52,1000 +69,1165 @@
         }
     </script>
 </head>
-<body class="font-display bg-background-dark text-cream">
-    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
-        <div class="layout-container flex h-full grow flex-col">
-            <div class="flex flex-1 justify-center py-5">
-                <div class="layout-content-container flex flex-col w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+<body class="font-display bg-background-dark text-cream min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-border-dark px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="size-6 text-primary">
+                    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold">SideQuests</h2>
+            </div>
+            <a href="/my-communities" class="text-sm hover:text-primary transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                My Communities
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p class="text-text-muted-dark">Loading community...</p>
+        </div>
+
+        <!-- Community Content -->
+        <div id="communityContent" class="hidden space-y-8">
+            <!-- Community Header -->
+            <div class="relative rounded-xl overflow-hidden glass">
+                <div id="communityBanner" class="h-40 gradient-card flex items-end p-6">
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex-1 min-w-0">
+                            <h1 id="communityName" class="text-3xl font-bold mb-1 truncate">Community Name</h1>
+                            <p id="communityDescription" class="text-text-muted-dark text-sm line-clamp-2">Description</p>
+                        </div>
+                        <!-- Settings Dropdown -->
+                        <div class="relative" id="settingsDropdown">
+                            <button onclick="toggleSettings()" 
+                                    class="p-3 glass hover:bg-primary hover:text-background-dark text-white rounded-lg transition-all duration-300 transform hover:scale-110">
+                                <span class="material-symbols-outlined text-2xl">settings</span>
+                            </button>
+                            <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-48 glass rounded-lg shadow-xl z-50 dropdown-menu">
+                                <button onclick="leaveCommunity()" 
+                                        class="w-full px-4 py-3 text-left text-white hover:bg-primary hover:text-background-dark transition-colors flex items-center gap-3 rounded-t-lg">
+                                    <span class="material-symbols-outlined">logout</span>
+                                    Leave Community
+                                </button>
+                                <button id="deleteMenuButton" onclick="showDeleteModal()" 
+                                        class="w-full px-4 py-3 text-left text-red-400 hover:bg-red-600 hover:text-white transition-colors flex items-center gap-3 rounded-b-lg hidden">
+                                    <span class="material-symbols-outlined">delete</span>
+                                    Delete Community
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass p-4 hover:border-primary transition-all cursor-pointer transform hover:scale-105">
+                    <p class="text-text-muted-dark text-sm">Members</p>
+                    <p id="memberCount" class="text-2xl font-bold gradient-primary bg-clip-text text-transparent">0</p>
+                </div>
+                <div class="glass p-4 hover:border-primary transition-all cursor-pointer transform hover:scale-105">
+                    <p class="text-text-muted-dark text-sm">Active Tasks</p>
+                    <p id="activeTasksCount" class="text-2xl font-bold gradient-primary bg-clip-text text-transparent">0</p>
+                </div>
+                <div class="glass p-4 hover:border-primary transition-all cursor-pointer transform hover:scale-105">
+                    <p class="text-text-muted-dark text-sm">Completed</p>
+                    <p id="completedTasksCount" class="text-2xl font-bold gradient-primary bg-clip-text text-transparent">0</p>
+                </div>
+                <div id="prizePoolCard" class="hidden glass border-primary p-4 hover:scale-105 transition-all cursor-pointer">
+                    <p class="text-text-muted-dark text-sm">Prize Pool</p>
+                    <p id="prizePool" class="text-primary text-2xl font-bold">0 HLP</p>
+                </div>
+            </div>
+
+            <!-- Members Section -->
+            <div class="glass rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold">Members</h2>
+                    <span id="totalMembers" class="text-text-muted-dark text-sm">0 members</span>
+                </div>
+                <div id="membersContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div class="text-center py-4 col-span-full text-text-muted-dark text-sm">Loading members...</div>
+                </div>
+            </div>
+
+            <!-- Create Blockchain Task Section (Admin Only) -->
+            <div id="createTaskSection" class="hidden glass rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="size-10 rounded-full gradient-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-background-dark text-2xl">link</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Create Blockchain Task</h2>
+                        <p class="text-text-muted-dark text-sm">Deploy task on-chain with smart contracts</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4 p-3 bg-blue-500/10 border border-blue-500 rounded-lg">
+                    <p class="text-blue-400 text-sm">
+                        <strong>ℹ️ Admin Feature:</strong> This section is only visible to community admins. You can create tasks that will be stored on the Sepolia blockchain.
+                    </p>
+                </div>
+                
+                <div id="walletStatus" class="mb-4 p-3 bg-background-dark/50 rounded-lg border border-border-dark">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-text-muted-dark">Wallet Status:</span>
+                        <button id="connectWalletBtn" onclick="connectWallet()" 
+                                class="px-4 py-2 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-opacity">
+                            Connect MetaMask
+                        </button>
+                        <span id="walletAddress" class="hidden text-sm text-primary font-mono"></span>
+                    </div>
+                </div>
+
+                <form id="blockchainTaskForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Task Title</label>
+                        <input type="text" id="taskTitle" required
+                               class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                               placeholder="Enter task title">
+                    </div>
                     
-                    <!-- Header -->
-                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark px-4 sm:px-6 py-4 mb-8">
-                        <div class="flex items-center gap-4">
-                            <div class="size-6 text-primary">
-                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
-                                </svg>
-                            </div>
-                            <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <a href="/dashboard" class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-2" style="color: #EEEFA8;">
-                                <span class="material-symbols-outlined">arrow_back</span>
-                                Back to Dashboard
-                            </a>
-                        </div>
-                    </header>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Task Description</label>
+                        <textarea id="taskDescription" required rows="4"
+                                  class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                                  placeholder="Describe the task requirements"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Reward Amount (HLP)</label>
+                        <input type="number" id="taskReward" required step="0.001" min="0"
+                               class="w-full px-4 py-3 bg-background-dark border border-border-dark rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                               placeholder="100">
+                    </div>
 
-                    <main class="flex flex-col gap-8">
-                        <!-- Community Hero -->
-                        <div class="relative rounded-xl overflow-hidden">
-                            <div id="communityBanner" class="aspect-[21/9] bg-center bg-cover bg-no-repeat" style="background-image: url('https://via.placeholder.com/1200x400?text=Community+Banner')"></div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent"></div>
-                            <div class="absolute bottom-0 left-0 right-0 p-8">
-                                <div class="flex items-end justify-between">
-                                    <div class="flex-1">
-                                        <h1 id="communityName" class="text-cream text-5xl font-bold leading-tight tracking-[-0.033em] mb-2">Loading...</h1>
-                                        <p id="communityDescription" class="text-text-muted-dark text-lg font-normal leading-normal max-w-3xl">Loading community details...</p>
-                                    </div>
-                                    <!-- Admin Settings Button -->
-                                    <button id="adminSettingsBtn" class="hidden bg-card-dark hover:bg-primary/10 border-2 border-primary text-primary px-6 py-3 rounded-lg font-bold transition-colors flex items-center gap-2">
-                                        <span class="material-symbols-outlined">settings</span>
-                                        Settings
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                    <button type="submit" id="createTaskBtn"
+                            class="w-full px-6 py-4 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">rocket_launch</span>
+                        Deploy Task to Blockchain
+                    </button>
+                </form>
 
-                        <!-- Stats Bar -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
-                                <p class="text-text-muted-dark text-sm font-medium">Members</p>
-                                <p class="text-cream text-2xl font-bold" id="memberCount">0</p>
-                            </div>
-                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
-                                <p class="text-text-muted-dark text-sm font-medium">Active Tasks</p>
-                                <p class="text-cream text-2xl font-bold" id="activeTasks">0</p>
-                            </div>
-                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
-                                <p class="text-text-muted-dark text-sm font-medium">Completed</p>
-                                <p class="text-cream text-2xl font-bold" id="completedTasks">0</p>
-                            </div>
-                            <div id="hlpBalanceCard" class="hidden flex-col gap-1 rounded-lg bg-card-dark p-4 border border-primary">
-                                <p class="text-text-muted-dark text-sm font-medium">Prize Pool</p>
-                                <p class="text-primary text-2xl font-bold" id="hlpBalance">0 HLP</p>
-                            </div>
-                        </div>
+                <div id="transactionStatus" class="hidden mt-4 p-4 rounded-lg border">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                        <span class="font-medium" id="statusText">Processing transaction...</span>
+                    </div>
+                    <a id="txLink" target="_blank" class="text-sm text-primary hover:underline hidden"></a>
+                </div>
+            </div>
 
-                        <!-- Main Content Grid -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <!-- Left Column: Tasks -->
-                            <div class="lg:col-span-2 flex flex-col gap-6">
-                                <!-- Create Task Section -->
-                                <div id="createTaskSection" class="rounded-lg bg-card-dark p-6 border border-border-dark">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h2 class="text-cream text-2xl font-bold">Create New Task</h2>
-                                        <button id="toggleCreateTask" class="text-primary hover:text-primary-light transition-colors">
-                                            <span class="material-symbols-outlined text-3xl">add_circle</span>
-                                        </button>
-                                    </div>
-                                    <div id="createTaskForm" class="hidden space-y-4">
-                                        <div>
-                                            <label class="block text-text-muted-dark text-sm font-medium mb-2">Task Title</label>
-                                            <input type="text" id="taskTitle" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="What needs to be done?" maxlength="100">
-                                        </div>
-                                        <div>
-                                            <label class="block text-text-muted-dark text-sm font-medium mb-2">Description</label>
-                                            <textarea id="taskDescription" rows="3" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none" placeholder="Describe the task in detail..." maxlength="500"></textarea>
-                                        </div>
-                                        <div>
-                                            <label class="block text-text-muted-dark text-sm font-medium mb-2">Reward (HLP)</label>
-                                            <input type="number" id="taskReward" min="0" step="1" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="0">
-                                        </div>
-                                        <button id="submitTask" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
-                                            Create Task on Blockchain
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Tasks List -->
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex items-center justify-between">
-                                        <h2 class="text-cream text-2xl font-bold">Community Tasks</h2>
-                                        <select id="taskFilter" class="bg-card-dark border border-border-dark rounded-lg px-4 py-2 text-cream text-sm">
-                                            <option value="all">All Tasks</option>
-                                            <option value="open">Open</option>
-                                            <option value="in-progress">In Progress</option>
-                                            <option value="completed">Completed</option>
-                                        </select>
-                                    </div>
-                                    <div id="tasksContainer" class="flex flex-col gap-4">
-                                        <!-- Loading state -->
-                                        <div class="text-center py-12">
-                                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                                            <p class="text-text-muted-dark">Loading tasks...</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Shop Section (Prize Pool Only) -->
-                                <div id="shopSection" class="hidden flex flex-col gap-4">
-                                    <div class="flex items-center justify-between">
-                                        <h2 class="text-cream text-2xl font-bold">Community Shop</h2>
-                                        <button id="manageShopBtn" class="hidden bg-primary hover:bg-primary-light text-background-dark px-4 py-2 rounded-lg font-bold text-sm transition-colors">
-                                            Manage Shop
-                                        </button>
-                                    </div>
-                                    <div id="shopItemsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <p class="col-span-full text-center text-text-muted-dark py-8">No shop items available</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right Column: Members & Info -->
-                            <div class="lg:col-span-1 flex flex-col gap-6">
-                                <!-- Community Info -->
-                                <div class="rounded-lg bg-card-dark p-6 border border-border-dark">
-                                    <h3 class="text-cream text-lg font-bold mb-4">About</h3>
-                                    <div class="space-y-3">
-                                        <div class="flex items-center gap-3">
-                                            <span class="material-symbols-outlined text-primary">category</span>
-                                            <span class="text-text-muted-dark" id="communityType">Loading...</span>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <span class="material-symbols-outlined text-primary">lock_open</span>
-                                            <span class="text-text-muted-dark" id="communityAccess">Loading...</span>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <span class="material-symbols-outlined text-primary">calendar_today</span>
-                                            <span class="text-text-muted-dark" id="communityCreated">Loading...</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Members List -->
-                                <div class="rounded-lg bg-card-dark p-6 border border-border-dark">
-                                    <h3 class="text-cream text-lg font-bold mb-4">Members</h3>
-                                    <div id="membersContainer" class="space-y-3 max-h-96 overflow-y-auto">
-                                        <p class="text-text-muted-dark text-sm">Loading members...</p>
-                                    </div>
-                                </div>
-
-                                <!-- Invite Section (Invite-Only) -->
-                                <div id="inviteSection" class="hidden rounded-lg bg-card-dark p-6 border border-border-dark">
-                                    <h3 class="text-cream text-lg font-bold mb-4">Invite Members</h3>
-                                    <div class="space-y-3">
-                                        <input type="email" id="inviteEmail" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2 text-cream focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Enter email address">
-                                        <button id="sendInviteBtn" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-4 rounded-lg transition-colors">
-                                            Send Invitation
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </main>
+            <!-- Tasks Section -->
+            <div class="glass rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Community Tasks</h2>
+                <div id="tasksContainer" class="space-y-3">
+                    <div class="text-center py-4 text-text-muted-dark text-sm">Loading tasks...</div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Admin Settings Modal -->
-    <div id="adminModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-card-dark border-2 border-border-dark rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div class="sticky top-0 bg-card-dark border-b border-border-dark p-6 flex items-center justify-between">
-                <h2 class="text-cream text-2xl font-bold">Community Settings</h2>
-                <button id="closeAdminModal" class="text-text-muted-dark hover:text-cream transition-colors">
-                    <span class="material-symbols-outlined text-3xl">close</span>
+    <!-- Leave Modal -->
+    <div id="leaveModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-card-dark border-2 border-red-500/50 rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="size-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-red-400 text-3xl">logout</span>
+                </div>
+                <h3 class="text-2xl font-bold">Leave Community?</h3>
+            </div>
+            <p class="text-text-muted-dark mb-8">
+                Are you sure you want to leave this community? You'll lose access to all tasks and discussions.
+            </p>
+            <div class="flex gap-4">
+                <button id="cancelLeaveBtn" class="flex-1 px-6 py-3 rounded-xl bg-card-dark border-2 border-border-dark font-bold hover:border-primary transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmLeaveBtn" class="flex-1 px-6 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-colors">
+                    Leave
                 </button>
             </div>
-            <div class="p-6 space-y-6">
-                <!-- Tab Navigation -->
-                <div class="flex border-b border-border-dark">
-                    <button class="admin-tab px-4 py-2 font-bold border-b-2 border-primary text-primary" data-tab="general">General</button>
-                    <button class="admin-tab px-4 py-2 font-bold border-b-2 border-transparent text-text-muted-dark hover:text-cream" data-tab="members">Members</button>
-                    <button id="shopTab" class="admin-tab hidden px-4 py-2 font-bold border-b-2 border-transparent text-text-muted-dark hover:text-cream" data-tab="shop">Shop</button>
-                    <button id="poolTab" class="admin-tab hidden px-4 py-2 font-bold border-b-2 border-transparent text-text-muted-dark hover:text-cream" data-tab="pool">Prize Pool</button>
-                </div>
+        </div>
+    </div>
 
-                <!-- General Tab -->
-                <div id="generalTab" class="tab-content space-y-4">
-                    <div>
-                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Community Name</label>
-                        <input type="text" id="editName" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
-                    </div>
-                    <div>
-                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Description</label>
-                        <textarea id="editDescription" rows="4" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream resize-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Banner Image URL</label>
-                        <input type="text" id="editImageUrl" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
-                    </div>
-                    <button id="saveGeneralSettings" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
-                        Save Changes
-                    </button>
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-card-dark border-2 border-red-600 rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="size-12 rounded-full bg-red-600/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-red-500 text-3xl">delete_forever</span>
                 </div>
-
-                <!-- Members Tab -->
-                <div id="membersTab" class="tab-content hidden space-y-4">
-                    <div id="adminMembersList" class="space-y-3">
-                        <p class="text-text-muted-dark">Loading members...</p>
-                    </div>
-                </div>
-
-                <!-- Shop Tab (Prize Pool Only) -->
-                <div id="shopTabContent" class="tab-content hidden space-y-4">
-                    <button id="addShopItem" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
-                        Add New Item
-                    </button>
-                    <div id="shopItemsList" class="space-y-3">
-                        <p class="text-text-muted-dark">No shop items yet</p>
-                    </div>
-                </div>
-
-                <!-- Prize Pool Tab (Prize Pool Only) -->
-                <div id="poolTabContent" class="tab-content hidden space-y-4">
-                    <div class="rounded-lg bg-background-dark p-4 border border-primary">
-                        <p class="text-text-muted-dark text-sm mb-2">Current Prize Pool</p>
-                        <p class="text-primary text-4xl font-bold" id="adminPrizePool">0 HLP</p>
-                    </div>
-                    <div>
-                        <label class="block text-text-muted-dark text-sm font-medium mb-2">Add Funds</label>
-                        <input type="number" id="addFunds" min="0" step="1" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream" placeholder="Amount in HLP">
-                    </div>
-                    <button id="depositFunds" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
-                        Deposit Funds
-                    </button>
-                </div>
+                <h3 class="text-2xl font-bold">Delete Community?</h3>
+            </div>
+            <p class="text-text-muted-dark mb-4">
+                ⚠️ This action is <span class="text-red-500 font-bold">PERMANENT</span> and cannot be undone!
+            </p>
+            <p class="text-text-muted-dark text-sm mb-6">
+                All tasks, members, and data will be deleted. Type <strong class="text-cream">DELETE</strong> to confirm:
+            </p>
+            <input type="text" id="deleteConfirmInput" class="w-full bg-background-dark border-2 border-red-500 rounded-lg px-4 py-3 text-cream mb-6 outline-none focus:border-red-400" placeholder="Type DELETE">
+            <div class="flex gap-4">
+                <button id="cancelDeleteBtn" class="flex-1 px-6 py-3 rounded-xl bg-card-dark border-2 border-border-dark font-bold hover:border-primary transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors">
+                    Delete Forever
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Shop Item Modal -->
-    <div id="shopItemModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-card-dark border-2 border-border-dark rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="text-cream text-xl font-bold mb-4">Add Shop Item</h3>
-            <div class="space-y-4">
+    <!-- Blockchain Task Modal -->
+    <div id="blockchainTaskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="glass rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
                 <div>
-                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Item Name</label>
-                    <input type="text" id="shopItemName" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
+                    <h3 class="text-2xl font-bold" id="modalTaskTitle">Task Details</h3>
+                    <p class="text-text-muted-dark text-sm" id="modalTaskId">Task #1</p>
                 </div>
-                <div>
-                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Description</label>
-                    <textarea id="shopItemDesc" rows="3" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream resize-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Price (HLP)</label>
-                    <input type="number" id="shopItemPrice" min="0" step="1" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
-                </div>
-                <div>
-                    <label class="block text-text-muted-dark text-sm font-medium mb-2">Image URL</label>
-                    <input type="text" id="shopItemImage" class="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-3 text-cream">
-                </div>
-                <div class="flex gap-3">
-                    <button id="cancelShopItem" class="flex-1 bg-background-dark hover:bg-card-dark border border-border-dark text-cream font-bold py-3 px-6 rounded-lg transition-colors">
-                        Cancel
-                    </button>
-                    <button id="saveShopItem" class="flex-1 bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
-                        Save Item
-                    </button>
-                </div>
+                <button onclick="closeBlockchainTaskModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+
+            <div id="modalTaskContent" class="space-y-4">
+                <!-- Content will be dynamically loaded -->
+            </div>
+
+            <div id="modalActions" class="mt-6 flex gap-3 flex-wrap">
+                <!-- Action buttons will be dynamically loaded -->
             </div>
         </div>
     </div>
 
-    <!-- Firebase & Web3 SDK -->
+    <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
         import { 
-            getAuth,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-        import { 
-            getFirestore,
-            doc,
-            getDoc,
-            getDocs,
-            collection,
-            query,
-            where,
-            updateDoc,
-            addDoc,
-            deleteDoc,
-            increment,
-            arrayUnion,
-            arrayRemove,
-            serverTimestamp
+            getFirestore, doc, getDoc, updateDoc, deleteDoc, 
+            arrayRemove, increment, collection, query, where, getDocs 
         } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
             authDomain: "taskmatch-openhack2025.firebaseapp.com",
             projectId: "taskmatch-openhack2025",
             storageBucket: "taskmatch-openhack2025.firebasestorage.app",
             messagingSenderId: "1071810532798",
-            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
-            measurementId: "G-Y0XPDPZFY8"
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Blockchain contracts (from index.html)
-        const TASK_CONTRACT_ADDRESS = "0x77bD0b58d5786587614a00688Ddc9db7A592449E";
-        const REWARD_CONTRACT_ADDRESS = "0xFD1b4a56B7Dc1321a674265F68400fE09E7101A5";
-        
-        const TASK_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"},{"internalType":"address","name":"_achievementBadge","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"applicant","type":"address"}],"name":"TaskApplied","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"TaskAssigned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"}],"name":"TaskCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"TaskCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"string","name":"title","type":"string"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"TaskCreated","type":"event"},{"inputs":[],"name":"achievementBadge","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"applyForTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"},{"internalType":"address","name":"_worker","type":"address"}],"name":"assignTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"cancelTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"completeTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_title","type":"string"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"uint256","name":"_reward","type":"uint256"}],"name":"createTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTask","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"internalType":"struct TaskContract.TaskStruct","name":"","type":"tuple"}],"stateMutability":"view","type":"function"}];
-
         let currentUser = null;
-        let community = null;
         let communityId = null;
+        let communityData = null;
         let isAdmin = false;
-        let provider = null;
-        let signer = null;
-        let taskContract = null;
+        let isMember = false;
 
         // Get community ID from URL
         const pathParts = window.location.pathname.split('/');
         communityId = pathParts[pathParts.length - 1];
 
-        if (!communityId || communityId === 'community') {
-            alert('Invalid community ID');
-            window.location.href = '/communities';
+        if (!communityId) {
+            alert('Invalid community URL');
+            window.location.href = '/my-communities';
         }
 
-        // Check authentication
+        // Auth check
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '/login';
                 return;
             }
             currentUser = user;
-            console.log('User authenticated:', user.uid);
-            
-            // Initialize Web3 if MetaMask is available
-            await initWeb3();
-            
-            // Load community data
             await loadCommunity();
-            await loadTasks();
-            await loadMembers();
-            await loadShopItems();
-            
-            // Setup all event listeners after loading
-            setupEventListeners();
         });
 
-        // Initialize Web3 connection
-        async function initWeb3() {
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
-                    signer = provider.getSigner();
-                    taskContract = new ethers.Contract(TASK_CONTRACT_ADDRESS, TASK_CONTRACT_ABI, signer);
-                    console.log('Web3 initialized');
-                } catch (error) {
-                    console.error('Error initializing Web3:', error);
-                }
-            }
-        }
-
-        // Load community data
         async function loadCommunity() {
             try {
+                console.log('Loading community:', communityId);
+                
+                // Get community data
                 const communityRef = doc(db, 'communities', communityId);
                 const communitySnap = await getDoc(communityRef);
 
                 if (!communitySnap.exists()) {
                     alert('Community not found');
-                    window.location.href = '/communities';
+                    window.location.href = '/my-communities';
                     return;
                 }
 
-                community = { id: communitySnap.id, ...communitySnap.data() };
-                isAdmin = community.admins && community.admins.includes(currentUser.uid);
+                communityData = { id: communitySnap.id, ...communitySnap.data() };
+                
+                // Check user permissions
+                isMember = communityData.members && communityData.members.includes(currentUser.uid);
+                isAdmin = communityData.admins && communityData.admins.includes(currentUser.uid);
+
+                console.log('Is member:', isMember, 'Is admin:', isAdmin);
 
                 // Update UI
-                document.getElementById('communityName').textContent = community.name;
-                document.getElementById('communityDescription').textContent = community.description;
-                document.getElementById('communityBanner').style.backgroundImage = `url('${community.imageUrl || 'https://via.placeholder.com/1200x400?text=Community+Banner'}')`;
+                document.getElementById('communityName').textContent = communityData.name || 'Unnamed Community';
+                document.getElementById('communityDescription').textContent = communityData.description || 'No description';
+                document.getElementById('memberCount').textContent = communityData.memberCount || 0;
                 
-                document.getElementById('memberCount').textContent = community.memberCount || 0;
-                document.getElementById('activeTasks').textContent = community.tasksCount || 0;
-                document.getElementById('completedTasks').textContent = community.tasksCompleted || 0;
-
-                // Community type
-                const typeText = community.type === 'prize-pool' ? 'Prize Pool Community' : 'Mutual Aid Community';
-                document.getElementById('communityType').textContent = typeText;
-
-                // Access type
-                const accessText = community.accessType === 'open' ? 'Open to Everyone' : 
-                                  community.accessType === 'approval' ? 'Approval Required' : 'Invite Only';
-                document.getElementById('communityAccess').textContent = accessText;
-
-                // Created date
-                if (community.createdAt) {
-                    const date = community.createdAt.toDate();
-                    document.getElementById('communityCreated').textContent = `Created ${date.toLocaleDateString()}`;
+                // Show prize pool if applicable
+                if (communityData.type === 'prize-pool') {
+                    document.getElementById('prizePoolCard').classList.remove('hidden');
+                    document.getElementById('prizePool').textContent = `${communityData.prizePool || 0} HLP`;
                 }
 
-                // Show/hide prize pool features
-                if (community.type === 'prize-pool') {
-                    document.getElementById('hlpBalanceCard').classList.remove('hidden');
-                    document.getElementById('hlpBalanceCard').classList.add('flex');
-                    document.getElementById('hlpBalance').textContent = `${community.prizePool || 0} HLP`;
-                    
-                    if (community.shopEnabled) {
-                        document.getElementById('shopSection').classList.remove('hidden');
-                        if (isAdmin) {
-                            document.getElementById('manageShopBtn').classList.remove('hidden');
-                            document.getElementById('shopTab').classList.remove('hidden');
-                        }
-                    }
-                    
-                    if (isAdmin) {
-                        document.getElementById('poolTab').classList.remove('hidden');
-                    }
-                }
-
-                // Show admin settings button
+                // Show delete button in settings for admins
                 if (isAdmin) {
-                    document.getElementById('adminSettingsBtn').classList.remove('hidden');
+                    console.log('User is admin - showing blockchain task section');
+                    const deleteMenuBtn = document.getElementById('deleteMenuButton');
+                    const taskSection = document.getElementById('createTaskSection');
+                    
+                    if (deleteMenuBtn) deleteMenuBtn.classList.remove('hidden');
+                    if (taskSection) {
+                        taskSection.classList.remove('hidden');
+                        console.log('Blockchain task section should now be visible');
+                        // Double-check visibility
+                        setTimeout(() => {
+                            const isVisible = !taskSection.classList.contains('hidden');
+                            console.log('Task section visible after timeout:', isVisible);
+                        }, 500);
+                    } else {
+                        console.error('createTaskSection element not found!');
+                    }
+                } else {
+                    console.log('User is not admin - blockchain section hidden');
                 }
 
-                // Show/hide create task section based on community type
-                const canCreateTask = community.type === 'mutual-aid' || isAdmin;
-                if (!canCreateTask) {
-                    document.getElementById('createTaskSection').style.display = 'none';
-                }
+                // Debug: Force show for testing (REMOVE THIS LATER)
+                console.log('Admin status:', isAdmin);
+                console.log('Community admins:', communityData.admins);
+                console.log('Current user:', currentUser.uid);
 
-                // Show invite section for invite-only communities
-                if (community.accessType === 'invite' && (isAdmin || community.members.includes(currentUser.uid))) {
-                    document.getElementById('inviteSection').classList.remove('hidden');
-                }
+                // Load members and tasks
+                await loadMembers();
+                await loadTasks();
+
+                // Show content
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('communityContent').classList.remove('hidden');
 
             } catch (error) {
                 console.error('Error loading community:', error);
-                alert('Error loading community');
+                alert('Error loading community: ' + error.message);
+                window.location.href = '/my-communities';
             }
         }
 
-        // Load blockchain tasks for this community
-        async function loadTasks() {
-            const container = document.getElementById('tasksContainer');
-            
-            try {
-                // Show loading state
-                container.innerHTML = `
-                    <div class="text-center py-12">
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p class="text-text-muted-dark">Loading tasks...</p>
-                    </div>
-                `;
-
-                if (!taskContract) {
-                    container.innerHTML = `
-                        <div class="text-center py-12 rounded-lg bg-card-dark border-2 border-border-dark">
-                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">account_balance_wallet</span>
-                            <p class="text-text-muted-dark mb-4">Connect MetaMask to view and create tasks</p>
-                            <button onclick="connectMetaMask()" class="bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-6 rounded-lg transition-colors">
-                                Connect Wallet
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Get all tasks from Firebase that belong to this community
-                const tasksQuery = query(collection(db, 'tasks'), where('communityId', '==', communityId));
-                const tasksSnapshot = await getDocs(tasksQuery);
-
-                if (tasksSnapshot.empty) {
-                    container.innerHTML = `
-                        <div class="text-center py-12 rounded-lg bg-card-dark border-2 border-dashed border-border-dark">
-                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">assignment</span>
-                            <p class="text-text-muted-dark mb-2 text-lg font-medium">No tasks yet</p>
-                            <p class="text-text-muted-dark text-sm">Be the first to create a task for this community!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = '';
-                
-                for (const taskDoc of tasksSnapshot.docs) {
-                    const taskData = taskDoc.data();
-                    const taskCard = createTaskCard(taskData, taskDoc.id);
-                    container.appendChild(taskCard);
-                }
-
-                console.log('Loaded', tasksSnapshot.size, 'tasks');
-
-            } catch (error) {
-                console.error('Error loading tasks:', error);
-                container.innerHTML = `
-                    <div class="text-center py-12 rounded-lg bg-card-dark border-2 border-red-500/20">
-                        <span class="material-symbols-outlined text-6xl text-red-400 mb-4">error</span>
-                        <p class="text-red-400 mb-2">Error loading tasks</p>
-                        <p class="text-text-muted-dark text-sm mb-4">${error.message}</p>
-                        <button onclick="location.reload()" class="bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-6 rounded-lg transition-colors">
-                            Retry
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // Connect MetaMask function
-        async function connectMetaMask() {
-            if (typeof window.ethereum === 'undefined') {
-                alert('Please install MetaMask to interact with blockchain tasks');
-                window.open('https://metamask.io/download/', '_blank');
-                return;
-            }
-
-            try {
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                await initWeb3();
-                await loadTasks();
-            } catch (error) {
-                console.error('Error connecting MetaMask:', error);
-                alert('Failed to connect MetaMask: ' + error.message);
-            }
-        }
-
-        // Make connectMetaMask available globally
-        window.connectMetaMask = connectMetaMask;
-
-        // Create task card element
-        function createTaskCard(task, taskId) {
-            const card = document.createElement('div');
-            card.className = 'rounded-lg bg-card-dark p-6 border border-border-dark hover:border-primary transition-colors';
-
-            const statusColors = {
-                'open': 'bg-blue-500',
-                'in-progress': 'bg-yellow-500',
-                'completed': 'bg-green-500',
-                'cancelled': 'bg-gray-500'
-            };
-
-            const status = task.status || 'open';
-
-            card.innerHTML = `
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex-1">
-                        <h3 class="text-cream text-xl font-bold mb-2">${task.title}</h3>
-                        <p class="text-text-muted-dark text-sm mb-3">${task.description}</p>
-                    </div>
-                    <span class="text-primary font-bold text-lg whitespace-nowrap ml-4">${task.reward} HLP</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="status-badge text-xs px-3 py-1 rounded-full ${statusColors[status]} text-white font-semibold" data-status="${status}">
-                        ${status.toUpperCase().replace('-', ' ')}
-                    </span>
-                    ${status === 'open' ? `
-                        <button class="apply-task-btn text-primary hover:text-primary-light font-bold text-sm transition-colors" data-task-id="${taskId}">
-                            Apply for Task
-                        </button>
-                    ` : ''}
-                </div>
-            `;
-
-            return card;
-        }
-
-        // Load members
         async function loadMembers() {
             const container = document.getElementById('membersContainer');
+            const memberIds = communityData.members || [];
             
-            if (!community || !community.members || community.members.length === 0) {
-                container.innerHTML = '<p class="text-text-muted-dark text-sm text-center py-4">No members yet</p>';
+            document.getElementById('totalMembers').textContent = `${memberIds.length} member${memberIds.length !== 1 ? 's' : ''}`;
+
+            if (memberIds.length === 0) {
+                container.innerHTML = '<p class="text-text-muted-dark text-center py-4 col-span-full text-sm">No members yet</p>';
                 return;
             }
 
-            container.innerHTML = '<p class="text-text-muted-dark text-sm text-center py-2">Loading members...</p>';
             container.innerHTML = '';
 
-            for (const memberId of community.members) {
+            for (const memberId of memberIds) {
                 try {
-                    const userDoc = await getDoc(doc(db, 'users', memberId));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        const memberDiv = document.createElement('div');
-                        memberDiv.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-background-dark/50 transition-colors';
-                        
-                        const isAdminMember = community.admins && community.admins.includes(memberId);
-                        const initials = (userData.name || 'A').substring(0, 2).toUpperCase();
-                        
-                        memberDiv.innerHTML = `
-                            <div class="size-10 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center font-bold text-background-dark text-sm">
-                                ${initials}
+                    const userRef = doc(db, 'users', memberId);
+                    const userSnap = await getDoc(userRef);
+
+                    if (!userSnap.exists()) continue;
+
+                    const userData = userSnap.data();
+                    const isUserAdmin = communityData.admins && communityData.admins.includes(memberId);
+
+                    const memberCard = document.createElement('div');
+                    memberCard.className = 'glass hover:border-primary/50 hover:shadow-md hover:shadow-primary/10 transition-all transform hover:scale-105 p-3 rounded-lg';
+                    
+                    const initial = (userData.displayName || userData.email || 'U')[0].toUpperCase();
+                    const displayName = userData.displayName || userData.email?.split('@')[0] || 'User';
+                    const tasksCompleted = userData.tasksCompleted || 0;
+
+                    memberCard.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="size-12 rounded-full gradient-primary flex items-center justify-center flex-shrink-0">
+                                <span class="text-background-dark font-bold text-lg">${initial}</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-cream text-sm font-medium truncate">${userData.name || 'Anonymous User'}</p>
-                                ${isAdminMember ? '<p class="text-primary text-xs font-bold">ADMIN</p>' : '<p class="text-text-muted-dark text-xs">Member</p>'}
+                                <div class="flex items-center gap-2">
+                                    <p class="text-cream font-semibold truncate">${displayName}</p>
+                                    ${isUserAdmin ? '<span class="text-xs px-2 py-1 rounded-full gradient-primary text-background-dark font-bold">Admin</span>' : ''}
+                                </div>
+                                <p class="text-text-muted-dark text-xs flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">task_alt</span>
+                                    ${tasksCompleted} completed
+                                </p>
                             </div>
-                            ${isAdminMember ? '<span class="material-symbols-outlined text-primary text-lg">verified</span>' : ''}
-                        `;
-                        
-                        container.appendChild(memberDiv);
-                    }
+                        </div>
+                    `;
+
+                    container.appendChild(memberCard);
                 } catch (error) {
                     console.error('Error loading member:', memberId, error);
                 }
             }
         }
 
-        // Load shop items
-        async function loadShopItems() {
-            if (!community || community.type !== 'prize-pool' || !community.shopEnabled) return;
-
-            const container = document.getElementById('shopItemsContainer');
+        async function loadTasks() {
+            const container = document.getElementById('tasksContainer');
             
             try {
-                const shopQuery = query(collection(db, 'communities', communityId, 'shop'));
-                const shopSnapshot = await getDocs(shopQuery);
+                // Query Firebase tasks for this community
+                const tasksRef = collection(db, 'tasks');
+                const q = query(tasksRef, where('communityId', '==', communityId));
+                const querySnapshot = await getDocs(q);
 
-                if (shopSnapshot.empty) {
+                // Fetch blockchain tasks
+                let blockchainTasks = [];
+                if (window.ethers && taskContract) {
+                    try {
+                        const taskCount = await taskContract.getTasksCount();
+                        console.log('Total blockchain tasks:', taskCount.toString());
+                        
+                        for (let i = 1; i <= taskCount.toNumber(); i++) {
+                            try {
+                                const task = await taskContract.getTask(i);
+                                // Only show non-canceled tasks (worker is not 0x0...dead which indicates canceled)
+                                const canceledAddress = '0x000000000000000000000000000000000000dEaD';
+                                if (task.worker.toLowerCase() !== canceledAddress.toLowerCase()) {
+                                    blockchainTasks.push({ id: i, ...task, isBlockchain: true });
+                                }
+                            } catch (err) {
+                                console.log(`Blockchain task ${i} not found or deleted`);
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Could not load blockchain tasks:', error.message);
+                    }
+                }
+
+                const totalTasks = querySnapshot.size + blockchainTasks.length;
+                console.log(`Found ${querySnapshot.size} Firebase tasks + ${blockchainTasks.length} blockchain tasks`);
+
+                if (totalTasks === 0) {
                     container.innerHTML = `
-                        <div class="col-span-full text-center py-12 rounded-lg bg-card-dark border-2 border-dashed border-border-dark">
-                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">storefront</span>
-                            <p class="text-text-muted-dark mb-2">No shop items available</p>
-                            ${isAdmin ? '<p class="text-text-muted-dark text-sm">Click "Manage Shop" to add items</p>' : ''}
+                        <div class="text-center py-8">
+                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">assignment</span>
+                            <p class="text-text-muted-dark text-sm">No tasks yet</p>
+                            ${isAdmin ? '<p class="text-primary text-xs mt-2">Create a blockchain task above to get started!</p>' : ''}
                         </div>
                     `;
+                    document.getElementById('activeTasksCount').textContent = '0';
+                    document.getElementById('completedTasksCount').textContent = '0';
                     return;
                 }
 
                 container.innerHTML = '';
+                let activeTasks = 0;
+                let completedTasks = 0;
 
-                shopSnapshot.forEach(doc => {
-                    const item = doc.data();
-                    const itemCard = document.createElement('div');
-                    itemCard.className = 'rounded-lg bg-background-dark p-4 border-2 border-border-dark hover:border-primary transition-all hover:shadow-lg';
+                // Display Firebase tasks
+                querySnapshot.forEach((taskDoc) => {
+                    const task = taskDoc.data();
                     
-                    itemCard.innerHTML = `
-                        <div class="aspect-square bg-center bg-cover bg-no-repeat rounded-lg mb-3" style="background-image: url('${item.imageUrl || 'https://via.placeholder.com/200?text=Item'}')"></div>
-                        <h4 class="text-cream font-bold mb-1 truncate">${item.name}</h4>
-                        <p class="text-text-muted-dark text-sm mb-3 line-clamp-2 min-h-[2.5rem]">${item.description || 'No description'}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-primary font-bold text-lg">${item.price} HLP</span>
-                            <button class="purchase-item-btn text-sm bg-primary hover:bg-primary-light text-background-dark font-bold py-2 px-4 rounded-lg transition-colors" data-item-id="${doc.id}" data-item-price="${item.price}" data-item-name="${item.name}">
-                                Buy
-                            </button>
-                        </div>
-                    `;
-                    
-                    container.appendChild(itemCard);
+                    if (task.status === 'completed') {
+                        completedTasks++;
+                    } else {
+                        activeTasks++;
+                    }
+
+                    createTaskCard(taskDoc.id, task, false);
                 });
 
-                // Add purchase handlers
-                document.querySelectorAll('.purchase-item-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const itemId = btn.dataset.itemId;
-                        const itemPrice = btn.dataset.itemPrice;
-                        const itemName = btn.dataset.itemName;
-                        
-                        if (confirm(`Purchase ${itemName} for ${itemPrice} HLP?`)) {
-                            alert('Purchase functionality coming soon! This will deduct HLP from your balance.');
-                        }
-                    });
+                // Display blockchain tasks
+                blockchainTasks.forEach((task) => {
+                    if (task.completed) {
+                        completedTasks++;
+                    } else {
+                        activeTasks++;
+                    }
+                    createTaskCard(task.id.toString(), task, true);
                 });
 
-                console.log('Loaded', shopSnapshot.size, 'shop items');
+                document.getElementById('activeTasksCount').textContent = activeTasks;
+                document.getElementById('completedTasksCount').textContent = completedTasks;
 
             } catch (error) {
-                console.error('Error loading shop items:', error);
-                container.innerHTML = '<p class="col-span-full text-center text-red-400 py-8">Error loading shop items</p>';
+                console.error('Error loading tasks:', error);
+                container.innerHTML = `
+                    <div class="text-center py-4 text-red-400 text-sm">
+                        Error loading tasks: ${error.message}
+                    </div>
+                `;
             }
         }
 
-        // Toggle create task form
-        document.getElementById('toggleCreateTask').addEventListener('click', () => {
-            const form = document.getElementById('createTaskForm');
-            form.classList.toggle('hidden');
-        });
-
-        // Submit task to blockchain
-        document.getElementById('submitTask').addEventListener('click', async () => {
-            const title = document.getElementById('taskTitle').value.trim();
-            const description = document.getElementById('taskDescription').value.trim();
-            const reward = document.getElementById('taskReward').value;
-
-            if (!title || !description) {
-                alert('Please fill in all fields');
-                return;
+        function createTaskCard(taskId, task, isBlockchain) {
+            const container = document.getElementById('tasksContainer');
+            const taskCard = document.createElement('div');
+            taskCard.className = 'glass hover:border-primary/80 hover:shadow-lg hover:shadow-primary/10 transition-all transform hover:scale-[1.02] cursor-pointer p-4 rounded-lg';
+            
+            if (isBlockchain) {
+                taskCard.onclick = () => showBlockchainTaskModal(taskId, task);
+            } else {
+                taskCard.onclick = () => window.location.href = `/task/${taskId}`;
             }
 
+            let statusColor, statusIcon, statusText;
+            if (isBlockchain) {
+                if (task.completed) {
+                    statusColor = 'bg-green-500/20 text-green-400 border-green-500';
+                    statusIcon = 'verified';
+                    statusText = 'verified';
+                } else if (task.worker !== ethers.constants.AddressZero) {
+                    statusColor = 'bg-blue-500/20 text-blue-400 border-blue-500';
+                    statusIcon = 'pending';
+                    statusText = 'in progress';
+                } else {
+                    statusColor = 'bg-primary/20 text-primary border-primary';
+                    statusIcon = 'work';
+                    statusText = 'open';
+                }
+            } else {
+                statusColor = task.status === 'completed' ? 'bg-green-500/20 text-green-400 border-green-500' : 
+                             task.status === 'in-progress' ? 'bg-blue-500/20 text-blue-400 border-blue-500' : 
+                             'bg-primary/20 text-primary border-primary';
+                statusIcon = task.status === 'completed' ? 'check_circle' : 
+                            task.status === 'in-progress' ? 'pending' : 
+                            'radio_button_unchecked';
+                statusText = task.status || 'open';
+            }
+
+            const rewardText = isBlockchain ? 
+                `${ethers.utils.formatEther(task.reward)} HLP` : 
+                `${task.reward || 0} HLP`;
+
+            const blockchainBadge = isBlockchain ? 
+                '<span class="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500">⛓️ On-Chain</span>' : 
+                '';
+
+            taskCard.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3 mb-2 flex-wrap">
+                            <span class="material-symbols-outlined ${statusColor.split(' ')[1]}">${statusIcon}</span>
+                            <p class="text-cream font-bold truncate text-lg">${task.title || 'Untitled Task'}</p>
+                            <span class="text-xs px-3 py-1 rounded-full ${statusColor} border font-semibold uppercase flex-shrink-0">${statusText}</span>
+                            ${blockchainBadge}
+                        </div>
+                        <p class="text-text-muted-dark text-sm truncate ml-9">${task.description || 'No description'}</p>
+                    </div>
+                    <div class="flex items-center gap-4 flex-shrink-0 ml-4">
+                        <div class="text-right bg-primary/10 px-4 py-2 rounded-lg border border-primary/30">
+                            <p class="text-primary font-bold text-xl">${rewardText}</p>
+                            <p class="text-text-muted-dark text-xs">Reward</p>
+                        </div>
+                        <span class="material-symbols-outlined text-primary text-3xl">chevron_right</span>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(taskCard);
+        }
+
+        // Show Blockchain Task Modal
+        window.showBlockchainTaskModal = async function(taskId, task) {
+            const modal = document.getElementById('blockchainTaskModal');
+            const titleEl = document.getElementById('modalTaskTitle');
+            const idEl = document.getElementById('modalTaskId');
+            const contentEl = document.getElementById('modalTaskContent');
+            const actionsEl = document.getElementById('modalActions');
+
+            titleEl.textContent = task.title || 'Untitled Task';
+            idEl.textContent = `Task #${taskId} • On-Chain`;
+
+            // Get applicants
+            let applicants = [];
+            try {
+                applicants = await taskContract.getTaskApplicants(taskId);
+            } catch (err) {
+                console.log('No applicants yet');
+            }
+
+            const isCreator = userAddress && task.creator.toLowerCase() === userAddress.toLowerCase();
+            const isWorker = userAddress && task.worker.toLowerCase() === userAddress.toLowerCase();
+            const hasApplied = userAddress && applicants.some(addr => addr.toLowerCase() === userAddress.toLowerCase());
+            const isAssigned = task.worker !== ethers.constants.AddressZero;
+
+            // Content
+            let statusBadge = '';
+            let workflowInfo = '';
+            
+            if (task.completed) {
+                statusBadge = '<span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500 text-sm font-semibold">✓ COMPLETED & VERIFIED</span>';
+                workflowInfo = `
+                    <div class="glass p-3 rounded-lg bg-green-500/10 border border-green-500">
+                        <p class="text-green-400 text-sm">
+                            <strong>✅ Workflow Complete:</strong> Task has been completed by the worker and verified by the creator. Reward has been distributed!
+                        </p>
+                    </div>
+                `;
+            } else if (isAssigned) {
+                statusBadge = '<span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500 text-sm font-semibold">🔄 IN PROGRESS</span>';
+                workflowInfo = `
+                    <div class="glass p-3 rounded-lg bg-blue-500/10 border border-blue-500">
+                        <p class="text-blue-400 text-sm">
+                            <strong>📝 Step 3:</strong> Worker is completing the task. Once done, they will submit for verification.
+                        </p>
+                    </div>
+                `;
+            } else if (applicants.length > 0) {
+                statusBadge = '<span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500 text-sm font-semibold">⏳ PENDING APPROVAL</span>';
+                workflowInfo = `
+                    <div class="glass p-3 rounded-lg bg-yellow-500/10 border border-yellow-500">
+                        <p class="text-yellow-400 text-sm">
+                            <strong>👀 Step 2:</strong> Waiting for creator to review applications and assign a worker.
+                        </p>
+                    </div>
+                `;
+            } else {
+                statusBadge = '<span class="px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary text-sm font-semibold">📢 OPEN FOR APPLICATIONS</span>';
+                workflowInfo = `
+                    <div class="glass p-3 rounded-lg bg-primary/10 border border-primary">
+                        <p class="text-primary text-sm">
+                            <strong>🚀 Step 1:</strong> Apply for this task to be considered by the creator.
+                        </p>
+                    </div>
+                `;
+            }
+
+            contentEl.innerHTML = `
+                <div class="flex items-center gap-2 flex-wrap">
+                    ${statusBadge}
+                    ${isCreator ? '<span class="px-3 py-1 rounded-full gradient-primary text-background-dark text-sm font-bold">👑 You Created This</span>' : ''}
+                    ${isWorker ? '<span class="px-3 py-1 rounded-full bg-blue-600 text-white text-sm font-bold">👷 You Are Assigned</span>' : ''}
+                    ${hasApplied && !isWorker ? '<span class="px-3 py-1 rounded-full bg-yellow-600 text-white text-sm font-bold">✋ You Applied</span>' : ''}
+                </div>
+
+                ${workflowInfo}
+
+                <div class="glass p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-text-muted-dark mb-2">Description</h4>
+                    <p class="text-cream">${task.description}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass p-4 rounded-lg">
+                        <h4 class="text-sm font-semibold text-text-muted-dark mb-1">Reward</h4>
+                        <p class="text-primary font-bold text-2xl">${ethers.utils.formatEther(task.reward)} HLP</p>
+                    </div>
+                    <div class="glass p-4 rounded-lg">
+                        <h4 class="text-sm font-semibold text-text-muted-dark mb-1">Applicants</h4>
+                        <p class="text-cream font-bold text-2xl">${applicants.length}</p>
+                    </div>
+                </div>
+
+                <div class="glass p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-text-muted-dark mb-2">Creator</h4>
+                    <p class="text-cream font-mono text-sm break-all">${task.creator}</p>
+                    ${isCreator ? '<p class="text-primary text-xs mt-1">This is you!</p>' : ''}
+                </div>
+
+                ${task.worker !== ethers.constants.AddressZero ? `
+                    <div class="glass p-4 rounded-lg">
+                        <h4 class="text-sm font-semibold text-text-muted-dark mb-2">Assigned Worker</h4>
+                        <p class="text-cream font-mono text-sm break-all">${task.worker}</p>
+                        ${isWorker ? '<p class="text-blue-400 text-xs mt-1">This is you!</p>' : ''}
+                    </div>
+                ` : ''}
+
+                ${applicants.length > 0 ? `
+                    <div class="glass p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-semibold text-text-muted-dark">Applications (${applicants.length})</h4>
+                            ${isCreator && !isAssigned && !task.completed ? 
+                                '<span class="text-xs text-yellow-400">⚠️ Review and assign a worker</span>' : ''}
+                        </div>
+                        <div class="space-y-2">
+                            ${applicants.map(applicant => `
+                                <div class="flex items-center justify-between bg-background-dark/50 p-3 rounded-lg">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-cream font-mono text-sm break-all">${applicant}</p>
+                                        ${applicant.toLowerCase() === userAddress?.toLowerCase() ? 
+                                            '<span class="text-primary text-xs font-bold mt-1 block">✋ This is you</span>' : ''}
+                                    </div>
+                                    ${isCreator && !isAssigned && !task.completed ? 
+                                        `<button onclick="assignTaskToApplicant(${taskId}, '${applicant}')" 
+                                            class="ml-3 px-4 py-2 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-opacity flex-shrink-0 flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-sm">check</span>
+                                            Approve & Assign
+                                        </button>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="text-center py-6 glass rounded-lg">
+                        <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">person_search</span>
+                        <p class="text-text-muted-dark text-sm">No applications yet</p>
+                        ${!isCreator ? '<p class="text-primary text-xs mt-1">Be the first to apply!</p>' : ''}
+                    </div>
+                `}
+            `;
+
+            // Actions
+            actionsEl.innerHTML = '';
+            
+            // Step 1: Apply for task (if open and user hasn't applied)
+            if (!task.completed && !isAssigned && !hasApplied && !isCreator && userAddress) {
+                actionsEl.innerHTML += `
+                    <button onclick="applyForBlockchainTask(${taskId})" 
+                        class="flex-1 px-6 py-3 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">person_add</span>
+                        Apply for Task
+                    </button>
+                `;
+            }
+
+            // Show waiting message if already applied
+            if (hasApplied && !isAssigned && !isCreator) {
+                actionsEl.innerHTML += `
+                    <div class="flex-1 px-6 py-3 bg-yellow-500/20 border-2 border-yellow-500 text-yellow-400 rounded-lg font-bold text-center">
+                        ⏳ Waiting for approval from creator
+                    </div>
+                `;
+            }
+
+            // Step 3: Submit for completion (worker marks as done)
+            if (isWorker && !task.completed) {
+                actionsEl.innerHTML += `
+                    <button onclick="submitTaskCompletion(${taskId})" 
+                        class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">task_alt</span>
+                        Submit for Verification
+                    </button>
+                `;
+            }
+
+            // Step 4: Verify completion (creator verifies and distributes reward)
+            if (isCreator && isAssigned && !task.completed) {
+                actionsEl.innerHTML += `
+                    <button onclick="verifyTaskCompletion(${taskId})" 
+                        class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">verified</span>
+                        Verify & Distribute Reward
+                    </button>
+                `;
+            }
+
+            // Cancel task (creator only, before assignment)
+            if (isCreator && !task.completed && !isAssigned) {
+                actionsEl.innerHTML += `
+                    <button onclick="cancelBlockchainTask(${taskId})" 
+                        class="px-6 py-3 bg-red-600/20 border-2 border-red-600 text-red-400 rounded-lg font-bold hover:bg-red-600/30 transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">cancel</span>
+                        Cancel Task
+                    </button>
+                `;
+            }
+
+            // Connect wallet prompt
+            if (!userAddress) {
+                actionsEl.innerHTML += `
+                    <button onclick="connectWallet()" 
+                        class="flex-1 px-6 py-3 gradient-primary text-background-dark rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                        Connect Wallet to Interact
+                    </button>
+                `;
+            }
+
+            // Show completion message
+            if (task.completed) {
+                actionsEl.innerHTML = `
+                    <div class="flex-1 px-6 py-3 bg-green-500/20 border-2 border-green-500 text-green-400 rounded-lg font-bold text-center flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Task Completed & Reward Distributed
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closeBlockchainTaskModal = function() {
+            document.getElementById('blockchainTaskModal').classList.add('hidden');
+        };
+
+        window.applyForBlockchainTask = async function(taskId) {
             if (!taskContract) {
-                alert('Please connect MetaMask first');
+                alert('Please connect wallet first');
                 return;
             }
 
             try {
-                const button = document.getElementById('submitTask');
-                button.disabled = true;
-                button.textContent = 'Creating on blockchain...';
-
-                // Create task on blockchain
-                const tx = await taskContract.createTask(title, description, ethers.utils.parseEther(reward || '0'));
+                const tx = await taskContract.applyForTask(taskId);
+                alert('Application submitted! Waiting for confirmation...');
                 await tx.wait();
-
-                // Get the task ID from the blockchain
-                const taskCount = await taskContract.getTasksCount();
-                const blockchainTaskId = taskCount.toString();
-
-                // Save task reference in Firebase
-                await addDoc(collection(db, 'tasks'), {
-                    communityId: communityId,
-                    blockchainTaskId: blockchainTaskId,
-                    title: title,
-                    description: description,
-                    reward: parseFloat(reward || 0),
-                    status: 'open',
-                    createdBy: currentUser.uid,
-                    createdAt: serverTimestamp()
-                });
-
-                // Update community task count
-                await updateDoc(doc(db, 'communities', communityId), {
-                    tasksCount: increment(1)
-                });
-
-                alert('Task created successfully on blockchain!');
-                
-                // Reset form
-                document.getElementById('taskTitle').value = '';
-                document.getElementById('taskDescription').value = '';
-                document.getElementById('taskReward').value = '';
-                document.getElementById('createTaskForm').classList.add('hidden');
-                
-                // Reload tasks
+                alert('✅ Successfully applied for task!');
+                closeBlockchainTaskModal();
                 await loadTasks();
-
             } catch (error) {
-                console.error('Error creating task:', error);
-                alert('Error creating task: ' + error.message);
-            } finally {
-                const button = document.getElementById('submitTask');
-                button.disabled = false;
-                button.textContent = 'Create Task on Blockchain';
+                console.error('Error applying:', error);
+                alert('Error: ' + (error.message || 'Transaction failed'));
             }
-        });
+        };
 
-        // Send invitation
-        document.getElementById('sendInviteBtn')?.addEventListener('click', async () => {
-            const email = document.getElementById('inviteEmail').value.trim();
-            
-            if (!email) {
-                alert('Please enter an email address');
+        window.assignTaskToApplicant = async function(taskId, workerAddress) {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            if (!confirm(`Assign this task to ${workerAddress.substring(0, 10)}...?\n\nThis approves their application and assigns them to work on the task.`)) {
                 return;
             }
 
             try {
-                await addDoc(collection(db, 'invitations'), {
-                    communityId: communityId,
-                    communityName: community.name,
-                    email: email,
-                    invitedBy: currentUser.uid,
-                    status: 'pending',
-                    createdAt: serverTimestamp()
-                });
-
-                alert('Invitation sent successfully!');
-                document.getElementById('inviteEmail').value = '';
-
+                const tx = await taskContract.assignTask(taskId, workerAddress);
+                alert('✅ Assignment submitted! Waiting for confirmation...');
+                await tx.wait();
+                alert('🎉 Task assigned successfully!\n\nThe worker can now start working on the task.');
+                closeBlockchainTaskModal();
+                await loadTasks();
             } catch (error) {
-                console.error('Error sending invitation:', error);
-                alert('Error sending invitation');
+                console.error('Error assigning:', error);
+                alert('❌ Error: ' + (error.message || 'Transaction failed'));
             }
-        });
+        };
 
-        // Admin modal handlers
-        document.getElementById('adminSettingsBtn')?.addEventListener('click', () => {
-            document.getElementById('adminModal').classList.remove('hidden');
-            
-            // Pre-fill form
-            document.getElementById('editName').value = community.name;
-            document.getElementById('editDescription').value = community.description;
-            document.getElementById('editImageUrl').value = community.imageUrl;
-            
-            if (community.type === 'prize-pool') {
-                document.getElementById('adminPrizePool').textContent = `${community.prizePool || 0} HLP`;
+        window.submitTaskCompletion = async function(taskId) {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
             }
-        });
 
-        document.getElementById('closeAdminModal').addEventListener('click', () => {
-            document.getElementById('adminModal').classList.add('hidden');
-        });
-
-        // Close modal when clicking backdrop
-        document.getElementById('adminModal').addEventListener('click', (e) => {
-            if (e.target.id === 'adminModal') {
-                document.getElementById('adminModal').classList.add('hidden');
+            if (!confirm('Submit this task for verification?\n\nThe creator will review and verify your work before distributing the reward.')) {
+                return;
             }
-        });
 
-        // Close shop item modal
-        document.getElementById('shopItemModal').addEventListener('click', (e) => {
-            if (e.target.id === 'shopItemModal') {
-                document.getElementById('shopItemModal').classList.add('hidden');
+            try {
+                const tx = await taskContract.completeTask(taskId);
+                alert('✅ Submission sent! Waiting for confirmation...');
+                await tx.wait();
+                alert('🎉 Task submitted for verification!\n\nWait for the creator to verify and approve your work.');
+                closeBlockchainTaskModal();
+                await loadTasks();
+            } catch (error) {
+                console.error('Error submitting:', error);
+                alert('❌ Error: ' + (error.message || 'Transaction failed'));
             }
+        };
+
+        window.verifyTaskCompletion = async function(taskId) {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            if (!confirm('Verify this task as complete?\n\nThis will:\n✅ Mark the task as completed\n💰 Transfer the HLP reward to the worker\n\nMake sure the work is satisfactory before confirming!')) {
+                return;
+            }
+
+            try {
+                const tx = await taskContract.completeTask(taskId);
+                alert('✅ Verification submitted! Processing reward distribution...');
+                await tx.wait();
+                alert('🎉 Task verified and reward distributed!\n\nThe worker has received their HLP tokens.');
+                closeBlockchainTaskModal();
+                await loadTasks();
+            } catch (error) {
+                console.error('Error verifying:', error);
+                alert('❌ Error: ' + (error.message || 'Transaction failed'));
+            }
+        };
+
+        window.cancelBlockchainTask = async function(taskId) {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            if (!confirm('Cancel this task?\n\n⚠️ This will:\n❌ Remove the task from the list\n❌ Reject all applications\n\nThis action cannot be undone!')) {
+                return;
+            }
+
+            try {
+                const tx = await taskContract.cancelTask(taskId);
+                alert('🗑️ Cancellation submitted! Removing task...');
+                await tx.wait();
+                alert('✅ Task cancelled and removed from the list.');
+                closeBlockchainTaskModal();
+                await loadTasks();
+            } catch (error) {
+                console.error('Error cancelling:', error);
+                alert('❌ Error: ' + (error.message || 'Transaction failed'));
+            }
+        };
+
+        // Leave Community (called from settings dropdown)
+        window.leaveCommunity = function() {
+            document.getElementById('leaveModal').classList.remove('hidden');
+            document.getElementById('settingsMenu').classList.add('hidden');
+        };
+
+        // Show Delete Modal (called from settings dropdown)
+        window.showDeleteModal = function() {
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('settingsMenu').classList.add('hidden');
+        };
+
+        document.getElementById('cancelLeaveBtn').addEventListener('click', () => {
+            document.getElementById('leaveModal').classList.add('hidden');
         });
 
-        // Admin tab switching
-        document.querySelectorAll('.admin-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                // Update tab styling
-                document.querySelectorAll('.admin-tab').forEach(t => {
-                    t.classList.remove('border-primary', 'text-primary');
-                    t.classList.add('border-transparent', 'text-text-muted-dark');
+        document.getElementById('confirmLeaveBtn').addEventListener('click', async () => {
+            try {
+                const communityRef = doc(db, 'communities', communityId);
+                const userRef = doc(db, 'users', currentUser.uid);
+
+                await updateDoc(communityRef, {
+                    members: arrayRemove(currentUser.uid),
+                    memberCount: increment(-1)
                 });
-                tab.classList.add('border-primary', 'text-primary');
-                tab.classList.remove('border-transparent', 'text-text-muted-dark');
-                
-                // Show/hide content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
+
+                await updateDoc(userRef, {
+                    joinedCommunities: arrayRemove(communityId)
                 });
-                document.getElementById(`${tabName}Tab${tabName === 'general' ? '' : 'Content'}`).classList.remove('hidden');
+
+                alert('You have left the community');
+                window.location.href = '/my-communities';
+            } catch (error) {
+                console.error('Error leaving community:', error);
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteConfirmInput').value = '';
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            const confirmText = document.getElementById('deleteConfirmInput').value;
+            
+            if (confirmText !== 'DELETE') {
+                alert('Please type DELETE to confirm');
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'communities', communityId));
+                alert('Community deleted successfully');
+                window.location.href = '/my-communities';
+            } catch (error) {
+                console.error('Error deleting community:', error);
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Close modals on outside click
+        document.getElementById('leaveModal').addEventListener('click', (e) => {
+            if (e.target.id === 'leaveModal') {
+                document.getElementById('leaveModal').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('deleteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'deleteModal') {
+                document.getElementById('deleteModal').classList.add('hidden');
+                document.getElementById('deleteConfirmInput').value = '';
+            }
+        });
+
+        // Settings Dropdown Toggle
+        window.toggleSettings = function() {
+            const menu = document.getElementById('settingsMenu');
+            menu.classList.toggle('hidden');
+        };
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('settingsDropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                document.getElementById('settingsMenu').classList.add('hidden');
+            }
+        });
+
+        // Show/hide delete button in settings based on admin status
+        function updateSettingsMenu() {
+            const deleteMenuBtn = document.getElementById('deleteMenuButton');
+            if (isAdmin && deleteMenuBtn) {
+                deleteMenuBtn.classList.remove('hidden');
+            }
+        }
+
+        // Call after admin check
+        setTimeout(updateSettingsMenu, 1000);
+    </script>
+
+    <!-- Blockchain Integration -->
+    <script>
+        // Contract addresses and ABIs from deployment.json
+        const TASK_CONTRACT_ADDRESS = "0x77bD0b58d5786587614a00688Ddc9db7A592449E";
+        const REWARD_CONTRACT_ADDRESS = "0xFD1b4a56B7Dc1321a674265F68400fE09E7101A5";
+        const ACHIEVEMENT_BADGE_ADDRESS = "0x101546970B89156d33EC9cDC576DAbfc1BE3C13D";
+        
+        const TASK_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"},{"internalType":"address","name":"_achievementBadge","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"applicant","type":"address"}],"name":"TaskApplied","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"TaskAssigned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"}],"name":"TaskCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"TaskCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"string","name":"title","type":"string"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"TaskCreated","type":"event"},{"inputs":[],"name":"achievementBadge","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"applyForTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"},{"internalType":"address","name":"_worker","type":"address"}],"name":"assignTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"cancelTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"completeTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_title","type":"string"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"uint256","name":"_reward","type":"uint256"}],"name":"createTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTask","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"internalType":"struct TaskContract.TaskStruct","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTaskApplicants","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTasksCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserTasks","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"hasApplied","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"rewardToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_achievementBadge","type":"address"}],"name":"setAchievementBadge","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"}],"name":"setRewardToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"taskApplicants","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"taskCounter","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tasks","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"userTasks","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
+        let provider = null;
+        let signer = null;
+        let taskContract = null;
+        let userAddress = null;
+
+        // Connect Wallet
+        window.connectWallet = async function() {
+            try {
+                if (!window.ethereum) {
+                    alert('Please install MetaMask to use blockchain features!');
+                    window.open('https://metamask.io/download/', '_blank');
+                    return;
+                }
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+
+                // Initialize provider and signer
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                taskContract = new ethers.Contract(TASK_CONTRACT_ADDRESS, TASK_CONTRACT_ABI, signer);
+
+                // Update UI
+                document.getElementById('connectWalletBtn').classList.add('hidden');
+                const walletAddressEl = document.getElementById('walletAddress');
+                walletAddressEl.textContent = `Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                walletAddressEl.classList.remove('hidden');
+
+                console.log('Wallet connected:', userAddress);
+
+                // Check network (Sepolia = chainId 11155111)
+                const network = await provider.getNetwork();
+                if (network.chainId !== 11155111) {
+                    alert('Please switch to Sepolia Test Network in MetaMask');
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }], // Sepolia chainId in hex
+                        });
+                    } catch (switchError) {
+                        console.error('Error switching network:', switchError);
+                    }
+                }
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                alert('Failed to connect wallet: ' + error.message);
+            }
+        };
+
+        // Create Blockchain Task
+        document.addEventListener('DOMContentLoaded', () => {
+            const blockchainForm = document.getElementById('blockchainTaskForm');
+            if (!blockchainForm) return; // Form only exists for admins
+
+            blockchainForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!taskContract) {
+                    alert('Please connect your wallet first!');
+                    return;
+                }
+
+                const title = document.getElementById('taskTitle').value.trim();
+                const description = document.getElementById('taskDescription').value.trim();
+                const rewardEth = parseFloat(document.getElementById('taskReward').value);
+
+                if (!title || !description || rewardEth <= 0) {
+                    alert('Please fill in all fields with valid values');
+                    return;
+                }
+
+                const createTaskBtn = document.getElementById('createTaskBtn');
+                const statusDiv = document.getElementById('transactionStatus');
+                const statusText = document.getElementById('statusText');
+                const txLink = document.getElementById('txLink');
+
+                try {
+                    // Disable button
+                    createTaskBtn.disabled = true;
+                    createTaskBtn.innerHTML = '<span class="animate-spin material-symbols-outlined">progress_activity</span> Deploying...';
+
+                    // Show status
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.className = 'mt-4 p-4 rounded-lg border border-primary bg-primary/10';
+                    statusText.textContent = 'Waiting for transaction approval...';
+                    txLink.classList.add('hidden');
+
+                    // Convert ETH to Wei (smallest unit)
+                    const rewardWei = ethers.utils.parseEther(rewardEth.toString());
+
+                    console.log('Creating task:', { title, description, rewardWei: rewardWei.toString() });
+
+                    // Call smart contract
+                    const tx = await taskContract.createTask(title, description, rewardWei);
+                    
+                    statusText.textContent = 'Transaction submitted! Waiting for confirmation...';
+                    txLink.textContent = `View on Sepolia Etherscan: ${tx.hash}`;
+                    txLink.href = `https://sepolia.etherscan.io/tx/${tx.hash}`;
+                    txLink.classList.remove('hidden');
+
+                    // Wait for confirmation
+                    const receipt = await tx.wait();
+                    console.log('Transaction confirmed:', receipt);
+
+                    // Extract task ID from event
+                    const taskCreatedEvent = receipt.events?.find(e => e.event === 'TaskCreated');
+                    const taskId = taskCreatedEvent?.args?.taskId?.toString();
+
+                    // Success
+                    statusDiv.className = 'mt-4 p-4 rounded-lg border border-green-500 bg-green-500/10';
+                    statusText.innerHTML = `✅ Task deployed successfully! <span class="text-primary">Task ID: #${taskId || receipt.transactionHash.substring(0, 8)}</span>`;
+
+                    // Reset form
+                    blockchainForm.reset();
+
+                    // Reload tasks after 2 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('Error creating blockchain task:', error);
+                    
+                    statusDiv.className = 'mt-4 p-4 rounded-lg border border-red-500 bg-red-500/10';
+                    statusText.textContent = `❌ Error: ${error.message || 'Transaction failed'}`;
+                    
+                    // Re-enable button
+                    createTaskBtn.disabled = false;
+                    createTaskBtn.innerHTML = '<span class="material-symbols-outlined">rocket_launch</span> Deploy Task to Blockchain';
+                }
             });
         });
 
-        // Save general settings
-        document.getElementById('saveGeneralSettings').addEventListener('click', async () => {
-            try {
-                const newName = document.getElementById('editName').value.trim();
-                const newDesc = document.getElementById('editDescription').value.trim();
-                const newImage = document.getElementById('editImageUrl').value.trim();
-
-                await updateDoc(doc(db, 'communities', communityId), {
-                    name: newName,
-                    description: newDesc,
-                    imageUrl: newImage,
-                    updatedAt: serverTimestamp()
-                });
-
-                alert('Settings saved successfully!');
-                window.location.reload();
-
-            } catch (error) {
-                console.error('Error saving settings:', error);
-                alert('Error saving settings');
-            }
-        });
-
-        // Shop item management
-        document.getElementById('addShopItem')?.addEventListener('click', () => {
-            document.getElementById('shopItemModal').classList.remove('hidden');
-        });
-
-        document.getElementById('cancelShopItem').addEventListener('click', () => {
-            document.getElementById('shopItemModal').classList.add('hidden');
-        });
-
-        document.getElementById('saveShopItem').addEventListener('click', async () => {
-            const name = document.getElementById('shopItemName').value.trim();
-            const desc = document.getElementById('shopItemDesc').value.trim();
-            const price = document.getElementById('shopItemPrice').value;
-            const image = document.getElementById('shopItemImage').value.trim();
-
-            if (!name || !price) {
-                alert('Please fill in required fields');
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, 'communities', communityId, 'shop'), {
-                    name: name,
-                    description: desc,
-                    price: parseFloat(price),
-                    imageUrl: image,
-                    createdAt: serverTimestamp()
-                });
-
-                alert('Shop item added successfully!');
-                document.getElementById('shopItemModal').classList.add('hidden');
-                
-                // Clear form
-                document.getElementById('shopItemName').value = '';
-                document.getElementById('shopItemDesc').value = '';
-                document.getElementById('shopItemPrice').value = '';
-                document.getElementById('shopItemImage').value = '';
-                
-                await loadShopItems();
-
-            } catch (error) {
-                console.error('Error adding shop item:', error);
-                alert('Error adding shop item');
-            }
-        });
-
-        // Deposit funds
-        document.getElementById('depositFunds')?.addEventListener('click', async () => {
-            const amount = document.getElementById('addFunds').value;
-            
-            if (!amount || amount <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-
-            try {
-                await updateDoc(doc(db, 'communities', communityId), {
-                    prizePool: increment(parseFloat(amount)),
-                    updatedAt: serverTimestamp()
-                });
-
-                alert('Funds deposited successfully!');
-                window.location.reload();
-
-            } catch (error) {
-                console.error('Error depositing funds:', error);
-                alert('Error depositing funds');
-            }
-        });
-
-        // Setup all event listeners
-        function setupEventListeners() {
-            // Toggle create task form
-            const toggleBtn = document.getElementById('toggleCreateTask');
-            if (toggleBtn) {
-                // Remove existing listeners by cloning
-                const newToggleBtn = toggleBtn.cloneNode(true);
-                toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-                
-                newToggleBtn.addEventListener('click', () => {
-                    const form = document.getElementById('createTaskForm');
-                    form.classList.toggle('hidden');
-                    
-                    // Rotate icon
-                    const icon = newToggleBtn.querySelector('.material-symbols-outlined');
-                    if (form.classList.contains('hidden')) {
-                        icon.textContent = 'add_circle';
-                    } else {
-                        icon.textContent = 'remove_circle';
-                    }
-                });
-            }
-
-            // Task filter
-            const taskFilter = document.getElementById('taskFilter');
-            if (taskFilter) {
-                taskFilter.addEventListener('change', () => {
-                    filterTasks(taskFilter.value);
-                });
-            }
-
-            // Manage shop button
-            const manageShopBtn = document.getElementById('manageShopBtn');
-            if (manageShopBtn && !manageShopBtn.classList.contains('hidden')) {
-                manageShopBtn.addEventListener('click', () => {
-                    document.getElementById('adminModal').classList.remove('hidden');
-                    // Switch to shop tab
-                    const shopTab = document.querySelector('[data-tab="shop"]');
-                    if (shopTab) shopTab.click();
-                });
-            }
-
-            console.log('Event listeners initialized');
-        }
-
-        // Filter tasks by status
-        function filterTasks(status) {
-            const taskCards = document.querySelectorAll('#tasksContainer > div');
-            taskCards.forEach(card => {
-                if (status === 'all') {
-                    card.style.display = 'block';
-                } else {
-                    const statusBadge = card.querySelector('.status-badge');
-                    if (statusBadge && statusBadge.dataset.status === status) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
+        // Auto-connect wallet if previously connected
+        if (window.ethereum) {
+            window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+                if (accounts.length > 0) {
+                    window.connectWallet();
                 }
             });
         }

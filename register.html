@@ -878,9 +878,8 @@
 
                 console.log('✅ User registered successfully with skills');
 
-                // Show success message
-                step3.classList.add('hidden');
-                successMessage.classList.remove('hidden');
+                // Redirect to dashboard immediately
+                window.location.href = '/dashboard';
                 
             } catch (error) {
                 console.error('Registration error:', error);

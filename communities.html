@@ -219,7 +219,12 @@
             const container = document.getElementById('communitiesContainer');
             const emptyState = document.getElementById('emptyState');
 
-            if (communities.length === 0) {
+            // Filter out invite-only communities from public view
+            const visibleCommunities = communities.filter(community => 
+                community.accessType !== 'invite'
+            );
+
+            if (visibleCommunities.length === 0) {
                 container.innerHTML = '';
                 emptyState.classList.remove('hidden');
                 return;
@@ -228,7 +233,7 @@
             emptyState.classList.add('hidden');
             container.innerHTML = '';
 
-            communities.forEach(community => {
+            visibleCommunities.forEach(community => {
                 const card = createCommunityCard(community);
                 container.appendChild(card);
             });

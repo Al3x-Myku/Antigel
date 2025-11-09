@@ -513,6 +513,11 @@ func main() {
 	http.HandleFunc("/communities", communitiesPageHandler)
 	http.HandleFunc("/my-communities", myCommunitiesPageHandler)
 	http.HandleFunc("/community/", communityPageHandler) // Dynamic route for individual communities
+	http.HandleFunc("/fix-communities.html", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		http.ServeFile(w, r, "fix-communities.html")
+	})
 
 	// Static assets (CSS, JS, images, etc.)
 	http.HandleFunc("/static/", staticAssetsHandler)

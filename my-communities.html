@@ -219,11 +219,33 @@
         // Load user's joined communities
         async function loadMyCommunities() {
             try {
+                console.log('🚀 Starting to load communities for user:', currentUser.uid);
+                
                 // Get user's joined communities array
                 const userRef = doc(db, 'users', currentUser.uid);
                 const userSnap = await getDoc(userRef);
 
-                if (!userSnap.exists() || !userSnap.data().joinedCommunities || userSnap.data().joinedCommunities.length === 0) {
+                if (!userSnap.exists()) {
+                    console.error('❌ User document does not exist in Firestore!');
+                    document.getElementById('myCommunitiesContainer').innerHTML = '';
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    return;
+                }
+
+                const userData = userSnap.data();
+                console.log('📋 User data loaded:', userData);
+                
+                // Get joined communities - handle if it doesn't exist
+                let joinedCommunityIds = [];
+                if (userData.joinedCommunities && Array.isArray(userData.joinedCommunities)) {
+                    joinedCommunityIds = userData.joinedCommunities;
+                }
+                
+                console.log('� Joined communities:', joinedCommunityIds);
+                console.log('� Number of joined communities:', joinedCommunityIds.length);
+
+                if (joinedCommunityIds.length === 0) {
+                    console.log('⚠️ User has not joined any communities');
                     document.getElementById('myCommunitiesContainer').innerHTML = '';
                     document.getElementById('emptyState').classList.remove('hidden');
                     document.getElementById('totalCommunities').textContent = '0';
@@ -233,11 +255,13 @@
                     return;
                 }
 
-                const joinedCommunityIds = userSnap.data().joinedCommunities;
+                console.log('🔎 Fetching communities from database...');
 
                 // Fetch all communities
                 const communitiesRef = collection(db, 'communities');
                 const communitiesSnapshot = await getDocs(communitiesRef);
+                
+                console.log('Total communities in database:', communitiesSnapshot.size);
 
                 allMyCommunities = [];
                 let adminCount = 0;
@@ -246,9 +270,11 @@
 
                 communitiesSnapshot.forEach((doc) => {
                     const communityData = { id: doc.id, ...doc.data() };
+                    console.log('Checking community:', doc.id, communityData.name);
                     
                     // Only include communities user has joined
                     if (joinedCommunityIds.includes(doc.id)) {
+                        console.log('✅ User is member of:', communityData.name);
                         // Check if user is admin
                         communityData.isAdmin = communityData.admins && communityData.admins.includes(currentUser.uid);
                         if (communityData.isAdmin) adminCount++;
@@ -275,6 +301,7 @@
                 document.getElementById('myCommunitiesContainer').innerHTML = `
                     <div class="col-span-full text-center py-12">
                         <p class="text-text-muted-dark">Error loading your communities</p>
+                        <p class="text-xs text-red-400 mt-2">${error.message}</p>
                     </div>
                 `;
             }

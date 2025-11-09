@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Communities - SideQuests</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button {
+            background: #DDD92A;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #EAE151;
+        }
+        #output {
+            background: #2a2a2a;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix My Communities</h1>
+    <p>This tool will scan all communities and update your joinedCommunities array based on which communities have you as a member.</p>
+    
+    <button id="scanBtn">🔍 Scan & Fix Communities</button>
+    <button id="showDataBtn">📋 Show My Current Data</button>
+    
+    <div id="output"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            getDoc,
+            updateDoc,
+            collection,
+            getDocs,
+            arrayUnion
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
+            authDomain: "taskmatch-openhack2025.firebaseapp.com",
+            projectId: "taskmatch-openhack2025",
+            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
+            messagingSenderId: "1071810532798",
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
+            measurementId: "G-Y0XPDPZFY8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUser = null;
+        const output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const line = `[${timestamp}] ${message}\n`;
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = line;
+            output.appendChild(span);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = user;
+            log('✅ Logged in as: ' + user.email, 'success');
+        });
+
+        document.getElementById('showDataBtn').addEventListener('click', async () => {
+            if (!currentUser) {
+                log('❌ Not logged in', 'error');
+                return;
+            }
+
+            try {
+                output.innerHTML = '';
+                log('📋 Fetching your user data...', 'info');
+                
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    log('✅ User document found', 'success');
+                    log('📊 UID: ' + userData.uid, 'info');
+                    log('📧 Email: ' + userData.email, 'info');
+                    log('👛 Wallet: ' + userData.walletAddress, 'info');
+                    log('👥 Joined Communities: ' + JSON.stringify(userData.joinedCommunities || []), 'info');
+                    log('🎯 Tasks Completed: ' + (userData.tasksCompleted || 0), 'info');
+                } else {
+                    log('❌ User document not found', 'error');
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('scanBtn').addEventListener('click', async () => {
+            if (!currentUser) {
+                log('❌ Not logged in', 'error');
+                return;
+            }
+
+            try {
+                output.innerHTML = '';
+                log('🔍 Starting community scan...', 'info');
+                
+                // Get all communities
+                const communitiesRef = collection(db, 'communities');
+                const communitiesSnap = await getDocs(communitiesRef);
+                
+                log(`📊 Found ${communitiesSnap.size} communities in database`, 'info');
+                
+                const myCommunitiesIds = [];
+                
+                communitiesSnap.forEach((docSnap) => {
+                    const communityData = docSnap.data();
+                    const communityId = docSnap.id;
+                    const members = communityData.members || [];
+                    
+                    log(`\n🏘️  Community: ${communityData.name} (${communityId})`, 'info');
+                    log(`   Members: ${members.length}`, 'info');
+                    
+                    if (members.includes(currentUser.uid)) {
+                        log(`   ✅ You are a MEMBER of this community`, 'success');
+                        myCommunitiesIds.push(communityId);
+                    } else {
+                        log(`   ❌ You are NOT a member`, 'warning');
+                    }
+                });
+                
+                log(`\n📊 Summary: You are a member of ${myCommunitiesIds.length} communities`, myCommunitiesIds.length > 0 ? 'success' : 'warning');
+                
+                if (myCommunitiesIds.length > 0) {
+                    log('\n🔧 Updating your user profile...', 'info');
+                    
+                    const userRef = doc(db, 'users', currentUser.uid);
+                    await updateDoc(userRef, {
+                        joinedCommunities: myCommunitiesIds
+                    });
+                    
+                    log('✅ SUCCESS! Your joinedCommunities array has been updated!', 'success');
+                    log('📋 Updated with: ' + JSON.stringify(myCommunitiesIds), 'success');
+                    log('\n✨ You can now go to My Communities page and see your communities!', 'success');
+                } else {
+                    log('⚠️  You are not a member of any communities yet.', 'warning');
+                    log('💡 Try joining some communities first, then run this scan again.', 'info');
+                }
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

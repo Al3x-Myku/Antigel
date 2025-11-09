@@ -229,6 +229,28 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- AI Recommended Tasks -->
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em] flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary">auto_awesome</span>
+                                            AI Recommended
+                                        </h2>
+                                        <button id="refreshAIRecommendations" class="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">refresh</span>
+                                            Refresh
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-col gap-3 rounded-lg bg-gradient-to-br from-card-dark to-primary/5 p-6 border-2 border-primary/30 min-h-[200px]" id="aiRecommendedTasksContainer">
+                                        <div class="flex items-center justify-center h-full">
+                                            <div class="text-center">
+                                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                                                <p class="text-sm text-text-muted-dark">Analyzing your profile...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </main>
@@ -493,12 +515,11 @@
                 
                 if (tabType === 'in-progress') {
                     // Tasks assigned to the user that are in progress
+                    // Simplified query - just filter by assignedTo first
                     q = query(
                         tasksRef,
                         where('assignedTo', '==', userId),
-                        where('status', '==', 'in-progress'),
-                        orderBy('createdAt', 'desc'),
-                        limit(10)
+                        limit(50)
                     );
                 } else if (tabType === 'posted') {
                     // Tasks created by the user
@@ -511,19 +532,42 @@
                 }
 
                 const querySnapshot = await getDocs(q);
+                
+                // Filter in-progress tasks in memory (temporary workaround)
+                let tasks = [];
+                if (tabType === 'in-progress') {
+                    querySnapshot.forEach((doc) => {
+                        const task = doc.data();
+                        if (task.status === 'in-progress' || !task.status) {
+                            tasks.push({ id: doc.id, data: task });
+                        }
+                    });
+                    // Sort by createdAt
+                    tasks.sort((a, b) => {
+                        const timeA = a.data.createdAt?.seconds || 0;
+                        const timeB = b.data.createdAt?.seconds || 0;
+                        return timeB - timeA;
+                    });
+                    tasks = tasks.slice(0, 10); // Limit to 10
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        tasks.push({ id: doc.id, data: doc.data() });
+                    });
+                }
+                
                 const tasksContainer = document.getElementById('activeTasksContainer');
                 const inProgressCount = document.getElementById('inProgressCount');
                 const postedByMeCount = document.getElementById('postedByMeCount');
                 
                 // Update the appropriate tab count
-                const taskCount = querySnapshot.size;
+                const taskCount = tasks.length;
                 if (tabType === 'in-progress') {
                     inProgressCount.textContent = `In Progress (${taskCount})`;
                 } else {
                     postedByMeCount.textContent = `Posted by Me (${taskCount})`;
                 }
                 
-                if (querySnapshot.empty) {
+                if (tasks.length === 0) {
                     const emptyMessage = tabType === 'in-progress' 
                         ? 'No active quests yet. Start exploring!' 
                         : 'You haven\'t posted any quests yet.';
@@ -538,13 +582,12 @@
                 }
 
                 tasksContainer.innerHTML = '';
-                querySnapshot.forEach((doc) => {
-                    const task = doc.data();
-                    const taskCard = createTaskCard(task, doc.id, tabType);
+                tasks.forEach(({ id, data }) => {
+                    const taskCard = createTaskCard(data, id, tabType);
                     tasksContainer.appendChild(taskCard);
                 });
 
-                console.log('✅ Loaded', querySnapshot.size, tabType, 'tasks');
+                console.log('✅ Loaded', tasks.length, tabType, 'tasks');
             } catch (error) {
                 console.error('❌ Error loading tasks:', error);
                 const tasksContainer = document.getElementById('activeTasksContainer');
