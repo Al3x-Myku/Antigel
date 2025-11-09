@@ -358,6 +358,9 @@
         let isAdmin = false;
         let isMember = false;
 
+        // expose for non-module scripts
+        window.communityData = null;
+
         // Get community ID from URL
         const pathParts = window.location.pathname.split('/');
         communityId = pathParts[pathParts.length - 1];
@@ -392,6 +395,7 @@
                 }
 
                 communityData = { id: communitySnap.id, ...communitySnap.data() };
+window.communityData = communityData;
                 
                 // Track community visit for history
                 if (window.opener?.trackCommunityVisit) {
@@ -1305,6 +1309,8 @@
                     const currentCommunityId = pathParts[pathParts.length - 1];
                     
                     // Prepare task data to send to port 25565
+                    const community = window.communityData;
+                    
                     const taskData = {
                         id: taskStruct.id.toString(),
                         title: taskStruct.title,
@@ -1314,7 +1320,7 @@
                         creator: taskStruct.creator,
                         worker: taskStruct.worker,
                         communityId: currentCommunityId,
-                        communityName: communityData?.name || 'Unknown Community',
+                        communityName: community?.name || 'Unknown Community',
                         transactionHash: tx.hash,
                         blockNumber: receipt.blockNumber,
                         timestamp: new Date().toISOString()
