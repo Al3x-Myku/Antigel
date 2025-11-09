@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Community - SideQuests</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        
+        /* Progress bar animation */
+        .progress-step {
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active {
+            background: #DDD92A;
+            color: #2D2A32;
+        }
+        
+        .progress-step.completed {
+            background: #EAE151;
+            color: #2D2A32;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#DDD92A",
+                        "primary-light": "#EAE151",
+                        "primary-pale": "#EEEFA8",
+                        "secondary": "#DDD92A",
+                        "background-dark": "#2D2A32",
+                        "card-dark": "#3A3740",
+                        "border-dark": "#4A4750",
+                        "text-muted-dark": "#B0ADB5",
+                        "cream": "#FAFDF6",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-dark text-cream">
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <div class="flex flex-1 justify-center py-5">
+                <div class="layout-content-container flex flex-col w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+                    
+                    <!-- Header -->
+                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark px-4 sm:px-6 py-4 mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="size-6 text-primary">
+                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
+                        </div>
+                        <a href="/dashboard" class="text-sm font-medium hover:text-primary transition-colors" style="color: #EEEFA8;">
+                            <span class="material-symbols-outlined">close</span>
+                        </a>
+                    </header>
+
+                    <!-- Progress Steps -->
+                    <div class="flex items-center justify-center gap-2 mb-12 px-4">
+                        <div class="flex items-center gap-2">
+                            <div class="progress-step active flex items-center justify-center size-10 rounded-full font-bold" id="step1Indicator">1</div>
+                            <span class="text-sm font-medium" id="step1Label">Basic Info</span>
+                        </div>
+                        <div class="h-0.5 w-12 bg-border-dark" id="line1"></div>
+                        <div class="flex items-center gap-2">
+                            <div class="progress-step flex items-center justify-center size-10 rounded-full bg-card-dark border-2 border-border-dark font-bold" id="step2Indicator">2</div>
+                            <span class="text-sm font-medium text-text-muted-dark" id="step2Label">Type & Settings</span>
+                        </div>
+                        <div class="h-0.5 w-12 bg-border-dark" id="line2"></div>
+                        <div class="flex items-center gap-2">
+                            <div class="progress-step flex items-center justify-center size-10 rounded-full bg-card-dark border-2 border-border-dark font-bold" id="step3Indicator">3</div>
+                            <span class="text-sm font-medium text-text-muted-dark" id="step3Label">Review</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Basic Info -->
+                    <div id="step1" class="space-y-8">
+                        <div class="text-center mb-8">
+                            <h1 class="text-4xl font-bold mb-2">Create Your Community</h1>
+                            <p class="text-text-muted-dark">Let's start with the basics</p>
+                        </div>
+
+                        <div class="max-w-2xl mx-auto space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-primary-pale">Community Name *</label>
+                                <input type="text" id="communityName" 
+                                       class="w-full bg-card-dark border-2 border-border-dark text-cream rounded-lg px-4 py-3 focus:border-primary focus:outline-none"
+                                       placeholder="e.g., Web3 Builders, Design Collective, Code for Good"
+                                       maxlength="50">
+                                <p class="text-xs text-text-muted-dark mt-1">50 characters max</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-primary-pale">Short Description *</label>
+                                <textarea id="communityDescription" 
+                                          class="w-full bg-card-dark border-2 border-border-dark text-cream rounded-lg px-4 py-3 focus:border-primary focus:outline-none resize-none"
+                                          rows="4"
+                                          placeholder="Describe what your community is about, who should join, and what you aim to achieve..."
+                                          maxlength="500"></textarea>
+                                <p class="text-xs text-text-muted-dark mt-1"><span id="descCharCount">0</span>/500 characters</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-primary-pale">Community Image URL (Optional)</label>
+                                <input type="url" id="communityImage" 
+                                       class="w-full bg-card-dark border-2 border-border-dark text-cream rounded-lg px-4 py-3 focus:border-primary focus:outline-none"
+                                       placeholder="https://example.com/image.jpg">
+                                <p class="text-xs text-text-muted-dark mt-1">Link to an image that represents your community</p>
+                            </div>
+
+                            <button id="nextStep1" 
+                                    class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Type & Settings -->
+                    <div id="step2" class="hidden space-y-8">
+                        <div class="text-center mb-8">
+                            <h1 class="text-4xl font-bold mb-2">Community Type & Configuration</h1>
+                            <p class="text-text-muted-dark">Choose how your community will operate</p>
+                        </div>
+
+                        <div class="max-w-2xl mx-auto space-y-6">
+                            <!-- Community Type -->
+                            <div>
+                                <label class="block text-sm font-bold mb-4 text-primary-pale">Community Type *</label>
+                                <div class="space-y-3">
+                                    <label class="flex items-start gap-4 p-4 bg-card-dark border-2 border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                        <input type="radio" name="communityType" value="prize-pool" class="mt-1">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="material-symbols-outlined text-primary">emoji_events</span>
+                                                <span class="font-bold">Prize Pool Community</span>
+                                            </div>
+                                            <p class="text-sm text-text-muted-dark">Tasks have rewards paid from a community pool. Members earn HLP tokens for completing quests. Great for funded projects and organizations.</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-start gap-4 p-4 bg-card-dark border-2 border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                        <input type="radio" name="communityType" value="mutual-aid" class="mt-1">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="material-symbols-outlined text-primary">volunteer_activism</span>
+                                                <span class="font-bold">Mutual Aid Community</span>
+                                            </div>
+                                            <p class="text-sm text-text-muted-dark">Members help each other without monetary rewards. Focus on collaboration, skill-sharing, and building reputation. Perfect for volunteer groups.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Prize Pool Settings (shown only if prize-pool selected) -->
+                            <div id="prizePoolSettings" class="hidden space-y-4 p-4 bg-background-dark rounded-lg border border-border-dark">
+                                <h3 class="font-bold text-lg">Prize Pool Configuration</h3>
+                                
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-primary-pale">Initial Pool Amount (HLP)</label>
+                                    <input type="number" id="initialPool" 
+                                           class="w-full bg-card-dark border-2 border-border-dark text-cream rounded-lg px-4 py-3 focus:border-primary focus:outline-none"
+                                           placeholder="0"
+                                           min="0"
+                                           step="0.01">
+                                    <p class="text-xs text-text-muted-dark mt-1">You can add funds later</p>
+                                </div>
+
+                                <div>
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" id="allowDonations" class="rounded">
+                                        <span class="text-sm">Allow community members to donate to the prize pool</span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" id="enableShop" class="rounded">
+                                        <span class="text-sm">Enable community shop (members can purchase items with earned HLP)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Access Settings -->
+                            <div>
+                                <label class="block text-sm font-bold mb-4 text-primary-pale">Who can join? *</label>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 p-3 bg-card-dark border-2 border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                        <input type="radio" name="accessType" value="open" checked>
+                                        <span class="font-medium">Open - Anyone can join</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 bg-card-dark border-2 border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                        <input type="radio" name="accessType" value="approval">
+                                        <span class="font-medium">Approval Required - Members must be approved by admin</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 bg-card-dark border-2 border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                        <input type="radio" name="accessType" value="invite">
+                                        <span class="font-medium">Invite Only - Only invited users can join</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4">
+                                <button id="backStep2" 
+                                        class="flex-1 bg-card-dark hover:bg-border-dark text-cream font-bold py-3 px-6 rounded-lg border-2 border-border-dark transition-colors">
+                                    Back
+                                </button>
+                                <button id="nextStep2" 
+                                        class="flex-1 bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Review & Create -->
+                    <div id="step3" class="hidden space-y-8">
+                        <div class="text-center mb-8">
+                            <h1 class="text-4xl font-bold mb-2">Review Your Community</h1>
+                            <p class="text-text-muted-dark">Make sure everything looks good</p>
+                        </div>
+
+                        <div class="max-w-2xl mx-auto space-y-6">
+                            <!-- Preview Card -->
+                            <div class="bg-card-dark border-2 border-border-dark rounded-lg p-6 space-y-4">
+                                <div class="flex items-start gap-4">
+                                    <div id="previewImage" class="size-20 rounded-lg bg-border-dark bg-cover bg-center" style="background-image: url('https://via.placeholder.com/80?text=Community')"></div>
+                                    <div class="flex-1">
+                                        <h2 id="previewName" class="text-2xl font-bold text-cream mb-2">Community Name</h2>
+                                        <p id="previewDescription" class="text-text-muted-dark text-sm">Description will appear here</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-border-dark">
+                                    <div>
+                                        <p class="text-xs text-text-muted-dark mb-1">Type</p>
+                                        <p id="previewType" class="font-bold">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-text-muted-dark mb-1">Access</p>
+                                        <p id="previewAccess" class="font-bold">-</p>
+                                    </div>
+                                    <div id="previewPoolContainer" class="hidden">
+                                        <p class="text-xs text-text-muted-dark mb-1">Initial Pool</p>
+                                        <p id="previewPool" class="font-bold text-primary">0 HLP</p>
+                                    </div>
+                                    <div id="previewShopContainer" class="hidden">
+                                        <p class="text-xs text-text-muted-dark mb-1">Shop</p>
+                                        <p id="previewShop" class="font-bold">Enabled</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4">
+                                <button id="backStep3" 
+                                        class="flex-1 bg-card-dark hover:bg-border-dark text-cream font-bold py-3 px-6 rounded-lg border-2 border-border-dark transition-colors">
+                                    Back
+                                </button>
+                                <button id="createCommunity" 
+                                        class="flex-1 bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                                    <span class="flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined">add_circle</span>
+                                        Create Community
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-card-dark border-2 border-primary rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div class="text-center">
+                <div class="flex items-center justify-center size-20 rounded-full bg-primary/20 mx-auto mb-4">
+                    <span class="material-symbols-outlined text-primary text-5xl">check_circle</span>
+                </div>
+                <h3 class="text-cream text-2xl font-bold mb-2">Community Created!</h3>
+                <p class="text-text-muted-dark mb-6">Your community has been successfully created.</p>
+                <button id="goToCommunity" class="w-full bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                    Go to Community Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            collection,
+            addDoc,
+            doc,
+            updateDoc,
+            arrayUnion,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
+            authDomain: "taskmatch-openhack2025.firebaseapp.com",
+            projectId: "taskmatch-openhack2025",
+            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
+            messagingSenderId: "1071810532798",
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
+            measurementId: "G-Y0XPDPZFY8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentStep = 1;
+        let communityData = {};
+
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = user;
+            console.log('✅ User authenticated:', user.uid);
+        });
+
+        // Character counter
+        const descriptionInput = document.getElementById('communityDescription');
+        const charCount = document.getElementById('descCharCount');
+        descriptionInput.addEventListener('input', () => {
+            charCount.textContent = descriptionInput.value.length;
+        });
+
+        // Show/hide prize pool settings
+        const prizePoolRadio = document.querySelector('input[value="prize-pool"]');
+        const mutualAidRadio = document.querySelector('input[value="mutual-aid"]');
+        const prizePoolSettings = document.getElementById('prizePoolSettings');
+
+        prizePoolRadio.addEventListener('change', () => {
+            if (prizePoolRadio.checked) {
+                prizePoolSettings.classList.remove('hidden');
+            }
+        });
+
+        mutualAidRadio.addEventListener('change', () => {
+            if (mutualAidRadio.checked) {
+                prizePoolSettings.classList.add('hidden');
+            }
+        });
+
+        // Step navigation
+        document.getElementById('nextStep1').addEventListener('click', () => {
+            const name = document.getElementById('communityName').value.trim();
+            const description = document.getElementById('communityDescription').value.trim();
+
+            if (!name) {
+                alert('Please enter a community name');
+                return;
+            }
+            if (!description || description.length < 20) {
+                alert('Please enter a description (at least 20 characters)');
+                return;
+            }
+
+            communityData.name = name;
+            communityData.description = description;
+            communityData.imageUrl = document.getElementById('communityImage').value.trim() || 'https://via.placeholder.com/400?text=Community';
+
+            goToStep(2);
+        });
+
+        document.getElementById('backStep2').addEventListener('click', () => goToStep(1));
+        
+        document.getElementById('nextStep2').addEventListener('click', () => {
+            const communityType = document.querySelector('input[name="communityType"]:checked');
+            const accessType = document.querySelector('input[name="accessType"]:checked');
+
+            if (!communityType) {
+                alert('Please select a community type');
+                return;
+            }
+
+            communityData.type = communityType.value;
+            communityData.accessType = accessType.value;
+
+            if (communityType.value === 'prize-pool') {
+                communityData.prizePool = parseFloat(document.getElementById('initialPool').value) || 0;
+                communityData.allowDonations = document.getElementById('allowDonations').checked;
+                communityData.shopEnabled = document.getElementById('enableShop').checked;
+            } else {
+                communityData.prizePool = null;
+                communityData.allowDonations = false;
+                communityData.shopEnabled = false;
+            }
+
+            updatePreview();
+            goToStep(3);
+        });
+
+        document.getElementById('backStep3').addEventListener('click', () => goToStep(2));
+
+        function goToStep(step) {
+            // Hide all steps
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+
+            // Show current step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+
+            // Update progress indicators
+            updateProgress(step);
+            currentStep = step;
+        }
+
+        function updateProgress(step) {
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.getElementById(`step${i}Indicator`);
+                const label = document.getElementById(`step${i}Label`);
+
+                if (i < step) {
+                    indicator.classList.add('completed');
+                    indicator.classList.remove('active', 'bg-card-dark', 'border-2', 'border-border-dark');
+                    label.classList.remove('text-text-muted-dark');
+                } else if (i === step) {
+                    indicator.classList.add('active');
+                    indicator.classList.remove('completed', 'bg-card-dark', 'border-2', 'border-border-dark');
+                    label.classList.remove('text-text-muted-dark');
+                } else {
+                    indicator.classList.remove('active', 'completed');
+                    indicator.classList.add('bg-card-dark', 'border-2', 'border-border-dark');
+                    label.classList.add('text-text-muted-dark');
+                }
+            }
+        }
+
+        function updatePreview() {
+            document.getElementById('previewName').textContent = communityData.name;
+            document.getElementById('previewDescription').textContent = communityData.description;
+            document.getElementById('previewImage').style.backgroundImage = `url('${communityData.imageUrl}')`;
+            
+            const typeText = communityData.type === 'prize-pool' ? 'Prize Pool' : 'Mutual Aid';
+            document.getElementById('previewType').textContent = typeText;
+            
+            const accessText = communityData.accessType === 'open' ? 'Open' : 
+                              communityData.accessType === 'approval' ? 'Approval Required' : 'Invite Only';
+            document.getElementById('previewAccess').textContent = accessText;
+
+            if (communityData.type === 'prize-pool') {
+                document.getElementById('previewPoolContainer').classList.remove('hidden');
+                document.getElementById('previewPool').textContent = `${communityData.prizePool} HLP`;
+                
+                if (communityData.shopEnabled) {
+                    document.getElementById('previewShopContainer').classList.remove('hidden');
+                }
+            } else {
+                document.getElementById('previewPoolContainer').classList.add('hidden');
+                document.getElementById('previewShopContainer').classList.add('hidden');
+            }
+        }
+
+        // Create community
+        document.getElementById('createCommunity').addEventListener('click', async () => {
+            if (!currentUser) {
+                alert('Please log in to create a community');
+                return;
+            }
+
+            try {
+                const button = document.getElementById('createCommunity');
+                button.disabled = true;
+                button.innerHTML = '<span class="animate-pulse">Creating...</span>';
+
+                // Create community document
+                const communityRef = await addDoc(collection(db, 'communities'), {
+                    name: communityData.name,
+                    description: communityData.description,
+                    imageUrl: communityData.imageUrl,
+                    type: communityData.type,
+                    accessType: communityData.accessType,
+                    prizePool: communityData.prizePool || 0,
+                    allowDonations: communityData.allowDonations || false,
+                    shopEnabled: communityData.shopEnabled || false,
+                    
+                    // Admin & Members
+                    createdBy: currentUser.uid,
+                    admins: [currentUser.uid],
+                    members: [currentUser.uid],
+                    memberCount: 1,
+                    
+                    // Stats
+                    tasksCount: 0,
+                    tasksCompleted: 0,
+                    
+                    // Timestamps
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+
+                // Update user's joined communities
+                const userRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(userRef, {
+                    joinedCommunities: arrayUnion(communityRef.id),
+                    updatedAt: serverTimestamp()
+                });
+
+                console.log('✅ Community created:', communityRef.id);
+
+                // Show success modal
+                document.getElementById('successModal').classList.remove('hidden');
+                
+                // Store community ID for redirect
+                window.createdCommunityId = communityRef.id;
+
+            } catch (error) {
+                console.error('❌ Error creating community:', error);
+                alert('Error creating community: ' + error.message);
+                const button = document.getElementById('createCommunity');
+                button.disabled = false;
+                button.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="material-symbols-outlined">add_circle</span>Create Community</span>';
+            }
+        });
+
+        // Go to community dashboard
+        document.getElementById('goToCommunity').addEventListener('click', () => {
+            window.location.href = `/community/${window.createdCommunityId}`;
+        });
+    </script>
+</body>
+</html>

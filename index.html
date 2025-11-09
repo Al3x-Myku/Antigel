@@ -1,297 +1,1858 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SideQuests</title>
+    <title>SideQuests · Community Task Manager</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script>
         tailwind.config = {
+            darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#DDD92A",
-                        "primary-light": "#EAE151",
-                        "primary-pale": "#EEEFA8",
-                        "secondary": "#DDD92A",
-                        "background-dark": "#2D2A32",
-                        "card-dark": "#3A3740",
-                        "border-dark": "#4A4750",
-                        "text-muted-dark": "#B0ADB5",
-                        "cream": "#FAFDF6",
+                        primary: "#1337ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101322",
                     },
                     fontFamily: {
-                        "display": ["Space Grotesk", "sans-serif"]
+                        display: ["Space Grotesk", "sans-serif"],
                     },
                     borderRadius: {
-                        "DEFAULT": "1rem",
-                        "lg": "1.5rem",
-                        "xl": "2rem",
-                        "full": "9999px"
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px",
                     },
                 },
             },
-        }
+        };
     </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+        body { font-family: 'Space Grotesk', sans-serif; }
+        
+        /* Custom styles for NFT cards */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* NFT image loading states */
+        .nft-image {
+            transition: opacity 0.3s ease;
+        }
+        
+        .nft-image.loading {
+            opacity: 0.5;
+        }
+        
+        /* Achievement card hover effects */
+        .achievement-card {
+            transition: all 0.2s ease;
+        }
+        
+        .achievement-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#101322" />
 </head>
-<body class="font-display bg-background-dark text-cream">
-    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
-        <div class="layout-container flex h-full grow flex-col">
-            <div class="flex flex-1 justify-center py-5">
-                <div class="layout-content-container flex flex-col w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <!-- TopNavBar -->
-                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark px-4 sm:px-6 py-4">
-                        <div class="flex items-center gap-4">
-                            <div class="size-6 text-primary">
-                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
-                                </svg>
-                            </div>
-                            <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
-                        </div>
-                        <div class="flex flex-1 justify-end items-center gap-4">
-                            <button class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-light transition-colors">
-                                <span class="truncate">Create Quest</span>
-                            </button>
-                            <button class="relative flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-card-dark text-cream gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 border border-border-dark hover:border-primary/50 transition-colors">
-                                <span class="material-symbols-outlined text-cream text-xl">notifications</span>
-                                <span class="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                                </span>
-                            </button>
-                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-border-dark" id="userAvatar" style='background-image: url("https://via.placeholder.com/40");'></div>
-                        </div>
-                    </header>
+<body class="bg-background-light dark:bg-background-dark text-[#9da1b9] min-h-screen">
 
-                    <main class="flex flex-col gap-8 mt-8">
-                        <!-- Page Heading -->
-                        <div class="flex flex-wrap justify-between gap-3 px-4 sm:px-6">
-                            <div class="flex min-w-72 flex-col gap-3">
-                                <p class="text-cream text-4xl font-bold leading-tight tracking-[-0.033em]" id="welcomeText">Welcome back!</p>
-                                <p class="text-text-muted-dark text-base font-normal leading-normal">Here's your quest overview for today.</p>
-                            </div>
-                        </div>
-
-                        <!-- Stats -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 sm:px-6">
-                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                <p class="text-text-muted-dark text-base font-medium leading-normal">Total Token Balance</p>
-                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">$1,250.75</p>
-                                <p class="text-primary text-base font-medium leading-normal">+15.2%</p>
-                            </div>
-                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                <p class="text-text-muted-dark text-base font-medium leading-normal">Quests Completed</p>
-                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">18</p>
-                                <p class="text-primary text-base font-medium leading-normal">+2 this week</p>
-                            </div>
-                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                <p class="text-text-muted-dark text-base font-medium leading-normal">XP Earned</p>
-                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">3,400 XP</p>
-                                <p class="text-primary text-base font-medium leading-normal">+150</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 sm:px-6">
-                            <!-- Left Column: Active Quests -->
-                            <div class="lg:col-span-2 flex flex-col gap-4">
-                                <!-- Section Header -->
-                                <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">My Active Quests</h2>
-                                
-                                <!-- Tabs -->
-                                <div>
-                                    <div class="flex border-b border-border-dark gap-8">
-                                        <a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-cream pb-[13px] pt-2 cursor-pointer" href="#">
-                                            <p class="text-cream text-sm font-bold leading-normal tracking-[0.015em]">In Progress (3)</p>
-                                        </a>
-                                        <a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-muted-dark pb-[13px] pt-2 hover:text-cream transition-colors cursor-pointer" href="#">
-                                            <p class="text-sm font-bold leading-normal tracking-[0.015em]">Posted by Me (1)</p>
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <!-- Quest Cards -->
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
-                                        <div class="flex items-center gap-4">
-                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Design");'></div>
-                                            <div>
-                                                <p class="text-cream font-bold">Redesign Community Onboarding Flow</p>
-                                                <p class="text-sm text-text-muted-dark">for EtherMinds DAO</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-right">
-                                                <p class="font-bold text-primary">500 USDC</p>
-                                                <p class="text-sm text-text-muted-dark">+200 XP</p>
-                                            </div>
-                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
-                                        <div class="flex items-center gap-4">
-                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Tweet");'></div>
-                                            <div>
-                                                <p class="text-cream font-bold">Create a Twitter Thread about our new feature</p>
-                                                <p class="text-sm text-text-muted-dark">for QuantumLeap</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-right">
-                                                <p class="font-bold text-primary">50 QLP</p>
-                                                <p class="text-sm text-text-muted-dark">+50 XP</p>
-                                            </div>
-                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
-                                        <div class="flex items-center gap-4">
-                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Code");'></div>
-                                            <div>
-                                                <p class="text-cream font-bold">Review 3 Pull Requests on GitHub</p>
-                                                <p class="text-sm text-text-muted-dark">for CodeCrafters</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-right">
-                                                <p class="font-bold text-primary">100 ETH</p>
-                                                <p class="text-sm text-text-muted-dark">+150 XP</p>
-                                            </div>
-                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right Column: Recent Activity & Trending Communities -->
-                            <div class="lg:col-span-1 flex flex-col gap-8">
-                                <!-- Recent Activity -->
-                                <div class="flex flex-col gap-4">
-                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recent Activity</h2>
-                                    <div class="flex flex-col gap-5 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary/20">
-                                                <span class="material-symbols-outlined text-primary text-lg">military_tech</span>
-                                            </div>
-                                            <div>
-                                                <p class="text-cream text-sm">You completed the quest <span class="font-bold">"Community Moderator"</span>.</p>
-                                                <p class="text-xs text-text-muted-dark">2 hours ago</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary-light/20">
-                                                <span class="material-symbols-outlined text-primary-light text-lg">add_task</span>
-                                            </div>
-                                            <div>
-                                                <p class="text-cream text-sm">Your submission for <span class="font-bold">"Redesign Flow"</span> was approved.</p>
-                                                <p class="text-xs text-text-muted-dark">1 day ago</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary-pale/20">
-                                                <span class="material-symbols-outlined text-primary-pale text-lg">person_add</span>
-                                            </div>
-                                            <div>
-                                                <p class="text-cream text-sm"><span class="font-bold">@zara</span> started following you.</p>
-                                                <p class="text-xs text-text-muted-dark">2 days ago</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Trending Communities -->
-                                <div class="flex flex-col gap-4">
-                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Trending Communities</h2>
-                                    <div class="flex flex-col gap-4">
-                                        <div class="flex items-center justify-between rounded-lg bg-card-dark p-4 border border-border-dark">
-                                            <div class="flex items-center gap-3">
-                                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://via.placeholder.com/40?text=EM");'></div>
-                                                <div>
-                                                    <p class="text-cream font-bold">EtherMinds DAO</p>
-                                                    <p class="text-sm text-text-muted-dark">1,204 Questers</p>
-                                                </div>
-                                            </div>
-                                            <button class="flex items-center justify-center rounded-full bg-primary h-8 px-3 text-background-dark text-xs font-bold hover:bg-primary-light transition-colors">Join</button>
-                                        </div>
-                                        <div class="flex items-center justify-between rounded-lg bg-card-dark p-4 border border-border-dark">
-                                            <div class="flex items-center gap-3">
-                                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://via.placeholder.com/40?text=QL");'></div>
-                                                <div>
-                                                    <p class="text-cream font-bold">QuantumLeap</p>
-                                                    <p class="text-sm text-text-muted-dark">987 Questers</p>
-                                                </div>
-                                            </div>
-                                            <button class="flex items-center justify-center rounded-full bg-primary h-8 px-3 text-background-dark text-xs font-bold hover:bg-primary-light transition-colors">Join</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </main>
-                </div>
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center px-4">
+        <div class="w-full max-w-xl bg-white/5 border border-white/10 rounded-lg p-8 text-center backdrop-blur-sm">
+            <div class="mx-auto mb-6 size-12 text-primary">
+                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                </svg>
+            </div>
+            <h1 class="text-white text-3xl font-black mb-2 tracking-tight">SideQuests</h1>
+            <p class="text-sm mb-6">Connect your wallet on Sepolia to create and complete quests.</p>
+            <button id="loginButton" class="flex w-full items-center justify-center gap-3 h-12 rounded-full bg-primary text-white font-bold">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                Connect Wallet
+            </button>
+            <div class="mt-6 p-4 bg-white/5 border border-white/10 rounded-lg text-left text-sm">
+                <p class="mb-1">Network: <span class="text-white font-semibold">Sepolia Testnet</span></p>
+                <a class="text-primary hover:underline" href="https://sepoliafaucet.com/" target="_blank" rel="noreferrer">Get Sepolia ETH</a>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    <div id="mainApp" class="hidden flex min-h-screen flex-col">
+        <header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-white/10 px-4 sm:px-8 md:px-10 py-3 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+            <div class="flex items-center gap-4 text-white">
+                <div class="size-6 text-primary">
+                    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
+            </div>
+            <div class="hidden lg:flex flex-1 justify-center gap-8">
+                <div class="flex items-center gap-9">
+                    <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Dashboard</a>
+                    <a class="text-white text-sm font-medium leading-normal" href="#">Quests</a>
+                    <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Communities</a>
+                    <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Achievements</a>
+                    <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Rewards</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="hidden sm:flex items-center gap-2 mr-2">
+                    <span class="hidden md:inline text-xs text-white/70">Addr:</span>
+                    <span id="userAddress" class="text-white/90 text-xs font-mono truncate max-w-[180px]"></span>
+                    <span class="mx-1 text-white/20">•</span>
+                    <span id="userBalance" class="text-white/90 text-xs font-mono"></span>
+                </div>
+                <!-- Token Management Buttons -->
+                <button id="addHLPToken" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 text-xs font-medium leading-normal tracking-[0.015em]" title="Add HLP Token to MetaMask">
+                    <span class="material-symbols-outlined text-sm mr-1">add_card</span>
+                    <span class="truncate">HLP</span>
+                </button>
+                <button id="addNFTToken" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 text-xs font-medium leading-normal tracking-[0.015em]" title="Add Achievement NFTs to MetaMask">
+                    <span class="material-symbols-outlined text-sm mr-1">emoji_events</span>
+                    <span class="truncate">NFT</span>
+                </button>
+                <button id="goToLanding" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-200 text-sm font-bold leading-normal tracking-[0.015em]" title="Go to Landing Page">
+                    <span class="material-symbols-outlined text-sm mr-1">home</span>
+                    <span class="truncate">Home</span>
+                </button>
+                <button id="disconnectWallet" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 hover:bg-white/20 text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                    <span class="truncate">Disconnect</span>
+                </button>
+                <!-- Mobile-friendly dropdown for token management -->
+                <div class="relative sm:hidden">
+                    <button id="mobileMenuBtn" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-white/10 hover:bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+                        <span class="material-symbols-outlined text-xl">more_vert</span>
+                    </button>
+                    <div id="mobileDropdown" class="absolute right-0 top-12 hidden bg-[#1c1d27] border border-gray-600 rounded-lg shadow-lg min-w-[200px] z-50">
+                        <button id="mobileAddHLP" class="w-full flex items-center px-4 py-3 text-blue-200 hover:bg-blue-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">add_card</span>
+                            Add HLP Token
+                        </button>
+                        <button id="mobileAddNFT" class="w-full flex items-center px-4 py-3 text-purple-200 hover:bg-purple-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">emoji_events</span>
+                            Add Achievement NFTs
+                        </button>
+                        <div class="border-t border-gray-600"></div>
+                        <button id="mobileGoToLanding" class="w-full flex items-center px-4 py-3 text-yellow-200 hover:bg-yellow-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">home</span>
+                            Go to Landing Page
+                        </button>
+                        <button id="mobileDisconnect" class="w-full flex items-center px-4 py-3 text-red-200 hover:bg-red-600/20 text-sm transition-colors">
+                            <span class="material-symbols-outlined text-sm mr-2">logout</span>
+                            Disconnect Wallet
+                        </button>
+                    </div>
+                </div>
+                <!-- Desktop notification button -->
+                <button class="hidden sm:flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-white/10 hover:bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+                    <span class="material-symbols-outlined text-xl">notifications</span>
+                </button>
+                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAM3aqSFMwPhnnBGZw35sWWb_mzWAExLvlRpTKGDk4WoqIvRAI_a5O7Z121wCafikJL8-1R-VB0_H-fQupjEcz6NoIyc6faF5WO1StgIyQNl6tILG9ZRodpx_X9A1aFLCCAP7amTRVKRPgjZDc_NdVDzXsOhSCsG8nEy_yhNuaNQ6qnMTve7PPiiqnGFgq1mkjqRjQ22R-y8XB7UShaIwhbuj-286aPfMOxzMPj6valE0QfO70PtIYoPfN56m59MRCK1XxyC3-3");'></div>
+            </div>
+        </header>
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUB3bsWDfitlfweFyLQnqlL1foTg3IiqU",
-            authDomain: "taskmatch-openhack2025.firebaseapp.com",
-            projectId: "taskmatch-openhack2025",
-            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
-            messagingSenderId: "1085072427435",
-            appId: "1:1085072427435:web:e31a9bf2ecc3a7a3a44dc3",
-            measurementId: "G-V4F74J4B2M"
-        };
+        <main class="flex-1 px-4 sm:px-8 md:px-10 py-8 lg:py-12">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <a class="hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Web3 Community</a>
+                    <span class="text-sm font-medium leading-normal">/</span>
+                    <a class="hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Quests</a>
+                    <span class="text-sm font-medium leading-normal">/</span>
+                    <span class="text-white text-sm font-medium leading-normal">Create Quest</span>
+                </div>
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-8">
+                    <p class="text-white text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">Create a New Quest</p>
+                </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
+                    <div class="lg:col-span-2 flex flex-col gap-8">
+                        <div class="bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
+                            <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-6">Create New Task</h3>
+                            <form id="createTaskForm" class="flex flex-col gap-6">
+                                <label class="flex flex-col">
+                                    <p class="text-white text-base font-medium leading-normal pb-2">Task Title</p>
+                                    <input id="taskTitle" type="text" placeholder="Enter task title..." class="form-input h-12 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4" />
+                                    <span class="text-xs text-white/50 pt-2">A short, descriptive title for your task.</span>
+                                </label>
 
-        // Check authentication state
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                console.log('❌ No user authenticated, redirecting to login');
-                window.location.href = '/login';
+                                <label class="flex flex-col">
+                                    <p class="text-white text-base font-medium leading-normal pb-2">Task Description</p>
+                                    <textarea id="taskDescription" placeholder="Describe the task..." rows="4" class="form-input bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-4 py-3"></textarea>
+                                    <span class="text-xs text-white/50 pt-2">Provide a clear description of what needs to be done.</span>
+                                </label>
+
+                                <label class="flex flex-col">
+                                    <p class="text-white text-base font-medium leading-normal pb-2">Reward Amount</p>
+                                    <div class="relative">
+                                        <input id="rewardAmount" type="number" value="100" placeholder="100" class="form-input h-12 w-full bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded pl-4 pr-24" />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                            <span class="text-white font-bold">HLP Tokens</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-white/50 pt-2">Amount of HLP tokens to reward upon completion (in wei, e.g., 100 = 100 tokens).</span>
+                                </label>
+
+                                <div id="createTaskResult" class="hidden mt-1 p-3 rounded bg-white/5 border border-white/10 text-sm"></div>
+
+                                <div>
+                                    <button type="submit" class="flex w-full items-center justify-center gap-2 h-12 rounded-full bg-primary hover:brightness-110 text-white font-bold">
+                                        <span class="material-symbols-outlined">add_task</span>
+                                        Create Task
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
+                            <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-6">Task Actions</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Apply for Task</label>
+                                    <div class="flex gap-2">
+                                        <input id="applyTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
+                                        <button id="applyTaskBtn" class="h-12 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold whitespace-nowrap">Apply</button>
+                                    </div>
+                                    <span class="text-xs text-white/50">Apply to work on a task</span>
+                                    <div id="applyResult" class="hidden text-xs"></div>
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Assign Task</label>
+                                    <div class="flex gap-2">
+                                        <input id="assignTaskId" type="number" placeholder="Task ID" class="form-input h-10 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3 text-sm" />
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input id="assignWorkerAddress" type="text" placeholder="Worker Address (0x...)" class="form-input h-10 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3 text-sm" />
+                                        <button id="assignTaskBtn" class="h-10 px-4 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm whitespace-nowrap">Assign</button>
+                                    </div>
+                                    <span class="text-xs text-white/50">Creator assigns task to applicant</span>
+                                    <div id="assignResult" class="hidden text-xs"></div>
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Complete & Reward</label>
+                                    <div class="flex gap-2">
+                                        <input id="completeTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
+                                        <button id="completeTaskBtn" class="h-12 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white font-bold whitespace-nowrap">Complete</button>
+                                    </div>
+                                    <span class="text-xs text-white/50">Creator completes task & mints rewards</span>
+                                    <div id="completeResult" class="hidden text-xs"></div>
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Cancel Task</label>
+                                    <div class="flex gap-2">
+                                        <input id="cancelTaskId" type="number" placeholder="Task ID" class="form-input h-12 flex-1 bg-[#1c1d27] border-[#3b3f54] focus:border-primary focus:ring-primary/50 text-white rounded px-3" />
+                                        <button id="cancelTaskBtn" class="h-12 px-4 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold whitespace-nowrap">Cancel</button>
+                                    </div>
+                                    <span class="text-xs text-white/50">Creator cancels unassigned task</span>
+                                    <div id="cancelResult" class="hidden text-xs"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1 lg:sticky top-28">
+                        <div class="bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Task List</h3>
+                                <button id="refreshTasks" class="h-9 px-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium">Refresh</button>
+                            </div>
+                            <div id="taskList" class="space-y-3 max-h-[28rem] overflow-y-auto">
+                                <p class="text-center py-8">Connect wallet to view tasks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-background-light dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg p-6">
+                    <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-4">My Rewards & Achievements</h3>
+                    
+                    <!-- Token Rewards -->
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-white text-md font-semibold">💰 Tokens</h4>
+                            
+                            <!-- MetaMask Helper Info -->
+                            <div id="metamaskTokenHelper" class="hidden bg-blue-600/10 border border-blue-600/20 rounded-lg px-3 py-2 text-xs text-blue-200">
+                                <span class="material-symbols-outlined text-sm mr-1">info</span>
+                                Add tokens to MetaMask using the 
+                                <span class="inline-flex items-center mx-1 px-1 bg-blue-600/20 rounded text-xs">
+                                    <span class="material-symbols-outlined text-xs mr-0.5">add_card</span>HLP
+                                </span>
+                                and
+                                <span class="inline-flex items-center mx-1 px-1 bg-purple-600/20 rounded text-xs">
+                                    <span class="material-symbols-outlined text-xs mr-0.5">emoji_events</span>NFT
+                                </span>
+                                buttons above
+                            </div>
+                        </div>
+                        
+                        <div id="rewardsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <p class="text-center py-8 col-span-3">Connect wallet to view rewards</p>
+                        </div>
+                    </div>
+
+                    <!-- User Stats -->
+                    <div class="mb-8">
+                        <h4 class="text-white text-md font-semibold mb-4">📊 Statistics</h4>
+                        <div id="userStats" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <p class="text-center py-8 col-span-5">Connect wallet to view stats</p>
+                        </div>
+                    </div>
+
+                    <!-- Achievement Badges -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-white text-md font-semibold">🏆 Achievement Badges</h4>
+                            <button id="refreshAchievements" class="h-9 px-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium">
+                                <span class="material-symbols-outlined text-sm mr-1">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="achievementsList" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <p class="text-center py-8 col-span-4">Connect wallet to view achievements</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="sticky bottom-0 z-40 mt-auto bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-t border-white/10 py-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-8 md:px-10 flex items-center justify-end gap-4">
+                <button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-white/10 hover:bg-white/20 text-white text-base font-bold">
+                    <span class="truncate">Save as Draft</span>
+                </button>
+                <button type="submit" form="createTaskForm" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold gap-2">
+                    <span class="truncate">Publish Quest</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Contract addresses and ABIs from deployment.json
+        const REWARD_CONTRACT_ADDRESS = "0xFD1b4a56B7Dc1321a674265F68400fE09E7101A5";
+        const TASK_CONTRACT_ADDRESS = "0x77bD0b58d5786587614a00688Ddc9db7A592449E";
+        const ACHIEVEMENT_CONTRACT_ADDRESS = "0x101546970B89156d33EC9cDC576DAbfc1BE3C13D";
+        
+        const TASK_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"},{"internalType":"address","name":"_achievementBadge","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"applicant","type":"address"}],"name":"TaskApplied","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"}],"name":"TaskAssigned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"}],"name":"TaskCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"worker","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"TaskCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"string","name":"title","type":"string"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"TaskCreated","type":"event"},{"inputs":[],"name":"achievementBadge","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"applyForTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"},{"internalType":"address","name":"_worker","type":"address"}],"name":"assignTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"cancelTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"completeTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_title","type":"string"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"uint256","name":"_reward","type":"uint256"}],"name":"createTask","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTask","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type":"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"internalType":"struct TaskContract.TaskStruct","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_taskId","type":"uint256"}],"name":"getTaskApplicants","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTasksCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserTasks","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"hasApplied","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"rewardToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_achievementBadge","type":"address"}],"name":"setAchievementBadge","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_rewardToken","type":"address"}],"name":"setRewardToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint2Message"}],"name":"taskApplicants","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"taskCounter","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tasks","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"reward","type"
+:"uint256"},{"internalType":"bool","name":"completed","type":"bool"},{"internalType":"address","name":"worker","type":"address"},{"internalType":"address","name":"creator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"userTasks","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+        
+        const REWARD_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINTER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"grantMinterRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"revokeMinterRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+        const ACHIEVEMENT_CONTRACT_ABI = [{"inputs":[{"internalType":"address","name":"admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"}],"name":"BadgeMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"_fromTokenId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"_toTokenId","type":"uint256"}],"name":"BatchMetadataUpdate","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"MetadataUpdate","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"}],"name":"MilestoneReached","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINTER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"badges","outputs":[{"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"imageURI","type":"string"},{"internalType":"uint256","name":"mintedAt","type":"uint256"},{"internalType":"uint256","name":"rarity","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"currentStreak","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"}],"name":"getAchievementDescription","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"}],"name":"getAchievementRarity","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"}],"name":"getAchievementTitle","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"}],"name":"getDefaultTokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserBadges","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserStats","outputs":[{"internalType":"uint256","name":"_tasksCompleted","type":"uint256"},{"internalType":"uint256","name":"_tokensEarned","type":"uint256"},{"internalType":"uint256","name":"_tasksCreated","type":"uint256"},{"internalType":"uint256","name":"_currentStreak","type":"uint256"},{"internalType":"uint256","name":"_maxStreak","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"grantMinterRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"enum AchievementBadge.AchievementType","name":"","type":"uint8"}],"name":"hasAchievement","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastTaskCompletionDate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"maxStreak","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"enum AchievementBadge.AchievementType","name":"achievementType","type":"uint8"},{"internalType":"string","name":"tokenURI","type":"string"}],"name":"mintBadge","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"revokeMinterRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"tasksCompleted","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"tasksCreated","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"tokensEarned","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"tokensReward","type":"uint256"}],"name":"updateTaskCompletion","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"updateTaskCreation","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+        let provider;
+        let signer;
+        let userAddress;
+        let taskContract;
+        let rewardContract;
+        let achievementContract;
+
+    const statusLabels = ['Created', 'InProgress', 'Completed', 'Verified'];
+    const statusColors = ['bg-blue-600', 'bg-yellow-500', 'bg-purple-600', 'bg-green-600'];
+
+    // Achievement type mapping (matches the contract enum)
+    const achievementTypes = {
+        0: { 
+            name: 'First Quest', 
+            icon: '🎯', 
+            description: 'Complete your first task',
+            image: 'https://img.icons8.com/fluency/96/000000/bullseye.png'
+        },
+        1: { 
+            name: 'Getting Started', 
+            icon: '⭐', 
+            description: 'Complete 5 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/star.png'
+        },
+        2: { 
+            name: 'Task Hunter', 
+            icon: '🔥', 
+            description: 'Complete 10 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/fire-element.png'
+        },
+        3: { 
+            name: 'Dedicated Worker', 
+            icon: '💪', 
+            description: 'Complete 25 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/muscle.png'
+        },
+        4: { 
+            name: 'Veteran Quester', 
+            icon: '🏅', 
+            description: 'Complete 50 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/medal.png'
+        },
+        5: { 
+            name: 'Quest Master', 
+            icon: '👑', 
+            description: 'Complete 100 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/crown.png'
+        },
+        6: { 
+            name: 'Early Adopter', 
+            icon: '🚀', 
+            description: 'One of first 100 users',
+            image: 'https://img.icons8.com/fluency/96/000000/rocket.png'
+        },
+        7: { 
+            name: 'Token Collector', 
+            icon: '💰', 
+            description: 'Earn 100 HLP tokens',
+            image: 'https://img.icons8.com/fluency/96/000000/money-bag.png'
+        },
+        8: { 
+            name: 'Wealth Builder', 
+            icon: '💎', 
+            description: 'Earn 500 HLP tokens',
+            image: 'https://img.icons8.com/fluency/96/000000/diamond.png'
+        },
+        9: { 
+            name: 'Token Whale', 
+            icon: '🐋', 
+            description: 'Earn 1000 HLP tokens',
+            image: 'https://img.icons8.com/fluency/96/000000/whale.png'
+        },
+        10: { 
+            name: 'Community Builder', 
+            icon: '🏗️', 
+            description: 'Create 10 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/construction.png'
+        },
+        11: { 
+            name: 'Mentor', 
+            icon: '👨‍🏫', 
+            description: 'Have 10 tasks completed by others',
+            image: 'https://img.icons8.com/fluency/96/000000/teacher.png'
+        },
+        12: { 
+            name: 'Week Warrior', 
+            icon: '⚡', 
+            description: 'Complete tasks 7 days in a row',
+            image: 'https://img.icons8.com/fluency/96/000000/lightning-bolt.png'
+        },
+        13: { 
+            name: 'Monthly Champion', 
+            icon: '🔥', 
+            description: 'Complete tasks 30 days in a row',
+            image: 'https://img.icons8.com/fluency/96/000000/trophy.png'
+        },
+        14: { 
+            name: 'Top Performer', 
+            icon: '🥇', 
+            description: 'Top 10 performer monthly',
+            image: 'https://img.icons8.com/fluency/96/000000/first-place.png'
+        },
+        15: { 
+            name: 'Helpful Reviewer', 
+            icon: '🤝', 
+            description: 'Review/verify 50 tasks',
+            image: 'https://img.icons8.com/fluency/96/000000/handshake.png'
+        }
+    };
+
+        // Function to detect MetaMask
+        async function detectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                return window.ethereum;
+            }
+            
+            // Wait for MetaMask to load (up to 3 seconds)
+            for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (typeof window.ethereum !== 'undefined') {
+                    return window.ethereum;
+                }
+            }
+            
+            return null;
+        }
+
+        // Function to suggest adding HLP Token to MetaMask
+        async function suggestAddHLPToken() {
+            if (!window.ethereum || !window.ethereum.isMetaMask) {
+                console.log('MetaMask not available for token suggestion');
+                return false;
+            }
+
+            try {
+                // First check if token is already added by checking user balance
+                const tokenContract = new ethers.Contract(REWARD_CONTRACT_ADDRESS, REWARD_CONTRACT_ABI, provider);
+                const tokenName = await tokenContract.name();
+                const tokenSymbol = await tokenContract.symbol();
+                const tokenDecimals = await tokenContract.decimals();
+
+                const wasAdded = await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20',
+                        options: {
+                            address: REWARD_CONTRACT_ADDRESS,
+                            symbol: tokenSymbol,
+                            decimals: tokenDecimals,
+                            image: 'https://raw.githubusercontent.com/Al3x-Myku/Antigel/main/assets/hlp-token-logo.png' // You can update this to your actual token logo URL
+                        },
+                    },
+                });
+
+                if (wasAdded) {
+                    console.log(`✅ ${tokenSymbol} token added to MetaMask successfully!`);
+                    
+                    // Show success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                    notification.innerHTML = `
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                        <span>${tokenSymbol} token added to MetaMask!</span>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 4000);
+                    
+                    return true;
+                } else {
+                    console.log(`❌ User declined to add ${tokenSymbol} token to MetaMask`);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error suggesting HLP token:', error);
+                return false;
+            }
+        }
+
+        // Function to suggest adding Achievement NFT to MetaMask
+        async function suggestAddAchievementNFT() {
+            if (!window.ethereum || !window.ethereum.isMetaMask) {
+                console.log('MetaMask not available for NFT suggestion');
+                return false;
+            }
+
+            try {
+                // Try to get user's first badge token ID if available
+                let tokenId = '1'; // Default fallback
+                
+                if (achievementContract && userAddress) {
+                    try {
+                        const badgeIds = await achievementContract.getUserBadges(userAddress);
+                        if (badgeIds.length > 0) {
+                            tokenId = badgeIds[0].toString();
+                            console.log(`Using user's badge token ID: ${tokenId}`);
+                        }
+                    } catch (error) {
+                        console.warn('Could not get user badges, using default token ID:', error);
+                    }
+                }
+
+                const wasAdded = await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC721',
+                        options: {
+                            address: ACHIEVEMENT_CONTRACT_ADDRESS,
+                            tokenId: tokenId,
+                        },
+                    },
+                });
+
+                if (wasAdded) {
+                    console.log('✅ Achievement NFT collection added to MetaMask successfully!');
+                    
+                    // Show success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 left-4 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                    notification.innerHTML = `
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        <span>Achievement NFTs added to MetaMask!</span>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 4000);
+                    
+                    return true;
+                } else {
+                    console.log('❌ User declined to add Achievement NFT to MetaMask');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error suggesting Achievement NFT:', error);
+                return false;
+            }
+        }
+
+        // Function to suggest adding all tokens to MetaMask
+        async function suggestAddTokensToMetaMask() {
+            if (!window.ethereum || !window.ethereum.isMetaMask) {
+                console.log('MetaMask not available for token suggestions');
                 return;
             }
 
-            console.log('✅ User authenticated:', user.uid);
+            // Wait a moment after connection to ensure everything is ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            try {
+                // Ask user if they want to add tokens
+                const addTokens = confirm(
+                    '🪙 Add Tokens to MetaMask?\n\n' +
+                    'Would you like to add HLP reward tokens and Achievement NFTs to your MetaMask wallet?\n\n' +
+                    'This will make it easier to view your rewards and achievements directly in MetaMask.\n\n' +
+                    'Click OK to add tokens, or Cancel to skip.'
+                );
+
+                if (!addTokens) {
+                    console.log('User chose not to add tokens to MetaMask');
+                    return;
+                }
+
+                // Add HLP Token
+                console.log('Suggesting HLP Token...');
+                await suggestAddHLPToken();
+
+                // Wait a moment between suggestions
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Add Achievement NFT Collection
+                console.log('Suggesting Achievement NFTs...');
+                await suggestAddAchievementNFT();
+
+            } catch (error) {
+                console.error('Error in token suggestion flow:', error);
+            }
+        }
+
+        // Function to manually trigger token addition (can be called from UI buttons)
+        async function addTokenToMetaMask(tokenType = 'HLP') {
+            if (tokenType === 'HLP') {
+                return await suggestAddHLPToken();
+            } else if (tokenType === 'NFT') {
+                return await suggestAddAchievementNFT();
+            }
+            return false;
+        }
+
+        // Function to generate detailed NFT metadata from contract data
+        function generateNFTMetadata(badge, tokenId, achievementInfo) {
+            const metadata = {
+                name: badge.title || achievementInfo.name,
+                description: badge.description || achievementInfo.description,
+                image: badge.imageURI || achievementInfo.image,
+                tokenId: tokenId.toString(),
+                achievementType: badge.achievementType.toString(),
+                rarity: badge.rarity.toString(),
+                mintedAt: new Date(badge.mintedAt * 1000).toISOString(),
+                attributes: [
+                    {
+                        trait_type: "Achievement Type",
+                        value: achievementInfo.name
+                    },
+                    {
+                        trait_type: "Rarity",
+                        value: badge.rarity === 4 ? 'Legendary' : badge.rarity === 3 ? 'Epic' : badge.rarity === 2 ? 'Rare' : 'Common'
+                    },
+                    {
+                        trait_type: "Minted Year",
+                        value: new Date(badge.mintedAt * 1000).getFullYear().toString()
+                    },
+                    {
+                        trait_type: "Achievement ID",
+                        value: badge.achievementType.toString()
+                    }
+                ],
+                external_url: `https://sidequests.com/achievements/${tokenId}`,
+                animation_url: null,
+                background_color: badge.rarity === 4 ? "FFD700" : badge.rarity === 3 ? "9932CC" : badge.rarity === 2 ? "4169E1" : "808080"
+            };
             
-            // Update welcome text with user's name
-            const welcomeText = document.getElementById('welcomeText');
-            const displayName = user.displayName || user.email?.split('@')[0] || 'there';
-            welcomeText.textContent = `Welcome back, ${displayName}!`;
+            return metadata;
+        }
+
+        // Function to show detailed NFT modal
+        function showNFTDetailModal(badge, tokenId, title, description, imageUrl, achievementInfo, mintDate, rarityNames) {
+            const rarityName = rarityNames[badge.rarity] || 'Common';
+            const rarityColor = badge.rarity === 4 ? 'yellow' : badge.rarity === 3 ? 'purple' : badge.rarity === 2 ? 'blue' : 'gray';
+            const rarityEmoji = badge.rarity === 4 ? '👑' : badge.rarity === 3 ? '💜' : badge.rarity === 2 ? '💙' : '🔸';
             
-            // Update avatar if available
-            const userAvatar = document.getElementById('userAvatar');
-            if (user.photoURL) {
-                userAvatar.style.backgroundImage = `url("${user.photoURL}")`;
+            // Remove existing modal if any
+            const existingModal = document.getElementById('nftDetailModal');
+            if (existingModal) {
+                existingModal.remove();
             }
             
-            console.log('👤 Dashboard loaded!');
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'nftDetailModal';
+            modal.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4';
+            
+            const imageElement = imageUrl ? 
+                `<img src="${imageUrl}" alt="${title}" class="w-48 h-48 mx-auto rounded-2xl object-cover border-4 border-${rarityColor}-400 shadow-2xl" />` :
+                `<div class="w-48 h-48 mx-auto rounded-2xl bg-gradient-to-br from-${rarityColor}-600 to-${rarityColor}-700 flex items-center justify-center text-6xl border-4 border-${rarityColor}-400 shadow-2xl">${achievementInfo.icon}</div>`;
+            
+            modal.innerHTML = `
+                <div class="bg-gray-900 border-2 border-${rarityColor}-400/50 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto relative">
+                    <button onclick="document.getElementById('nftDetailModal').remove()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button>
+                    
+                    <div class="text-center mb-6">
+                        ${imageElement}
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="text-center">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-${rarityColor}-400/20 border border-${rarityColor}-400/50 rounded-full text-${rarityColor}-300 text-sm font-semibold mb-2">
+                                ${rarityEmoji} ${rarityName}
+                            </div>
+                            <h2 class="text-2xl font-bold text-white mb-2">${title}</h2>
+                            <p class="text-gray-300 leading-relaxed">${description}</p>
+                        </div>
+                        
+                        <div class="border-t border-gray-700 pt-4 space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Token ID:</span>
+                                <span class="text-white font-mono">#${tokenId}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Achievement Type:</span>
+                                <span class="text-white">${badge.achievementType}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Earned:</span>
+                                <span class="text-white">${mintDate}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Contract Address:</span>
+                                <span class="text-white font-mono text-xs">${ACHIEVEMENT_CONTRACT_ADDRESS.slice(0,10)}...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-700 pt-4">
+                            <h3 class="text-white font-semibold mb-2">Metadata</h3>
+                            <div class="bg-gray-800/50 rounded-lg p-3 text-xs font-mono text-gray-300">
+                                <pre>${JSON.stringify(generateNFTMetadata(badge, tokenId, achievementInfo), null, 2)}</pre>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2 pt-4">
+                            <button onclick="navigator.clipboard.writeText('${ACHIEVEMENT_CONTRACT_ADDRESS}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                                Copy Contract
+                            </button>
+                            <button onclick="navigator.clipboard.writeText('#${tokenId}')" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                                Copy Token ID
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // Login with MetaMask
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const ethereum = await detectMetaMask();
+            
+            if (!ethereum) {
+                const installMetaMask = confirm(
+                    '🦊 MetaMask Not Found!\n\n' +
+                    'MetaMask extension is required to use this application.\n\n' +
+                    'If you have MetaMask installed, please refresh the page.\n\n' +
+                    'Click OK to visit MetaMask website for installation instructions.'
+                );
+                
+                if (installMetaMask) {
+                    window.open('https://metamask.io/download/', '_blank');
+                }
+                return;
+            }
+
+            // Check if MetaMask is the provider we want to use
+            if (ethereum.isMetaMask) {
+                window.ethereum = ethereum;
+            }
+
+            const loginBtn = document.getElementById('loginButton');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="material-symbols-outlined animate-pulse">progress_activity</span> Connecting...';
+
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                
+                // Check network - Sepolia chainId is 11155111
+                const network = await provider.getNetwork();
+                if (network.chainId !== 11155111) {
+                    // Try to switch network automatically first
+                    try {
+                        loginBtn.innerHTML = '<span class="material-symbols-outlined animate-pulse">swap_horiz</span> Switching Network...';
+                        
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }], // 11155111 in hex
+                        });
+                        
+                        // Wait a moment for network switch to complete
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Refresh provider and continue
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                        signer = provider.getSigner();
+                        
+                    } catch (switchError) {
+                        console.error('Network switch error:', switchError);
+                        
+                        let errorMessage = '⚠️ Wrong Network!\n\nPlease manually switch to Sepolia Testnet in MetaMask.';
+                        
+                        if (switchError.code === 4902) {
+                            // Network not added to MetaMask, try to add it
+                            try {
+                                await window.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: '0xaa36a7',
+                                        chainName: 'Sepolia Testnet',
+                                        rpcUrls: ['https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'],
+                                        nativeCurrency: {
+                                            name: 'Sepolia ETH',
+                                            symbol: 'SEP',
+                                            decimals: 18
+                                        },
+                                        blockExplorerUrls: ['https://sepolia.etherscan.io/']
+                                    }]
+                                });
+                                
+                                // Try switching again after adding
+                                await window.ethereum.request({
+                                    method: 'wallet_switchEthereumChain',
+                                    params: [{ chainId: '0xaa36a7' }]
+                                });
+                                
+                                // Refresh and continue
+                                provider = new ethers.providers.Web3Provider(window.ethereum);
+                                signer = provider.getSigner();
+                                
+                            } catch (addError) {
+                                console.error('Add network error:', addError);
+                                errorMessage = '⚠️ Please add and switch to Sepolia Testnet manually in MetaMask settings.';
+                            }
+                        }
+                        
+                        if (switchError.code === 4001 || switchError.code === -32002) {
+                            errorMessage = '⚠️ Network switch cancelled.\n\nPlease switch to Sepolia Testnet manually.';
+                        }
+                        
+                        alert(errorMessage);
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<span class="material-symbols-outlined">account_balance_wallet</span> Connect Wallet';
+                        return;
+                    }
+                }
+                
+                taskContract = new ethers.Contract(TASK_CONTRACT_ADDRESS, TASK_CONTRACT_ABI, signer);
+                rewardContract = new ethers.Contract(REWARD_CONTRACT_ADDRESS, REWARD_CONTRACT_ABI, signer);
+                achievementContract = new ethers.Contract(ACHIEVEMENT_CONTRACT_ADDRESS, ACHIEVEMENT_CONTRACT_ABI, signer);
+
+                loginBtn.innerHTML = '<span class="material-symbols-outlined animate-pulse">sync</span> Loading...';
+
+                const balance = await provider.getBalance(userAddress);
+                
+                const shortAddr = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+                document.getElementById('userAddress').textContent = shortAddr;
+                
+                // Format balance with better precision
+                const formattedBalance = parseFloat(ethers.utils.formatEther(balance)).toFixed(4);
+                document.getElementById('userBalance').textContent = formattedBalance + ' ETH';
+                
+                // Hide login screen, show main app
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+
+                // Show success message briefly
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                successMsg.textContent = '✅ Wallet connected successfully!';
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+
+                // Suggest adding tokens to MetaMask
+                await suggestAddTokensToMetaMask();
+
+                await loadTasks();
+                await loadRewards();
+                await loadAchievements();
+            } catch (error) {
+                console.error('Connection error:', error);
+                
+                let errorMsg = 'Failed to connect wallet';
+                
+                switch (error.code) {
+                    case 4001:
+                        errorMsg = 'Connection rejected.\n\nPlease approve the connection in MetaMask to continue.';
+                        break;
+                    case -32002:
+                        errorMsg = 'Connection request pending.\n\nPlease check MetaMask extension and approve the pending request.';
+                        break;
+                    case 4100:
+                        errorMsg = 'Unauthorized.\n\nPlease ensure you have an account connected in MetaMask.';
+                        break;
+                    case 4900:
+                        errorMsg = 'Disconnected.\n\nMetaMask is disconnected from all chains.';
+                        break;
+                    default:
+                        if (error.message) {
+                            if (error.message.includes('User rejected')) {
+                                errorMsg = 'Connection rejected by user.\n\nPlease try connecting again.';
+                            } else if (error.message.includes('No Ethereum provider')) {
+                                errorMsg = 'MetaMask not detected.\n\nPlease install MetaMask extension.';
+                            } else {
+                                errorMsg = error.message;
+                            }
+                        }
+                        break;
+                }
+                
+                alert('❌ ' + errorMsg);
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<span class="material-symbols-outlined">account_balance_wallet</span> Connect Wallet';
+            }
         });
+
+        // Add HLP Token to MetaMask
+        document.getElementById('addHLPToken').addEventListener('click', async () => {
+            const button = document.getElementById('addHLPToken');
+            const originalContent = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<span class="material-symbols-outlined animate-pulse text-sm">sync</span>';
+                button.disabled = true;
+                
+                const success = await addTokenToMetaMask('HLP');
+                
+                if (success) {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-green-400">check</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">close</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error adding HLP token:', error);
+                button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">error</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 2000);
+            }
+        });
+
+        // Add NFT Collection to MetaMask
+        document.getElementById('addNFTToken').addEventListener('click', async () => {
+            const button = document.getElementById('addNFTToken');
+            const originalContent = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<span class="material-symbols-outlined animate-pulse text-sm">sync</span>';
+                button.disabled = true;
+                
+                const success = await addTokenToMetaMask('NFT');
+                
+                if (success) {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-green-400">check</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">close</span>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error adding NFT collection:', error);
+                button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">error</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 2000);
+            }
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('mobileDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Close mobile dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('mobileDropdown');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Mobile HLP Token button
+        document.getElementById('mobileAddHLP').addEventListener('click', async () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            await addTokenToMetaMask('HLP');
+        });
+
+        // Mobile NFT Token button
+        document.getElementById('mobileAddNFT').addEventListener('click', async () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            await addTokenToMetaMask('NFT');
+        });
+
+        // Mobile Go to Landing button
+        document.getElementById('mobileGoToLanding').addEventListener('click', () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            window.location.href = '/';
+        });
+
+        // Desktop Go to Landing button
+        document.getElementById('goToLanding').addEventListener('click', () => {
+            window.location.href = '/';
+        });
+
+        // Mobile disconnect button
+        document.getElementById('mobileDisconnect').addEventListener('click', () => {
+            document.getElementById('mobileDropdown').classList.add('hidden');
+            // Trigger the same disconnect logic
+            document.getElementById('disconnectWallet').click();
+        });
+
+        // Disconnect Wallet
+        document.getElementById('disconnectWallet').addEventListener('click', () => {
+            // Clear state
+            provider = null;
+            signer = null;
+            userAddress = null;
+            taskContract = null;
+            rewardContract = null;
+            achievementContract = null;
+            
+            // Show login screen, hide main app
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        });
+
+        // Create Task
+        document.getElementById('createTaskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const rewardAmount = document.getElementById('rewardAmount').value;
+
+            if (!title || !description || !rewardAmount) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const resultDiv = document.getElementById('createTaskResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Creating task...</span>';
+
+            try {
+                const tx = await taskContract.createTask(title, description, rewardAmount);
+                resultDiv.innerHTML = '<span class="text-blue-400">⏳ Waiting for confirmation...</span>';
+                
+                const receipt = await tx.wait();
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task created successfully!</span>';
+                
+                document.getElementById('createTaskForm').reset();
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
+            } catch (error) {
+                console.error('Create task error:', error);
+                resultDiv.innerHTML = `<span class="text-red-400">❌ Error: ${error.message}</span>`;
+            }
+        });
+
+        // Get applicants for a task
+        async function getTaskApplicants(taskId) {
+            try {
+                const applicants = await taskContract.getTaskApplicants(taskId);
+                return applicants;
+            } catch (error) {
+                console.error(`Error getting applicants for task ${taskId}:`, error);
+                return [];
+            }
+        }
+
+        // Load Tasks
+        async function loadTasks() {
+            if (!taskContract) return;
+
+            try {
+                const taskCount = await taskContract.getTasksCount();
+                const taskListDiv = document.getElementById('taskList');
+                
+                if (taskCount.eq(0)) {
+                    taskListDiv.innerHTML = '<p class="text-gray-400 text-center py-8">No tasks yet. Create the first one!</p>';
+                    return;
+                }
+
+                taskListDiv.innerHTML = '';
+                
+                for (let i = 1; i <= taskCount.toNumber(); i++) {
+                    try {
+                        const task = await taskContract.getTask(i);
+                        const currentTaskId = i; // Store the actual task ID
+                        
+                        // Check if current user has applied for this task
+                        let hasApplied = false;
+                        try {
+                            hasApplied = await taskContract.hasApplied(currentTaskId, userAddress);
+                        } catch (err) {
+                            console.log(`Could not check application status for task ${currentTaskId}`);
+                        }
+
+                        // Get applicants for this specific task
+                        const applicants = await getTaskApplicants(currentTaskId);
+                        console.log(`Task ${currentTaskId} has ${applicants.length} applicants:`, applicants);
+                        
+                        const taskCard = document.createElement('div');
+                        taskCard.className = 'bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-primary transition';
+                        
+                        let statusBadges = '';
+                        
+                        if (task.completed) {
+                            statusBadges = '<span class="bg-green-600 text-xs px-2 py-1 rounded-full">Completed</span>';
+                        } else if (task.worker !== ethers.constants.AddressZero) {
+                            if (task.worker.toLowerCase() === userAddress.toLowerCase()) {
+                                statusBadges = '<span class="bg-purple-600 text-xs px-2 py-1 rounded-full">Assigned to You</span>';
+                            } else {
+                                statusBadges = '<span class="bg-yellow-500 text-xs px-2 py-1 rounded-full">Assigned</span>';
+                            }
+                        } else {
+                            statusBadges = '<span class="bg-blue-600 text-xs px-2 py-1 rounded-full">Open</span>';
+                            if (hasApplied) {
+                                statusBadges += ' <span class="bg-orange-600 text-xs px-2 py-1 rounded-full ml-1">Applied</span>';
+                            }
+                        }
+                        
+                        // Check if user is the creator
+                        const isCreator = task.creator.toLowerCase() === userAddress.toLowerCase();
+                        if (isCreator) {
+                            statusBadges += ' <span class="bg-indigo-600 text-xs px-2 py-1 rounded-full ml-1">Your Task</span>';
+                        }
+
+                        // Show applicant count
+                        if (applicants.length > 0 && !task.completed) {
+                            statusBadges += ` <span class="bg-cyan-600 text-xs px-2 py-1 rounded-full ml-1">${applicants.length} Applicant${applicants.length > 1 ? 's' : ''}</span>`;
+                        }
+
+                        // Create applicants section
+                        let applicantsSection = '';
+                        if (applicants.length > 0) {
+                            applicantsSection = `
+                                <div class="mt-3 pt-3 border-t border-gray-600">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-semibold text-gray-300">Applicants (${applicants.length})</span>
+                                        <button onclick="toggleApplicants(${currentTaskId})" class="text-xs text-primary hover:underline">
+                                            <span id="toggle-${currentTaskId}">Show</span>
+                                        </button>
+                                    </div>
+                                    <div id="applicants-${currentTaskId}" class="hidden space-y-2">
+                                        ${applicants.map((applicant, index) => `
+                                            <div class="flex flex-col bg-gray-800/50 rounded p-2 space-y-1">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="text-xs">
+                                                        <span class="text-white font-mono break-all">${applicant}</span>
+                                                        ${applicant.toLowerCase() === userAddress.toLowerCase() ? 
+                                                            '<span class="text-orange-400 ml-2 font-bold">(You)</span>' : ''}
+                                                    </div>
+                                                    ${isCreator && task.worker === ethers.constants.AddressZero ? 
+                                                        `<button onclick="quickAssign(${currentTaskId}, '${applicant}')" 
+                                                            class="text-xs bg-primary hover:bg-primary/80 text-white px-3 py-1 rounded ml-2 flex-shrink-0">
+                                                            Assign
+                                                        </button>` : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        taskCard.innerHTML = `
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-semibold text-lg text-white">${task.title || `Task #${currentTaskId}`}</h3>
+                                    <p class="text-xs text-gray-400">ID: #${currentTaskId}</p>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    ${statusBadges}
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-300 mb-3">${task.description}</p>
+                            <div class="text-xs text-gray-400 space-y-1">
+                                <p>Creator: <span class="font-mono text-white">${task.creator}</span></p>
+                                ${task.worker !== ethers.constants.AddressZero ? `<p>Worker: <span class="font-mono text-white">${task.worker}</span></p>` : '<p>Worker: Not assigned</p>'}
+                                <p class="text-primary font-semibold">Reward: ${task.reward} HLP</p>
+                            </div>
+                            ${applicantsSection}
+                        `;
+                        taskListDiv.appendChild(taskCard);
+                    } catch (err) {
+                        console.log(`Task ${i} not found or deleted`);
+                    }
+                }
+            } catch (error) {
+                console.error('Load tasks error:', error);
+            }
+        }
+
+        // Apply for Task
+        document.getElementById('applyTaskBtn').addEventListener('click', async () => {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            const taskId = document.getElementById('applyTaskId').value;
+            const resultDiv = document.getElementById('applyResult');
+            
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Checking application status...</span>';
+
+            try {
+                // First, check if user has already applied
+                const hasAlreadyApplied = await taskContract.hasApplied(taskId, userAddress);
+                
+                if (hasAlreadyApplied) {
+                    resultDiv.innerHTML = '<span class="text-blue-400">ℹ️ You have already applied for this task</span>';
+                    setTimeout(() => {
+                        resultDiv.classList.add('hidden');
+                    }, 3000);
+                    return;
+                }
+
+                // Check if task exists and get task details
+                try {
+                    const task = await taskContract.getTask(taskId);
+                    
+                    if (task.completed) {
+                        resultDiv.innerHTML = '<span class="text-gray-400">ℹ️ This task is already completed</span>';
+                        setTimeout(() => {
+                            resultDiv.classList.add('hidden');
+                        }, 3000);
+                        return;
+                    }
+
+                    if (task.worker !== ethers.constants.AddressZero) {
+                        resultDiv.innerHTML = '<span class="text-orange-400">ℹ️ This task is already assigned to someone</span>';
+                        setTimeout(() => {
+                            resultDiv.classList.add('hidden');
+                        }, 3000);
+                        return;
+                    }
+
+                    if (task.creator.toLowerCase() === userAddress.toLowerCase()) {
+                        resultDiv.innerHTML = '<span class="text-red-400">❌ You cannot apply for your own task</span>';
+                        setTimeout(() => {
+                            resultDiv.classList.add('hidden');
+                        }, 3000);
+                        return;
+                    }
+
+                } catch (taskError) {
+                    resultDiv.innerHTML = '<span class="text-red-400">❌ Task not found or invalid task ID</span>';
+                    setTimeout(() => {
+                        resultDiv.classList.add('hidden');
+                    }, 3000);
+                    return;
+                }
+
+                resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Submitting application...</span>';
+                
+                const tx = await taskContract.applyForTask(taskId);
+                resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming transaction...</span>';
+                await tx.wait();
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Applied successfully!</span>';
+                
+                // Clear the input field
+                document.getElementById('applyTaskId').value = '';
+                
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Apply error:', error);
+                
+                let errorMessage = 'Failed to apply for task';
+                
+                if (error.message) {
+                    if (error.message.includes('Already applied for this task')) {
+                        errorMessage = 'You have already applied for this task';
+                    } else if (error.message.includes('Task does not exist')) {
+                        errorMessage = 'Task not found - please check the task ID';
+                    } else if (error.message.includes('Task is completed')) {
+                        errorMessage = 'This task is already completed';
+                    } else if (error.message.includes('Task is already assigned')) {
+                        errorMessage = 'This task is already assigned to someone';
+                    } else if (error.message.includes('user rejected')) {
+                        errorMessage = 'Transaction cancelled by user';
+                    } else if (error.message.includes('insufficient funds')) {
+                        errorMessage = 'Insufficient funds for transaction';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                }
+                
+                resultDiv.innerHTML = `<span class="text-red-400">❌ ${errorMessage}</span>`;
+                
+                setTimeout(() => {
+                    resultDiv.classList.add('hidden');
+                }, 5000);
+            }
+        });
+
+        // Assign Task
+        document.getElementById('assignTaskBtn').addEventListener('click', async () => {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            const taskId = document.getElementById('assignTaskId').value;
+            const workerAddress = document.getElementById('assignWorkerAddress').value;
+            const resultDiv = document.getElementById('assignResult');
+            
+            if (!taskId || !workerAddress) {
+                alert('Please enter task ID and worker address');
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Assigning task...</span>';
+
+            try {
+                const tx = await taskContract.assignTask(taskId, workerAddress);
+                resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
+                await tx.wait();
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task assigned!</span>';
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
+            } catch (error) {
+                console.error('Assign error:', error);
+                resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
+            }
+        });
+
+        // Complete Task
+        document.getElementById('completeTaskBtn').addEventListener('click', async () => {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            const taskId = document.getElementById('completeTaskId').value;
+            const resultDiv = document.getElementById('completeResult');
+            
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Completing task and minting rewards...</span>';
+
+            try {
+                const tx = await taskContract.completeTask(taskId);
+                resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
+                await tx.wait();
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task completed & rewards minted!</span>';
+                setTimeout(() => {
+                    loadTasks();
+                    loadRewards();
+                    loadAchievements();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
+            } catch (error) {
+                console.error('Complete error:', error);
+                resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
+            }
+        });
+
+        // Cancel Task
+        document.getElementById('cancelTaskBtn').addEventListener('click', async () => {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            const taskId = document.getElementById('cancelTaskId').value;
+            const resultDiv = document.getElementById('cancelResult');
+            
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="text-yellow-400">⏳ Cancelling task...</span>';
+
+            try {
+                const tx = await taskContract.cancelTask(taskId);
+                resultDiv.innerHTML = '<span class="text-blue-400">⏳ Confirming...</span>';
+                await tx.wait();
+                resultDiv.innerHTML = '<span class="text-green-400">✅ Task cancelled!</span>';
+                setTimeout(() => {
+                    loadTasks();
+                    resultDiv.classList.add('hidden');
+                }, 2000);
+            } catch (error) {
+                console.error('Cancel error:', error);
+                resultDiv.innerHTML = `<span class="text-red-400">❌ ${error.message}</span>`;
+            }
+        });
+
+        // Load Rewards
+        async function loadRewards() {
+            if (!rewardContract || !userAddress) return;
+
+            try {
+                const balance = await rewardContract.balanceOf(userAddress);
+                const rewardListDiv = document.getElementById('rewardsList');
+                
+                // Show the MetaMask helper info
+                const helperDiv = document.getElementById('metamaskTokenHelper');
+                if (helperDiv) {
+                    helperDiv.classList.remove('hidden');
+                }
+                
+                rewardListDiv.innerHTML = `
+                    <div class="bg-gray-700/50 rounded-lg p-6 text-center border border-gray-600">
+                        <h3 class="text-3xl font-bold text-primary mb-2">${balance}</h3>
+                        <p class="text-gray-400">HLP Tokens</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Load rewards error:', error);
+            }
+        }
+
+        // Load Achievements
+        async function loadAchievements() {
+            if (!achievementContract || !userAddress) return;
+
+            try {
+                // Load user stats
+                const stats = await achievementContract.getUserStats(userAddress);
+                const statsDiv = document.getElementById('userStats');
+                
+                statsDiv.innerHTML = `
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-blue-400 mb-1">${stats._tasksCompleted}</h3>
+                        <p class="text-xs text-gray-400">Tasks Completed</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-green-400 mb-1">${stats._tokensEarned}</h3>
+                        <p class="text-xs text-gray-400">Tokens Earned</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-purple-400 mb-1">${stats._tasksCreated}</h3>
+                        <p class="text-xs text-gray-400">Tasks Created</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-orange-400 mb-1">${stats._currentStreak}</h3>
+                        <p class="text-xs text-gray-400">Current Streak</p>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-4 text-center border border-gray-600">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-1">${stats._maxStreak}</h3>
+                        <p class="text-xs text-gray-400">Max Streak</p>
+                    </div>
+                `;
+
+                // Load user badges
+                const badgeIds = await achievementContract.getUserBadges(userAddress);
+                const achievementsDiv = document.getElementById('achievementsList');
+                
+                console.log(`🏆 Found ${badgeIds.length} badge IDs:`, badgeIds.map(id => id.toString()));
+                
+                // Also show in UI for debugging
+                if (badgeIds.length > 0) {
+                    const debugInfo = document.createElement('div');
+                    debugInfo.className = 'col-span-4 mb-4 p-3 bg-blue-600/10 border border-blue-600/20 rounded-lg text-blue-200 text-sm';
+                    debugInfo.innerHTML = `
+                        <span class="material-symbols-outlined text-sm mr-1">info</span>
+                        <strong>Debug:</strong> Found ${badgeIds.length} badge(s) with IDs: ${badgeIds.map(id => `#${id.toString()}`).join(', ')}
+                    `;
+                    achievementsDiv.appendChild(debugInfo);
+                }
+                
+                if (badgeIds.length === 0) {
+                    achievementsDiv.innerHTML = `
+                        <div class="col-span-4 text-center py-8 text-gray-400">
+                            <div class="text-6xl mb-4">🎯</div>
+                            <p class="text-lg mb-2">No achievements yet!</p>
+                            <p class="text-sm">Complete tasks to earn your first badge</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                achievementsDiv.innerHTML = '';
+                
+                // Remove duplicates and process each unique badge
+                const uniqueBadgeIds = [...new Set(badgeIds.map(id => id.toString()))];
+                console.log(`Processing ${uniqueBadgeIds.length} unique badges:`, uniqueBadgeIds);
+                
+                for (const tokenId of uniqueBadgeIds) {
+                    try {
+                        console.log(`Loading badge details for token ID: ${tokenId}`);
+                        const badge = await achievementContract.badges(tokenId);
+                        
+                        // Get token URI for image
+                        let nftImageUrl = '';
+                        try {
+                            const tokenURI = await achievementContract.tokenURI(tokenId);
+                            console.log(`Token URI for ${tokenId}:`, tokenURI);
+                            
+                            // If it's a data URI (base64), extract the image
+                            if (tokenURI.startsWith('data:application/json;base64,')) {
+                                const jsonData = JSON.parse(atob(tokenURI.split(',')[1]));
+                                nftImageUrl = jsonData.image || '';
+                            } else if (tokenURI.startsWith('http')) {
+                                // If it's an HTTP URL, try to fetch metadata
+                                try {
+                                    const response = await fetch(tokenURI);
+                                    const metadata = await response.json();
+                                    nftImageUrl = metadata.image || '';
+                                } catch (fetchError) {
+                                    console.warn('Could not fetch metadata from URI:', fetchError);
+                                }
+                            }
+                        } catch (uriError) {
+                            console.warn(`Could not get token URI for ${tokenId}:`, uriError);
+                        }
+                        
+                        const rarityColors = {
+                            1: 'border-gray-500 bg-gray-600/20',      // Common
+                            2: 'border-blue-500 bg-blue-600/20',     // Rare  
+                            3: 'border-purple-500 bg-purple-600/20', // Epic
+                            4: 'border-yellow-500 bg-yellow-600/20'  // Legendary
+                        };
+                        
+                        const rarityNames = {
+                            1: 'Common',
+                            2: 'Rare', 
+                            3: 'Epic',
+                            4: 'Legendary'
+                        };
+
+                        const badgeCard = document.createElement('div');
+                        badgeCard.className = `achievement-card rounded-xl p-3 border-2 ${rarityColors[badge.rarity] || rarityColors[1]} transition-all duration-200 hover:scale-[1.02] cursor-pointer relative overflow-hidden shadow-lg hover:shadow-xl min-h-[280px] flex flex-col`;
+                        
+                        const mintDate = new Date(badge.mintedAt * 1000).toLocaleDateString();
+                        // Use contract data first, then fallback to predefined types
+                        const contractTitle = badge.title || '';
+                        const contractDescription = badge.description || '';
+                        const contractImageURI = badge.imageURI || '';
+                        
+                        const achievementInfo = achievementTypes[badge.achievementType] || { 
+                            name: 'Achievement', 
+                            icon: '🏆', 
+                            description: 'Special achievement unlocked!',
+                            image: ''
+                        };
+                        
+                        // Prioritize contract data over predefined data
+                        const finalTitle = contractTitle || achievementInfo.name;
+                        const finalDescription = contractDescription || achievementInfo.description;
+                        const finalImage = contractImageURI || nftImageUrl || achievementInfo.image;
+                        
+                        // Create image element with multiple fallbacks
+                        let imageElement;
+                        if (finalImage && finalImage.startsWith('http')) {
+                            // Use image URL (from contract or predefined)
+                            imageElement = `
+                                <img src="${finalImage}" 
+                                     alt="${finalTitle}" 
+                                     class="w-20 h-20 mx-auto mb-3 rounded-xl object-cover border-2 border-gray-500 nft-image shadow-lg" 
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                                <div class="text-4xl mb-3 hidden">${achievementInfo.icon}</div>`;
+                        } else {
+                            // Fallback to emoji with enhanced styling
+                            imageElement = `
+                                <div class="w-20 h-20 mx-auto mb-3 rounded-xl bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center text-3xl border-2 border-gray-500 shadow-lg">
+                                    ${achievementInfo.icon}
+                                </div>`;
+                        }
+                        
+                        badgeCard.innerHTML = `
+                            <div class="text-center p-2">
+                                ${imageElement}
+                                <h4 class="text-white font-bold text-sm mb-2 leading-tight">${finalTitle}</h4>
+                                <div class="bg-gray-800/50 rounded-lg p-2 mb-3">
+                                    <p class="text-xs text-gray-300 leading-relaxed">${finalDescription}</p>
+                                </div>
+                                <div class="flex justify-between items-center text-xs mb-2">
+                                    <span class="px-2 py-1 rounded-full text-${badge.rarity === 4 ? 'yellow' : badge.rarity === 3 ? 'purple' : badge.rarity === 2 ? 'blue' : 'gray'}-400 bg-${badge.rarity === 4 ? 'yellow' : badge.rarity === 3 ? 'purple' : badge.rarity === 2 ? 'blue' : 'gray'}-400/20 font-semibold text-xs">
+                                        ${rarityNames[badge.rarity] || 'Common'}
+                                    </span>
+                                    <span class="text-gray-400 font-mono">#{tokenId}</span>
+                                </div>
+                                <div class="text-xs text-gray-500 border-t border-gray-700 pt-2">${mintDate}</div>
+                            </div>
+                        `;
+                        
+                        // Add click event to show detailed badge info
+                        badgeCard.addEventListener('click', () => {
+                            showNFTDetailModal(badge, tokenId, finalTitle, finalDescription, finalImage, achievementInfo, mintDate, rarityNames);
+                        });
+                        
+                        achievementsDiv.appendChild(badgeCard);
+                        console.log(`Successfully loaded badge ${tokenId}`);
+                    } catch (error) {
+                        console.error(`Error loading badge ${tokenId}:`, error);
+                        
+                        // Still show a placeholder card for failed badges
+                        const errorCard = document.createElement('div');
+                        errorCard.className = 'rounded-lg p-4 border-2 border-red-500 bg-red-600/20 text-center';
+                        errorCard.innerHTML = `
+                            <div class="text-red-400">
+                                <div class="text-2xl mb-2">⚠️</div>
+                                <p class="text-xs">Badge #${tokenId}</p>
+                                <p class="text-xs text-red-300">Error loading</p>
+                            </div>
+                        `;
+                        achievementsDiv.appendChild(errorCard);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Load achievements error:', error);
+                document.getElementById('achievementsList').innerHTML = `
+                    <div class="col-span-4 text-center py-8 text-red-400">
+                        <p>Error loading achievements</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Toggle applicants visibility
+        function toggleApplicants(taskId) {
+            const applicantsDiv = document.getElementById(`applicants-${taskId}`);
+            const toggleBtn = document.getElementById(`toggle-${taskId}`);
+            
+            if (applicantsDiv.classList.contains('hidden')) {
+                applicantsDiv.classList.remove('hidden');
+                toggleBtn.textContent = 'Hide';
+            } else {
+                applicantsDiv.classList.add('hidden');
+                toggleBtn.textContent = 'Show';
+            }
+        }
+
+        // Quick assign function
+        async function quickAssign(taskId, workerAddress) {
+            if (!taskContract) {
+                alert('Please connect wallet first');
+                return;
+            }
+
+            try {
+                const confirmed = confirm(`Assign Task #${taskId} to ${workerAddress.slice(0, 6)}...${workerAddress.slice(-4)}?`);
+                if (!confirmed) return;
+
+                const tx = await taskContract.assignTask(taskId, workerAddress);
+                
+                // Show loading notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                notification.textContent = '⏳ Assigning task...';
+                document.body.appendChild(notification);
+                
+                await tx.wait();
+                
+                notification.textContent = '✅ Task assigned successfully!';
+                notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                
+                setTimeout(() => {
+                    notification.remove();
+                    loadTasks();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Quick assign error:', error);
+                
+                let errorMessage = 'Failed to assign task';
+                if (error.message.includes('user rejected')) {
+                    errorMessage = 'Assignment cancelled by user';
+                } else if (error.message.includes('insufficient funds')) {
+                    errorMessage = 'Insufficient funds for transaction';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                alert(`❌ ${errorMessage}`);
+            }
+        }
+
+        // Make functions globally available
+        window.toggleApplicants = toggleApplicants;
+        window.quickAssign = quickAssign;
+
+        // Refresh Tasks
+        document.getElementById('refreshTasks').addEventListener('click', () => {
+            loadTasks();
+            loadRewards();
+            loadAchievements();
+        });
+
+        // Refresh Achievements
+        document.getElementById('refreshAchievements').addEventListener('click', async () => {
+            const button = document.getElementById('refreshAchievements');
+            const originalContent = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<span class="material-symbols-outlined animate-pulse text-sm">sync</span> Loading...';
+                button.disabled = true;
+                
+                await loadAchievements();
+                
+                button.innerHTML = '<span class="material-symbols-outlined text-sm text-green-400">check</span> Refreshed';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 1500);
+            } catch (error) {
+                console.error('Error refreshing achievements:', error);
+                button.innerHTML = '<span class="material-symbols-outlined text-sm text-red-400">error</span> Error';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 2000);
+            }
+        });
+
+        // Check if already connected on page load
+        window.addEventListener('load', async () => {
+            // Wait a moment for extensions to load
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const ethereum = await detectMetaMask();
+            if (ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        console.log('Auto-connecting to existing wallet connection...');
+                        // Auto-login if already connected
+                        document.getElementById('loginButton').click();
+                    }
+                } catch (error) {
+                    console.log('No existing wallet connection found');
+                }
+            }
+        });
+
+        // Setup event listeners for MetaMask
+        async function setupMetaMaskListeners() {
+            const ethereum = await detectMetaMask();
+            if (ethereum) {
+                ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length === 0) {
+                        // User disconnected
+                        console.log('User disconnected wallet');
+                        document.getElementById('disconnectWallet').click();
+                    } else if (userAddress && accounts[0] !== userAddress) {
+                        // Account changed
+                        console.log('Account changed from', userAddress, 'to', accounts[0]);
+                        
+                        // Show notification
+                        const notification = document.createElement('div');
+                        notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                        notification.textContent = '🔄 Account changed, reloading...';
+                        document.body.appendChild(notification);
+                        
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                });
+
+                ethereum.on('chainChanged', (chainId) => {
+                    console.log('Network changed to:', chainId);
+                    
+                    // Show notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                    notification.textContent = '🌐 Network changed, reloading...';
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                });
+            }
+        }
+
+        // Initialize event listeners
+        setupMetaMaskListeners();
     </script>
+
 </body>
 </html>

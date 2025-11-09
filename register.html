@@ -830,22 +830,50 @@
 
                 // Create user document in Firestore with skills text
                 await setDoc(doc(db, 'users', currentUser.uid), {
+                    // Core identity
                     uid: currentUser.uid,
                     email: currentUser.email || null,
                     phoneNumber: currentUser.phoneNumber || null,
-                    walletAddress: walletAddress,
-                    skills: skillsText, // Store as single text string
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp(),
-                    // Additional fields that can be updated later
                     displayName: currentUser.displayName || null,
                     photoURL: currentUser.photoURL || null,
+                    
+                    // Wallet & Balance
+                    walletAddress: walletAddress,
+                    hlpBalance: 0, // HLP token balance
+                    
+                    // Skills & Profile
+                    skills: skillsText, // Store as single text string
                     bio: null,
+                    
+                    // Task Statistics
                     tasksCompleted: 0,
                     tasksCreated: 0,
+                    tasksInProgress: 0,
+                    
+                    // Rating System
+                    rating: 0, // Sum of all ratings received
+                    ratingCount: 0, // Number of ratings received
+                    
+                    // Reputation & Achievements
                     reputation: 0,
                     badges: [],
-                    preferences: {}
+                    
+                    // Activity Tracking
+                    recentlyViewedCommunities: [], // Array of community IDs
+                    recentlyViewedTasks: [], // Array of task IDs
+                    joinedCommunities: [], // Array of community IDs user has joined
+                    
+                    // User Preferences
+                    preferences: {
+                        emailNotifications: true,
+                        browserNotifications: true,
+                        theme: 'dark'
+                    },
+                    
+                    // Timestamps
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    lastLoginAt: serverTimestamp()
                 });
 
                 console.log('✅ User registered successfully with skills');

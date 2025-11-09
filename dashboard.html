@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SideQuests</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -16,6 +17,38 @@
             'wght' 400,
             'GRAD' 0,
             'opsz' 24
+        }
+        
+        /* Dropdown animation */
+        #profileDropdown {
+            animation: slideDown 0.2s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Modal animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out;
         }
     </style>
     <script>
@@ -62,18 +95,57 @@
                             </div>
                             <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
                         </div>
-                        <div class="flex flex-1 justify-end items-center gap-4">
-                            <button class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-light transition-colors">
-                                <span class="truncate">Create Quest</span>
+                        <div class="flex flex-1 justify-end items-center gap-3">
+                            <!-- Notifications Button -->
+                            <div class="relative">
+                                <button id="notificationsBtn" class="relative flex items-center justify-center size-10 rounded-full bg-card-dark border border-border-dark hover:border-primary transition-colors" title="Notifications">
+                                    <span class="material-symbols-outlined text-cream">notifications</span>
+                                    <span id="notificationBadge" class="hidden absolute -top-1 -right-1 size-5 rounded-full bg-primary text-background-dark text-xs font-bold flex items-center justify-center">0</span>
+                                </button>
+                                
+                                <!-- Notifications Dropdown -->
+                                <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-96 max-h-96 overflow-y-auto rounded-lg bg-card-dark border border-border-dark shadow-xl z-50">
+                                    <div class="p-4 border-b border-border-dark flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary">notifications_active</span>
+                                            <span class="text-cream font-bold" id="notificationCount">0</span>
+                                        </div>
+                                        <button id="markAllRead" class="text-xs text-text-muted-dark hover:text-primary transition-colors">Clear all</button>
+                                    </div>
+                                    <div id="notificationsList" class="p-2">
+                                        <p class="text-center text-text-muted-dark py-4 text-sm">No notifications</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="myCommunitiesBtn" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-card-dark border border-border-dark text-cream text-sm font-bold leading-normal tracking-[0.015em] hover:border-primary transition-colors">
+                                <span class="truncate">My Communities</span>
                             </button>
-                            <button class="relative flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-card-dark text-cream gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 border border-border-dark hover:border-primary/50 transition-colors">
-                                <span class="material-symbols-outlined text-cream text-xl">notifications</span>
-                                <span class="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                                </span>
+                            <button id="joinCommunityBtn" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-light transition-colors">
+                                <span class="truncate">Join Community</span>
                             </button>
-                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-border-dark" id="userAvatar" style='background-image: url("https://via.placeholder.com/40");'></div>
+                            <button id="createCommunityBtn" class="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-card-dark border-2 border-primary text-primary text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/10 transition-colors">
+                                <span class="truncate">Create Community</span>
+                            </button>
+                            
+                            <!-- Profile Dropdown -->
+                            <div class="relative">
+                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-border-dark hover:border-primary transition-colors cursor-pointer" id="userAvatar" style='background-image: url("https://via.placeholder.com/40");'></div>
+                                
+                                <!-- Dropdown Menu (hidden by default) -->
+                                <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-lg bg-card-dark border border-border-dark shadow-xl z-50">
+                                    <div class="py-2">
+                                        <button id="settingsBtn" class="w-full px-4 py-2 text-left text-cream hover:bg-primary/10 transition-colors flex items-center gap-3" disabled title="Coming soon">
+                                            <span class="material-symbols-outlined text-lg">settings</span>
+                                            <span>Settings</span>
+                                        </button>
+                                        <button id="logoutBtn" class="w-full px-4 py-2 text-left text-cream hover:bg-primary/10 transition-colors flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-lg">logout</span>
+                                            <span>Logout</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </header>
 
@@ -87,21 +159,24 @@
                         </div>
 
                         <!-- Stats -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 sm:px-6">
-                            <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                <p class="text-text-muted-dark text-base font-medium leading-normal">Total Token Balance</p>
-                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">$1,250.75</p>
-                                <p class="text-primary text-base font-medium leading-normal">+15.2%</p>
-                            </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 sm:px-6">
                             <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
                                 <p class="text-text-muted-dark text-base font-medium leading-normal">Quests Completed</p>
-                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">18</p>
-                                <p class="text-primary text-base font-medium leading-normal">+2 this week</p>
+                                <p class="text-cream tracking-light text-3xl font-bold leading-tight" id="tasksCompleted">0</p>
+                                <p class="text-primary text-base font-medium leading-normal">Total tasks done</p>
                             </div>
                             <div class="flex flex-col gap-2 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                <p class="text-text-muted-dark text-base font-medium leading-normal">XP Earned</p>
-                                <p class="text-cream tracking-light text-3xl font-bold leading-tight">3,400 XP</p>
-                                <p class="text-primary text-base font-medium leading-normal">+150</p>
+                                <p class="text-text-muted-dark text-base font-medium leading-normal">Your Rating</p>
+                                <div class="text-cream tracking-light font-bold leading-tight flex items-baseline gap-2" id="ratingDisplay">
+                                    <span class="text-2xl text-text-muted-dark">Loading...</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-primary text-xl">star</span>
+                                    <span class="material-symbols-outlined text-primary text-xl">star</span>
+                                    <span class="material-symbols-outlined text-primary text-xl">star</span>
+                                    <span class="material-symbols-outlined text-primary text-xl">star</span>
+                                    <span class="material-symbols-outlined text-primary text-xl">star</span>
+                                </div>
                             </div>
                         </div>
 
@@ -114,129 +189,43 @@
                                 <!-- Tabs -->
                                 <div>
                                     <div class="flex border-b border-border-dark gap-8">
-                                        <a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-cream pb-[13px] pt-2 cursor-pointer" href="#">
-                                            <p class="text-cream text-sm font-bold leading-normal tracking-[0.015em]">In Progress (3)</p>
+                                        <a id="inProgressTab" class="tab-link flex flex-col items-center justify-center border-b-[3px] border-b-primary text-cream pb-[13px] pt-2 cursor-pointer" data-tab="in-progress">
+                                            <p class="text-cream text-sm font-bold leading-normal tracking-[0.015em]" id="inProgressCount">In Progress (0)</p>
                                         </a>
-                                        <a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-muted-dark pb-[13px] pt-2 hover:text-cream transition-colors cursor-pointer" href="#">
-                                            <p class="text-sm font-bold leading-normal tracking-[0.015em]">Posted by Me (1)</p>
+                                        <a id="postedByMeTab" class="tab-link flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-muted-dark pb-[13px] pt-2 hover:text-cream transition-colors cursor-pointer" data-tab="posted">
+                                            <p class="text-sm font-bold leading-normal tracking-[0.015em]" id="postedByMeCount">Posted by Me (0)</p>
                                         </a>
                                     </div>
                                 </div>
 
                                 <!-- Quest Cards -->
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
-                                        <div class="flex items-center gap-4">
-                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Design");'></div>
-                                            <div>
-                                                <p class="text-cream font-bold">Redesign Community Onboarding Flow</p>
-                                                <p class="text-sm text-text-muted-dark">for EtherMinds DAO</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-right">
-                                                <p class="font-bold text-primary">500 USDC</p>
-                                                <p class="text-sm text-text-muted-dark">+200 XP</p>
-                                            </div>
-                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
-                                        <div class="flex items-center gap-4">
-                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Tweet");'></div>
-                                            <div>
-                                                <p class="text-cream font-bold">Create a Twitter Thread about our new feature</p>
-                                                <p class="text-sm text-text-muted-dark">for QuantumLeap</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-right">
-                                                <p class="font-bold text-primary">50 QLP</p>
-                                                <p class="text-sm text-text-muted-dark">+50 XP</p>
-                                            </div>
-                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer">
-                                        <div class="flex items-center gap-4">
-                                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" style='background-image: url("https://via.placeholder.com/48?text=Code");'></div>
-                                            <div>
-                                                <p class="text-cream font-bold">Review 3 Pull Requests on GitHub</p>
-                                                <p class="text-sm text-text-muted-dark">for CodeCrafters</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-right">
-                                                <p class="font-bold text-primary">100 ETH</p>
-                                                <p class="text-sm text-text-muted-dark">+150 XP</p>
-                                            </div>
-                                            <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
-                                        </div>
+                                <div class="flex flex-col gap-4" id="activeTasksContainer">
+                                    <!-- Loading state -->
+                                    <div class="text-center py-12">
+                                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                                        <p class="text-text-muted-dark">Loading your active quests...</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Right Column: Recent Activity & Trending Communities -->
+                            <!-- Right Column: Recently Viewed & Trending Communities -->
                             <div class="lg:col-span-1 flex flex-col gap-8">
-                                <!-- Recent Activity -->
+                                <!-- Recently Viewed Communities -->
                                 <div class="flex flex-col gap-4">
-                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recent Activity</h2>
-                                    <div class="flex flex-col gap-5 rounded-lg bg-card-dark p-6 border border-border-dark">
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary/20">
-                                                <span class="material-symbols-outlined text-primary text-lg">military_tech</span>
-                                            </div>
-                                            <div>
-                                                <p class="text-cream text-sm">You completed the quest <span class="font-bold">"Community Moderator"</span>.</p>
-                                                <p class="text-xs text-text-muted-dark">2 hours ago</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary-light/20">
-                                                <span class="material-symbols-outlined text-primary-light text-lg">add_task</span>
-                                            </div>
-                                            <div>
-                                                <p class="text-cream text-sm">Your submission for <span class="font-bold">"Redesign Flow"</span> was approved.</p>
-                                                <p class="text-xs text-text-muted-dark">1 day ago</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex items-center justify-center size-8 rounded-full bg-primary-pale/20">
-                                                <span class="material-symbols-outlined text-primary-pale text-lg">person_add</span>
-                                            </div>
-                                            <div>
-                                                <p class="text-cream text-sm"><span class="font-bold">@zara</span> started following you.</p>
-                                                <p class="text-xs text-text-muted-dark">2 days ago</p>
-                                            </div>
+                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recently Viewed Communities</h2>
+                                    <div class="flex flex-col gap-3 rounded-lg bg-card-dark p-6 border border-border-dark min-h-[150px]" id="recentCommunitiesContainer">
+                                        <div class="flex items-center justify-center h-full">
+                                            <p class="text-sm text-text-muted-dark">No communities viewed yet</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Trending Communities -->
+                                <!-- Recently Viewed Tasks -->
                                 <div class="flex flex-col gap-4">
-                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Trending Communities</h2>
-                                    <div class="flex flex-col gap-4">
-                                        <div class="flex items-center justify-between rounded-lg bg-card-dark p-4 border border-border-dark">
-                                            <div class="flex items-center gap-3">
-                                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://via.placeholder.com/40?text=EM");'></div>
-                                                <div>
-                                                    <p class="text-cream font-bold">EtherMinds DAO</p>
-                                                    <p class="text-sm text-text-muted-dark">1,204 Questers</p>
-                                                </div>
-                                            </div>
-                                            <button class="flex items-center justify-center rounded-full bg-primary h-8 px-3 text-background-dark text-xs font-bold hover:bg-primary-light transition-colors">Join</button>
-                                        </div>
-                                        <div class="flex items-center justify-between rounded-lg bg-card-dark p-4 border border-border-dark">
-                                            <div class="flex items-center gap-3">
-                                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://via.placeholder.com/40?text=QL");'></div>
-                                                <div>
-                                                    <p class="text-cream font-bold">QuantumLeap</p>
-                                                    <p class="text-sm text-text-muted-dark">987 Questers</p>
-                                                </div>
-                                            </div>
-                                            <button class="flex items-center justify-center rounded-full bg-primary h-8 px-3 text-background-dark text-xs font-bold hover:bg-primary-light transition-colors">Join</button>
+                                    <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">Recently Viewed Quests</h2>
+                                    <div class="flex flex-col gap-3 rounded-lg bg-card-dark p-6 border border-border-dark min-h-[150px]" id="recentTasksContainer">
+                                        <div class="flex items-center justify-center h-full">
+                                            <p class="text-sm text-text-muted-dark">No quests viewed yet</p>
                                         </div>
                                     </div>
                                 </div>
@@ -248,12 +237,95 @@
         </div>
     </div>
 
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-card-dark border-2 border-border-dark rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl animate-fadeIn">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="flex items-center justify-center size-12 rounded-full bg-primary/20">
+                    <span class="material-symbols-outlined text-primary text-3xl">logout</span>
+                </div>
+                <div>
+                    <h3 class="text-cream text-2xl font-bold">Confirm Logout</h3>
+                </div>
+            </div>
+            <p class="text-text-muted-dark text-base mb-8">Are you sure you want to logout? You'll need to sign in again to access your dashboard.</p>
+            <div class="flex gap-4">
+                <button id="cancelLogoutBtn" class="flex-1 px-6 py-3 rounded-xl bg-card-dark border-2 border-border-dark text-cream font-bold hover:border-primary/50 transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmLogoutBtn" class="flex-1 px-6 py-3 rounded-xl bg-primary text-background-dark font-bold hover:bg-primary-light transition-colors">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module">
-        import { requireAuth, logout } from './auth.js';
+        // Import Firebase modules directly
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getAuth,
+            onAuthStateChanged,
+            signOut,
+            setPersistence,
+            browserLocalPersistence
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            getDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            orderBy,
+            limit
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-        // Require authentication - if not logged in, redirect to login
-        requireAuth('/login').then((user) => {
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
+            authDomain: "taskmatch-openhack2025.firebaseapp.com",
+            projectId: "taskmatch-openhack2025",
+            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
+            messagingSenderId: "1071810532798",
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
+            measurementId: "G-Y0XPDPZFY8"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Enable session persistence
+        setPersistence(auth, browserLocalPersistence);
+
+        console.log('✅ Firebase initialized');
+        console.log('✅ Auth:', auth ? 'OK' : 'FAILED');
+        console.log('✅ Firestore:', db ? 'OK' : 'FAILED');
+
+        // Logout function
+        function logout() {
+            signOut(auth).then(() => {
+                console.log('✅ User logged out');
+                window.location.href = '/login';
+            }).catch((error) => {
+                console.error('❌ Logout error:', error);
+            });
+        }
+
+        // Check authentication and load dashboard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                console.log('❌ No user logged in, redirecting to login');
+                window.location.href = '/login';
+                return;
+            }
+
+            console.log('✅ User authenticated:', user.uid);
+
             // Update UI with user info
             const welcomeText = document.getElementById('welcomeText');
             const displayName = user.displayName || user.email?.split('@')[0] || 'there';
@@ -264,15 +336,476 @@
                 userAvatar.style.backgroundImage = `url("${user.photoURL}")`;
             }
             
-            // Add logout handler to avatar (click to logout)
-            userAvatar.addEventListener('click', () => {
-                if (confirm('Do you want to logout?')) {
-                    logout();
+            // Profile dropdown toggle
+            const profileDropdown = document.getElementById('profileDropdown');
+            userAvatar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!profileDropdown.contains(e.target) && e.target !== userAvatar) {
+                    profileDropdown.classList.add('hidden');
                 }
             });
-            userAvatar.style.cursor = 'pointer';
+
+            // Create Community button
+            const createCommunityBtn = document.getElementById('createCommunityBtn');
+            createCommunityBtn.addEventListener('click', () => {
+                window.location.href = '/create-community';
+            });
+
+            // My Communities button
+            const myCommunitiesBtn = document.getElementById('myCommunitiesBtn');
+            myCommunitiesBtn.addEventListener('click', () => {
+                window.location.href = '/my-communities';
+            });
+
+            // Join Community button
+            const joinCommunityBtn = document.getElementById('joinCommunityBtn');
+            joinCommunityBtn.addEventListener('click', () => {
+                window.location.href = '/communities';
+            });
+
+            // Logout modal elements
+            const logoutModal = document.getElementById('logoutModal');
+            const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+
+            // Show logout modal
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', () => {
+                profileDropdown.classList.add('hidden');
+                logoutModal.classList.remove('hidden');
+            });
+
+            // Cancel logout
+            cancelLogoutBtn.addEventListener('click', () => {
+                logoutModal.classList.add('hidden');
+            });
+
+            // Confirm logout
+            confirmLogoutBtn.addEventListener('click', () => {
+                logoutModal.classList.add('hidden');
+                logout();
+            });
+
+            // Close modal when clicking outside
+            logoutModal.addEventListener('click', (e) => {
+                if (e.target === logoutModal) {
+                    logoutModal.classList.add('hidden');
+                }
+            });
+
+            // Load user data from Firestore
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log('✅ User data loaded:', userData);
+
+                    // Update tasks completed
+                    const tasksCompleted = userData.tasksCompleted || 0;
+                    document.getElementById('tasksCompleted').textContent = tasksCompleted;
+                    
+                    // Update rating
+                    const rating = userData.rating || 0;
+                    const ratingCount = userData.ratingCount || 0;
+                    const ratingDisplay = document.getElementById('ratingDisplay');
+                    if (ratingCount > 0) {
+                        const avgRating = (rating / ratingCount).toFixed(1);
+                        ratingDisplay.innerHTML = `
+                            <span class="text-3xl">${avgRating}</span>
+                            <span class="text-sm text-text-muted-dark">/ 5.0 (${ratingCount} reviews)</span>
+                        `;
+                    } else {
+                        ratingDisplay.innerHTML = `
+                            <span class="text-2xl text-text-muted-dark">No ratings yet</span>
+                        `;
+                    }
+
+                    // Initialize tabs
+                    setupTabs(user.uid);
+
+                    // Load active tasks (tasks user is working on) - default tab
+                    await loadTasks(user.uid, 'in-progress');
+
+                    // Load notifications for admin
+                    await loadNotifications(user.uid);
+
+                } else {
+                    console.warn('⚠️ User document does not exist in Firestore');
+                    // Set default values
+                    document.getElementById('tasksCompleted').textContent = '0';
+                    document.getElementById('ratingDisplay').innerHTML = `<span class="text-2xl text-text-muted-dark">No ratings yet</span>`;
+                }
+            } catch (error) {
+                console.error('❌ Error loading user data:', error);
+            }
+
+            console.log('✅ Dashboard loaded successfully');
+        });
+
+        // Setup tab switching
+        function setupTabs(userId) {
+            const inProgressTab = document.getElementById('inProgressTab');
+            const postedByMeTab = document.getElementById('postedByMeTab');
             
-            console.log('✅ Dashboard loaded for:', user.email);
+            inProgressTab.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Update tab styles
+                inProgressTab.classList.remove('border-b-transparent', 'text-text-muted-dark');
+                inProgressTab.classList.add('border-b-primary', 'text-cream');
+                inProgressTab.querySelector('p').classList.add('text-cream');
+                
+                postedByMeTab.classList.remove('border-b-primary', 'text-cream');
+                postedByMeTab.classList.add('border-b-transparent', 'text-text-muted-dark');
+                postedByMeTab.querySelector('p').classList.remove('text-cream');
+                
+                // Load in-progress tasks
+                loadTasks(userId, 'in-progress');
+            });
+            
+            postedByMeTab.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Update tab styles
+                postedByMeTab.classList.remove('border-b-transparent', 'text-text-muted-dark');
+                postedByMeTab.classList.add('border-b-primary', 'text-cream');
+                postedByMeTab.querySelector('p').classList.add('text-cream');
+                
+                inProgressTab.classList.remove('border-b-primary', 'text-cream');
+                inProgressTab.classList.add('border-b-transparent', 'text-text-muted-dark');
+                inProgressTab.querySelector('p').classList.remove('text-cream');
+                
+                // Load posted tasks
+                loadTasks(userId, 'posted');
+            });
+        }
+
+        // Load tasks based on tab (in-progress or posted)
+        async function loadTasks(userId, tabType) {
+            try {
+                const tasksRef = collection(db, 'tasks');
+                let q;
+                
+                if (tabType === 'in-progress') {
+                    // Tasks assigned to the user that are in progress
+                    q = query(
+                        tasksRef,
+                        where('assignedTo', '==', userId),
+                        where('status', '==', 'in-progress'),
+                        orderBy('createdAt', 'desc'),
+                        limit(10)
+                    );
+                } else if (tabType === 'posted') {
+                    // Tasks created by the user
+                    q = query(
+                        tasksRef,
+                        where('createdBy', '==', userId),
+                        orderBy('createdAt', 'desc'),
+                        limit(10)
+                    );
+                }
+
+                const querySnapshot = await getDocs(q);
+                const tasksContainer = document.getElementById('activeTasksContainer');
+                const inProgressCount = document.getElementById('inProgressCount');
+                const postedByMeCount = document.getElementById('postedByMeCount');
+                
+                // Update the appropriate tab count
+                const taskCount = querySnapshot.size;
+                if (tabType === 'in-progress') {
+                    inProgressCount.textContent = `In Progress (${taskCount})`;
+                } else {
+                    postedByMeCount.textContent = `Posted by Me (${taskCount})`;
+                }
+                
+                if (querySnapshot.empty) {
+                    const emptyMessage = tabType === 'in-progress' 
+                        ? 'No active quests yet. Start exploring!' 
+                        : 'You haven\'t posted any quests yet.';
+                    
+                    tasksContainer.innerHTML = `
+                        <div class="text-center py-12">
+                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">assignment</span>
+                            <p class="text-text-muted-dark">${emptyMessage}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                tasksContainer.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const task = doc.data();
+                    const taskCard = createTaskCard(task, doc.id, tabType);
+                    tasksContainer.appendChild(taskCard);
+                });
+
+                console.log('✅ Loaded', querySnapshot.size, tabType, 'tasks');
+            } catch (error) {
+                console.error('❌ Error loading tasks:', error);
+                const tasksContainer = document.getElementById('activeTasksContainer');
+                
+                // Check if error is because collection doesn't exist or no permission
+                // Show friendly "no tasks" message instead of error
+                const emptyMessage = tabType === 'in-progress' 
+                    ? 'No active quests yet. Start exploring!' 
+                    : 'You haven\'t posted any quests yet.';
+                
+                tasksContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">assignment</span>
+                        <p class="text-text-muted-dark">${emptyMessage}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Create task card element
+        function createTaskCard(task, taskId, tabType) {
+            const card = document.createElement('div');
+            card.className = 'flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg bg-card-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer';
+            card.onclick = () => window.location.href = `/task/${taskId}`;
+
+            // Different display based on tab type
+            let statusBadge = '';
+            if (tabType === 'posted') {
+                const statusColors = {
+                    'open': 'bg-primary/20 text-primary',
+                    'in-progress': 'bg-blue-500/20 text-blue-400',
+                    'completed': 'bg-green-500/20 text-green-400',
+                    'cancelled': 'bg-red-500/20 text-red-400'
+                };
+                const statusText = task.status || 'open';
+                const colorClass = statusColors[statusText] || statusColors['open'];
+                statusBadge = `<span class="text-xs px-2 py-1 rounded-full ${colorClass} font-semibold">${statusText.toUpperCase()}</span>`;
+            }
+
+            card.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-12" 
+                         style='background-image: url("${task.imageUrl || 'https://via.placeholder.com/48?text=Quest'}");'></div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <p class="text-cream font-bold">${task.title || 'Untitled Quest'}</p>
+                            ${statusBadge}
+                        </div>
+                        <p class="text-sm text-text-muted-dark">for ${task.communityName || 'Unknown Community'}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <p class="font-bold text-primary">${task.reward || '0'} HLP</p>
+                        <p class="text-sm text-text-muted-dark">${tabType === 'posted' ? 'Created: ' : 'Due: '}${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-text-muted-dark">chevron_right</span>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Load notifications (join requests & invitations)
+        async function loadNotifications(userId) {
+            try {
+                const notificationsList = document.getElementById('notificationsList');
+                const notificationBadge = document.getElementById('notificationBadge');
+                
+                // Get communities where user is an admin
+                const communitiesQuery = query(
+                    collection(db, 'communities'),
+                    where('admins', 'array-contains', userId)
+                );
+                const communitiesSnapshot = await getDocs(communitiesQuery);
+                const adminCommunityIds = communitiesSnapshot.docs.map(doc => doc.id);
+
+                if (adminCommunityIds.length === 0) {
+                    return; // User is not an admin of any community
+                }
+
+                // Get join requests for admin communities
+                const joinRequestsQuery = query(
+                    collection(db, 'joinRequests'),
+                    where('communityId', 'in', adminCommunityIds),
+                    where('status', '==', 'pending'),
+                    orderBy('createdAt', 'desc'),
+                    limit(20)
+                );
+                const joinRequestsSnapshot = await getDocs(joinRequestsQuery);
+
+                // Get invitations sent by user
+                const invitationsQuery = query(
+                    collection(db, 'invitations'),
+                    where('invitedBy', '==', userId),
+                    where('status', '==', 'pending'),
+                    orderBy('createdAt', 'desc'),
+                    limit(20)
+                );
+                const invitationsSnapshot = await getDocs(invitationsQuery);
+
+                const totalNotifications = joinRequestsSnapshot.size + invitationsSnapshot.size;
+
+                if (totalNotifications === 0) {
+                    notificationsList.innerHTML = '<p class="text-center text-text-muted-dark py-4 text-sm">No notifications</p>';
+                    notificationBadge.classList.add('hidden');
+                    return;
+                }
+
+                // Show badge with count
+                notificationBadge.textContent = totalNotifications;
+                notificationBadge.classList.remove('hidden');
+                
+                // Update header count
+                document.getElementById('notificationCount').textContent = totalNotifications;
+
+                notificationsList.innerHTML = '';
+
+                // Add join requests
+                for (const requestDoc of joinRequestsSnapshot.docs) {
+                    const request = requestDoc.data();
+                    const userDoc = await getDoc(doc(db, 'users', request.userId));
+                    const userName = userDoc.exists() ? userDoc.data().name : 'Unknown User';
+
+                    const notifDiv = document.createElement('div');
+                    notifDiv.className = 'p-3 border-b border-border-dark hover:bg-background-dark/50 transition-colors group';
+                    notifDiv.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center size-10 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                                <span class="material-symbols-outlined text-primary">person_add</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-cream text-sm font-medium truncate">${userName}</p>
+                                <p class="text-text-muted-dark text-xs truncate">${request.communityName}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="approve-request-btn flex items-center justify-center size-8 rounded-full bg-primary hover:bg-primary-light text-background-dark transition-colors" data-request-id="${requestDoc.id}" data-user-id="${request.userId}" data-community-id="${request.communityId}" title="Approve">
+                                    <span class="material-symbols-outlined text-base">check</span>
+                                </button>
+                                <button class="reject-request-btn flex items-center justify-center size-8 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors" data-request-id="${requestDoc.id}" title="Reject">
+                                    <span class="material-symbols-outlined text-base">close</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    notificationsList.appendChild(notifDiv);
+                }
+
+                // Add invitations status
+                invitationsSnapshot.forEach(invDoc => {
+                    const invitation = invDoc.data();
+                    const notifDiv = document.createElement('div');
+                    notifDiv.className = 'p-3 border-b border-border-dark hover:bg-background-dark/50 transition-colors group';
+                    notifDiv.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center size-10 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                                <span class="material-symbols-outlined text-blue-400">mail</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-cream text-sm font-medium truncate">${invitation.email}</p>
+                                <p class="text-text-muted-dark text-xs truncate">${invitation.communityName}</p>
+                            </div>
+                            <div class="flex items-center justify-center size-8 rounded-full bg-yellow-500/20">
+                                <span class="material-symbols-outlined text-yellow-400 text-base">schedule</span>
+                            </div>
+                        </div>
+                    `;
+                    notificationsList.appendChild(notifDiv);
+                });
+
+                // Add event listeners for approve/reject buttons
+                document.querySelectorAll('.approve-request-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const requestId = btn.dataset.requestId;
+                        const userId = btn.dataset.userId;
+                        const communityId = btn.dataset.communityId;
+                        await handleJoinRequest(requestId, userId, communityId, true);
+                    });
+                });
+
+                document.querySelectorAll('.reject-request-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const requestId = btn.dataset.requestId;
+                        await handleJoinRequest(requestId, null, null, false);
+                    });
+                });
+
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // Handle join request approval/rejection
+        async function handleJoinRequest(requestId, userId, communityId, approve) {
+            try {
+                const requestRef = doc(db, 'joinRequests', requestId);
+
+                if (approve) {
+                    // Add user to community members
+                    const communityRef = doc(db, 'communities', communityId);
+                    await updateDoc(communityRef, {
+                        members: arrayUnion(userId),
+                        memberCount: increment(1),
+                        updatedAt: serverTimestamp()
+                    });
+
+                    // Add community to user's joined communities
+                    const userRef = doc(db, 'users', userId);
+                    await updateDoc(userRef, {
+                        joinedCommunities: arrayUnion(communityId),
+                        updatedAt: serverTimestamp()
+                    });
+
+                    // Update request status
+                    await updateDoc(requestRef, {
+                        status: 'approved',
+                        approvedAt: serverTimestamp()
+                    });
+
+                    alert('Join request approved!');
+                } else {
+                    // Update request status to rejected
+                    await updateDoc(requestRef, {
+                        status: 'rejected',
+                        rejectedAt: serverTimestamp()
+                    });
+
+                    alert('Join request rejected');
+                }
+
+                // Reload notifications
+                await loadNotifications(currentUser.uid);
+
+            } catch (error) {
+                console.error('Error handling join request:', error);
+                alert('Error processing request');
+            }
+        }
+
+        // Toggle notifications dropdown
+        document.getElementById('notificationsBtn').addEventListener('click', () => {
+            const dropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Clear all notifications
+        document.getElementById('markAllRead')?.addEventListener('click', () => {
+            const notificationsList = document.getElementById('notificationsList');
+            notificationsList.innerHTML = '<p class="text-center text-text-muted-dark py-4 text-sm">No notifications</p>';
+            document.getElementById('notificationBadge').classList.add('hidden');
+            document.getElementById('notificationCount').textContent = '0';
+        });
+
+        // Close notifications when clicking outside
+        document.addEventListener('click', (e) => {
+            const notificationsBtn = document.getElementById('notificationsBtn');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            
+            if (!notificationsBtn.contains(e.target) && !notificationsDropdown.contains(e.target)) {
+                notificationsDropdown.classList.add('hidden');
+            }
         });
     </script>
 </body>

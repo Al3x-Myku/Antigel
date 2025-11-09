@@ -357,6 +357,12 @@ func landingPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Only serve landing page for the root path
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
 	// Add CORS headers
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -398,6 +404,59 @@ func dashboardPageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	http.ServeFile(w, r, "dashboard.html")
+}
+
+// Create Community page handler
+func createCommunityPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	http.ServeFile(w, r, "create-community.html")
+}
+
+// Communities browse page handler
+func communitiesPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	http.ServeFile(w, r, "communities.html")
+}
+
+// Individual community page handler
+func communityPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Serve community.html for all /community/* routes
+	http.ServeFile(w, r, "community.html")
+}
+
+// My Communities page handler
+func myCommunitiesPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	http.ServeFile(w, r, "my-communities.html")
 }
 
 // Static assets handler (for CSS, JS, images, etc.)
@@ -450,6 +509,10 @@ func main() {
 	http.HandleFunc("/login", loginPageHandler)
 	http.HandleFunc("/register", registerPageHandler)
 	http.HandleFunc("/dashboard", dashboardPageHandler)
+	http.HandleFunc("/create-community", createCommunityPageHandler)
+	http.HandleFunc("/communities", communitiesPageHandler)
+	http.HandleFunc("/my-communities", myCommunitiesPageHandler)
+	http.HandleFunc("/community/", communityPageHandler) // Dynamic route for individual communities
 
 	// Static assets (CSS, JS, images, etc.)
 	http.HandleFunc("/static/", staticAssetsHandler)

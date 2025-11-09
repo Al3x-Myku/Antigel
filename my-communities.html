@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Communities - SideQuests</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#DDD92A",
+                        "primary-light": "#EAE151",
+                        "primary-pale": "#EEEFA8",
+                        "secondary": "#DDD92A",
+                        "background-dark": "#2D2A32",
+                        "card-dark": "#3A3740",
+                        "border-dark": "#4A4750",
+                        "text-muted-dark": "#B0ADB5",
+                        "cream": "#FAFDF6",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-dark text-cream">
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <div class="flex flex-1 justify-center py-5">
+                <div class="layout-content-container flex flex-col w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+                    
+                    <!-- Header -->
+                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark px-4 sm:px-6 py-4 mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="size-6 text-primary">
+                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-cream text-xl font-bold leading-tight tracking-[-0.015em]">SideQuests</h2>
+                        </div>
+                        <a href="/dashboard" class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-2" style="color: #EEEFA8;">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Back to Dashboard
+                        </a>
+                    </header>
+
+                    <main class="flex flex-col gap-8">
+                        <!-- Page Heading -->
+                        <div class="px-4 sm:px-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h1 class="text-cream text-4xl font-bold leading-tight tracking-[-0.033em] mb-2">My Communities</h1>
+                                    <p class="text-text-muted-dark text-base font-normal leading-normal">Communities you've joined</p>
+                                </div>
+                                <a href="/communities" class="bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors flex items-center gap-2">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Join More
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Stats Bar -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 sm:px-6">
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
+                                <p class="text-text-muted-dark text-sm font-medium">Total Communities</p>
+                                <p class="text-cream text-2xl font-bold" id="totalCommunities">0</p>
+                            </div>
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
+                                <p class="text-text-muted-dark text-sm font-medium">Admin Of</p>
+                                <p class="text-cream text-2xl font-bold" id="adminCount">0</p>
+                            </div>
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-border-dark">
+                                <p class="text-text-muted-dark text-sm font-medium">Active Tasks</p>
+                                <p class="text-cream text-2xl font-bold" id="activeTasks">0</p>
+                            </div>
+                            <div class="flex flex-col gap-1 rounded-lg bg-card-dark p-4 border border-primary">
+                                <p class="text-text-muted-dark text-sm font-medium">Total HLP Earned</p>
+                                <p class="text-primary text-2xl font-bold" id="totalHlp">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="flex flex-wrap gap-4 px-4 sm:px-6">
+                            <button id="filterAllMine" class="filter-btn px-4 py-2 rounded-full bg-primary text-background-dark font-bold text-sm transition-colors">
+                                All
+                            </button>
+                            <button id="filterAdmin" class="filter-btn px-4 py-2 rounded-full bg-card-dark border-2 border-border-dark text-cream font-bold text-sm hover:border-primary transition-colors">
+                                Admin
+                            </button>
+                            <button id="filterMember" class="filter-btn px-4 py-2 rounded-full bg-card-dark border-2 border-border-dark text-cream font-bold text-sm hover:border-primary transition-colors">
+                                Member
+                            </button>
+                            <button id="filterPrizePoolMine" class="filter-btn px-4 py-2 rounded-full bg-card-dark border-2 border-border-dark text-cream font-bold text-sm hover:border-primary transition-colors">
+                                Prize Pool
+                            </button>
+                            <button id="filterMutualAidMine" class="filter-btn px-4 py-2 rounded-full bg-card-dark border-2 border-border-dark text-cream font-bold text-sm hover:border-primary transition-colors">
+                                Mutual Aid
+                            </button>
+                        </div>
+
+                        <!-- Communities Grid -->
+                        <div id="myCommunitiesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-6">
+                            <!-- Loading state -->
+                            <div class="col-span-full flex justify-center py-12">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="hidden col-span-full text-center py-12 px-4 sm:px-6">
+                            <span class="material-symbols-outlined text-6xl text-text-muted-dark mb-4">groups_off</span>
+                            <p class="text-text-muted-dark text-lg mb-4">You haven't joined any communities yet</p>
+                            <a href="/communities" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-background-dark font-bold py-3 px-6 rounded-lg transition-colors">
+                                <span class="material-symbols-outlined">explore</span>
+                                Explore Communities
+                            </a>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Community Confirmation Modal -->
+    <div id="leaveModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-card-dark border-2 border-red-500/50 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="flex items-center justify-center size-12 rounded-full bg-red-500/20">
+                    <span class="material-symbols-outlined text-red-400 text-3xl">logout</span>
+                </div>
+                <div>
+                    <h3 class="text-cream text-2xl font-bold">Leave Community?</h3>
+                </div>
+            </div>
+            <p class="text-text-muted-dark text-base mb-2">Are you sure you want to leave</p>
+            <p class="text-cream font-bold text-lg mb-6" id="leaveCommunityName">Community Name</p>
+            <p class="text-text-muted-dark text-sm mb-6">You'll lose access to all tasks and content in this community.</p>
+            <div class="flex gap-4">
+                <button id="cancelLeaveBtn" class="flex-1 px-6 py-3 rounded-xl bg-card-dark border-2 border-border-dark text-cream font-bold hover:border-primary/50 transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmLeaveBtn" class="flex-1 px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-colors">
+                    Leave
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            collection,
+            query,
+            where,
+            getDocs,
+            doc,
+            getDoc,
+            updateDoc,
+            arrayRemove,
+            increment
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBV3CuuYD_8w843LgPQqAICGnmvDtOt5k",
+            authDomain: "taskmatch-openhack2025.firebaseapp.com",
+            projectId: "taskmatch-openhack2025",
+            storageBucket: "taskmatch-openhack2025.firebasestorage.app",
+            messagingSenderId: "1071810532798",
+            appId: "1:1071810532798:web:c8e7b6b25ec68c9df8cdda",
+            measurementId: "G-Y0XPDPZFY8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allMyCommunities = [];
+        let currentFilter = 'all';
+        let selectedCommunityId = null;
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = user;
+            console.log('User authenticated:', user.uid);
+            await loadMyCommunities();
+        });
+
+        // Load user's joined communities
+        async function loadMyCommunities() {
+            try {
+                // Get user's joined communities array
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists() || !userSnap.data().joinedCommunities || userSnap.data().joinedCommunities.length === 0) {
+                    document.getElementById('myCommunitiesContainer').innerHTML = '';
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    document.getElementById('totalCommunities').textContent = '0';
+                    document.getElementById('adminCount').textContent = '0';
+                    document.getElementById('activeTasks').textContent = '0';
+                    document.getElementById('totalHlp').textContent = '0';
+                    return;
+                }
+
+                const joinedCommunityIds = userSnap.data().joinedCommunities;
+
+                // Fetch all communities
+                const communitiesRef = collection(db, 'communities');
+                const communitiesSnapshot = await getDocs(communitiesRef);
+
+                allMyCommunities = [];
+                let adminCount = 0;
+                let totalTasks = 0;
+                let totalHlp = 0;
+
+                communitiesSnapshot.forEach((doc) => {
+                    const communityData = { id: doc.id, ...doc.data() };
+                    
+                    // Only include communities user has joined
+                    if (joinedCommunityIds.includes(doc.id)) {
+                        // Check if user is admin
+                        communityData.isAdmin = communityData.admins && communityData.admins.includes(currentUser.uid);
+                        if (communityData.isAdmin) adminCount++;
+                        
+                        totalTasks += communityData.tasksCount || 0;
+                        if (communityData.type === 'prize-pool') {
+                            totalHlp += communityData.prizePool || 0;
+                        }
+                        
+                        allMyCommunities.push(communityData);
+                    }
+                });
+
+                // Update stats
+                document.getElementById('totalCommunities').textContent = allMyCommunities.length;
+                document.getElementById('adminCount').textContent = adminCount;
+                document.getElementById('activeTasks').textContent = totalTasks;
+                document.getElementById('totalHlp').textContent = totalHlp;
+
+                console.log('Loaded', allMyCommunities.length, 'joined communities');
+                displayCommunities(allMyCommunities);
+            } catch (error) {
+                console.error('Error loading communities:', error);
+                document.getElementById('myCommunitiesContainer').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-text-muted-dark">Error loading your communities</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display communities
+        function displayCommunities(communities) {
+            const container = document.getElementById('myCommunitiesContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (communities.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = '';
+
+            communities.forEach(community => {
+                const card = createCommunityCard(community);
+                container.appendChild(card);
+            });
+        }
+
+        // Create community card
+        function createCommunityCard(community) {
+            const card = document.createElement('div');
+            card.className = 'flex flex-col bg-card-dark border-2 border-border-dark rounded-lg overflow-hidden hover:border-primary transition-all cursor-pointer hover:shadow-lg';
+
+            // Click to navigate
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.leave-btn')) {
+                    window.location.href = `/community/${community.id}`;
+                }
+            });
+
+            const typeBadge = community.type === 'prize-pool' 
+                ? '<span class="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary font-semibold">PRIZE POOL</span>'
+                : '<span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400 font-semibold">MUTUAL AID</span>';
+
+            const adminBadge = community.isAdmin 
+                ? '<span class="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-xs">verified</span> ADMIN</span>'
+                : '';
+
+            card.innerHTML = `
+                <div class="aspect-video bg-center bg-cover bg-no-repeat" style="background-image: url('${community.imageUrl || 'https://via.placeholder.com/400x225?text=Community'}')"></div>
+                <div class="p-4 flex flex-col gap-3 flex-1">
+                    <div class="flex items-start justify-between gap-2">
+                        <h3 class="text-cream text-xl font-bold leading-tight flex-1">${community.name}</h3>
+                        ${typeBadge}
+                    </div>
+                    <p class="text-text-muted-dark text-sm line-clamp-2">${community.description}</p>
+                    
+                    <div class="flex items-center gap-4 text-sm text-text-muted-dark mt-auto pt-3 border-t border-border-dark">
+                        <div class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-lg">group</span>
+                            <span>${community.memberCount || 0}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-lg">assignment</span>
+                            <span>${community.tasksCount || 0}</span>
+                        </div>
+                    </div>
+
+                    ${community.type === 'prize-pool' ? `
+                        <div class="flex items-center gap-2 text-sm">
+                            <span class="material-symbols-outlined text-primary text-lg">account_balance_wallet</span>
+                            <span class="text-primary font-bold">${community.prizePool || 0} HLP</span>
+                        </div>
+                    ` : ''}
+
+                    <div class="flex gap-2">
+                        ${adminBadge}
+                        ${!community.isAdmin ? `
+                            <button class="leave-btn flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2" data-community-id="${community.id}" data-community-name="${community.name}">
+                                <span class="material-symbols-outlined text-base">logout</span>
+                                <span>Leave</span>
+                            </button>
+                        ` : `
+                            <button class="flex-1 bg-card-dark border-2 border-primary text-primary font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2" onclick="event.stopPropagation(); window.location.href='/community/${community.id}'">
+                                <span class="material-symbols-outlined text-base">settings</span>
+                                <span>Manage</span>
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            // Add leave button handler
+            const leaveBtn = card.querySelector('.leave-btn');
+            if (leaveBtn) {
+                leaveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectedCommunityId = leaveBtn.dataset.communityId;
+                    document.getElementById('leaveCommunityName').textContent = leaveBtn.dataset.communityName;
+                    document.getElementById('leaveModal').classList.remove('hidden');
+                });
+            }
+
+            return card;
+        }
+
+        // Filter buttons
+        document.getElementById('filterAllMine').addEventListener('click', () => {
+            setActiveFilter('all');
+            displayCommunities(allMyCommunities);
+        });
+
+        document.getElementById('filterAdmin').addEventListener('click', () => {
+            setActiveFilter('admin');
+            const filtered = allMyCommunities.filter(c => c.isAdmin);
+            displayCommunities(filtered);
+        });
+
+        document.getElementById('filterMember').addEventListener('click', () => {
+            setActiveFilter('member');
+            const filtered = allMyCommunities.filter(c => !c.isAdmin);
+            displayCommunities(filtered);
+        });
+
+        document.getElementById('filterPrizePoolMine').addEventListener('click', () => {
+            setActiveFilter('prize-pool');
+            const filtered = allMyCommunities.filter(c => c.type === 'prize-pool');
+            displayCommunities(filtered);
+        });
+
+        document.getElementById('filterMutualAidMine').addEventListener('click', () => {
+            setActiveFilter('mutual-aid');
+            const filtered = allMyCommunities.filter(c => c.type === 'mutual-aid');
+            displayCommunities(filtered);
+        });
+
+        function setActiveFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-background-dark');
+                btn.classList.add('bg-card-dark', 'text-cream', 'border-2', 'border-border-dark');
+            });
+
+            let activeBtn;
+            if (filter === 'all') activeBtn = document.getElementById('filterAllMine');
+            else if (filter === 'admin') activeBtn = document.getElementById('filterAdmin');
+            else if (filter === 'member') activeBtn = document.getElementById('filterMember');
+            else if (filter === 'prize-pool') activeBtn = document.getElementById('filterPrizePoolMine');
+            else if (filter === 'mutual-aid') activeBtn = document.getElementById('filterMutualAidMine');
+
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-card-dark', 'text-cream', 'border-2', 'border-border-dark');
+                activeBtn.classList.add('bg-primary', 'text-background-dark');
+            }
+        }
+
+        // Leave community modal handlers
+        document.getElementById('cancelLeaveBtn').addEventListener('click', () => {
+            document.getElementById('leaveModal').classList.add('hidden');
+            selectedCommunityId = null;
+        });
+
+        document.getElementById('confirmLeaveBtn').addEventListener('click', async () => {
+            if (!selectedCommunityId) return;
+
+            try {
+                const button = document.getElementById('confirmLeaveBtn');
+                button.disabled = true;
+                button.textContent = 'Leaving...';
+
+                // Remove user from community members
+                const communityRef = doc(db, 'communities', selectedCommunityId);
+                await updateDoc(communityRef, {
+                    members: arrayRemove(currentUser.uid),
+                    memberCount: increment(-1)
+                });
+
+                // Remove community from user's joined communities
+                const userRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(userRef, {
+                    joinedCommunities: arrayRemove(selectedCommunityId)
+                });
+
+                console.log('Left community:', selectedCommunityId);
+
+                // Close modal and reload
+                document.getElementById('leaveModal').classList.add('hidden');
+                await loadMyCommunities();
+
+            } catch (error) {
+                console.error('Error leaving community:', error);
+                alert('Error leaving community: ' + error.message);
+                const button = document.getElementById('confirmLeaveBtn');
+                button.disabled = false;
+                button.textContent = 'Leave';
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('leaveModal').addEventListener('click', (e) => {
+            if (e.target.id === 'leaveModal') {
+                document.getElementById('leaveModal').classList.add('hidden');
+                selectedCommunityId = null;
+            }
+        });
+    </script>
+</body>
+</html>
