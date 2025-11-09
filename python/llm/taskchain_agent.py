@@ -10,7 +10,7 @@ async def main() -> None:
     api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("GRAPHRAG_API_KEY")
     azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     api_version = os.getenv("AZURE_OPENAI_API_VERSION", os.getenv("OPENAI_API_VERSION"))
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5-nano")
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4.1-nano")
 
     if not api_key:
         raise RuntimeError("Missing AZURE_OPENAI_API_KEY / GRAPHRAG_API_KEY")

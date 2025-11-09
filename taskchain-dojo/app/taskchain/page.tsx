@@ -47,7 +47,6 @@ const getToolName = (message: any): string => {
 
 const ToolCallMessage = ({ message }: any) => {
   const toolName = getToolName(message);
-
   return (
     <div className="tc-tool-pill-wrapper">
       <div className="tc-tool-pill">
@@ -62,7 +61,6 @@ const ToolCallMessage = ({ message }: any) => {
 
 const ToolResultMessage = ({ message, children }: any) => {
   const toolName = getToolName(message);
-
   return (
     <div className="tc-tool-message">
       <div className="tc-tool-header">
@@ -77,73 +75,7 @@ const ToolResultMessage = ({ message, children }: any) => {
   );
 };
 
-// ---------- System prompt ----------
-
-function buildSystemPrompt(user: UserProfile | null): string {
-  const base = `
-You are the SideQuests / TaskChain AI assistant.
-
-You run inside a Task Dojo UI that is connected to:
-- The TaskChain MCP tools on Sepolia for live on-chain task data.
-- A host app that may provide an authenticated user profile.
-
-Rules:
-- Always use the TaskChain MCP tools (list_tasks, get_task, list_active_tasks, etc.) for real data.
-- Never invent on-chain state.
-- When a user profile is provided, personalize using that profile & skillset.
-- DO NOT HALLUCINATE!!!
-- DO NOT FABRICATE TASKS!!
-If the user asks for tasks and you don't receive anything, don't hallucinate, fabricate, or lie to the user.
-Reward should be shown in raw format only, for example: for 1e-16, you need to show 100.
-`.trim();
-
-  if (!user) {
-    return `${base}
-
-User profile:
-- Not provided.
-
-Behavior:
-- Provide helpful, general guidance about available tasks and how the platform works.
-- If the user mentions their skills or wallet, adapt based on that conversation.
-- DO NOT HALLUCINATE!!!
-- DO NOT FABRICATE TASKS!!
-`;
-  }
-
-  const skillsText =
-    user.skills ||
-    user.skillset ||
-    user.bio ||
-    "No explicit skills string provided.";
-
-  const badgesCount = Array.isArray(user.badges) ? user.badges.length : 0;
-
-  return `${base}
-
-User Profile (trusted, provided by the host application):
-- Display Name: ${user.displayName || "N/A"}
-- Email: ${user.email || "N/A"}
-- Wallet Address: ${user.walletAddress || "N/A"}
-- UID / ID: ${user.uid || user.id || "N/A"}
-- Tasks Completed: ${user.tasksCompleted ?? 0}
-- Tasks Created: ${user.tasksCreated ?? 0}
-- Reputation: ${user.reputation ?? 0}
-- Badges: ${badgesCount} badge(s)
-- Skillset: ${skillsText}
-
-Instructions:
-- Treat this profile as the identity of the current user.
-- Use their skillset, experience, and reputation to:
-  - Suggest tasks that fit their level and interests.
-  - Highlight opportunities relevant to their wallet / history when appropriate.
-- Do NOT claim to perform on-chain actions or see private balances.
-- Stay grounded in data from TaskChain tools.
-- DO NOT HALLUCINATE!!!
-`;
-}
-
-// ---------- Signed-in banner (embed only) ----------
+// ---------- Banner for embedded + profile ----------
 
 const UserContextBanner: React.FC<{ user: UserProfile | null }> = ({ user }) => {
   if (!user) return null;
@@ -185,7 +117,7 @@ const UserContextBanner: React.FC<{ user: UserProfile | null }> = ({ user }) => 
   );
 };
 
-// ---------- Main component ----------
+// ---------- Main page ----------
 
 const TaskchainAgenticChat: React.FC = () => {
   const searchParams = useSearchParams();
@@ -193,11 +125,10 @@ const TaskchainAgenticChat: React.FC = () => {
 
   const isEmbedded = searchParams.get("embed") === "1";
 
-  // 1) Optional: ?user=<base64(json)>
+  // 1) Dev/testing: ?user=<base64(json)>
   useEffect(() => {
     const encoded = searchParams.get("user");
     if (!encoded) return;
-
     try {
       const json = atob(encoded);
       const parsed = JSON.parse(json);
@@ -205,17 +136,15 @@ const TaskchainAgenticChat: React.FC = () => {
         setUser((prev) => ({ ...(prev || {}), ...parsed }));
       }
     } catch {
-      // ignore malformed
+      // ignore invalid
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // 2) Primary: postMessage from host
+  // 2) Real embedding: receive profile via postMessage
   useEffect(() => {
     const handler = (event: MessageEvent) => {
-      // In production: restrict to trusted origins
-      // if (event.origin !== "https://your-host.app") return;
-
+      // In production: check event.origin
       if (event.data?.type === "TASKCHAIN_USER_PROFILE") {
         const profile = event.data.payload;
         if (profile && typeof profile === "object") {
@@ -223,13 +152,11 @@ const TaskchainAgenticChat: React.FC = () => {
         }
       }
     };
-
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  const systemPrompt = useMemo(() => buildSystemPrompt(user), [user]);
-
+  // Initial greeting text
   const initialLabel = useMemo(() => {
     if (user) {
       const name =
@@ -239,7 +166,56 @@ const TaskchainAgenticChat: React.FC = () => {
     return "Hi, I'm SideQuests AI. Ask me anything about SideQuests tasks and how to get involved.";
   }, [user]);
 
-  // Layout differs for embed vs direct access
+  // Suggestions, including "Share my account details" when we have a profile
+  const suggestions = useMemo(() => {
+    const base = [
+      {
+        title: "Show open tasks",
+        message: "Show me only open / available tasks.",
+      },
+      {
+        title: "Show completed tasks",
+        message: "Show me only completed / verified tasks.",
+      },
+    ];
+
+    if (user) {
+      const profilePayload = {
+        displayName: user.displayName,
+        email: user.email,
+        walletAddress: user.walletAddress,
+        uid: user.uid || user.id,
+        tasksCompleted: user.tasksCompleted ?? 0,
+        tasksCreated: user.tasksCreated ?? 0,
+        reputation: user.reputation ?? 0,
+        badges: user.badges ?? [],
+        skills:
+          user.skills || user.skillset || user.bio || "No explicit skills.",
+      };
+
+      // This sends a special message the backend is instructed to parse.
+      base.unshift({
+        title: "Share my account details",
+        message: `Here are my profile details (PROFILE_JSON): ${JSON.stringify(profilePayload)}`,
+      });
+
+      base.unshift({
+        title: "Find tasks for my skills",
+        message:
+          `Use my shared profile (via PROFILE_JSON) and suggest a few tasks that match my skills. ${JSON.stringify(profilePayload)}`,
+      });
+    } else {
+      base.unshift({
+        title: "Help me get started",
+        message:
+          "Explain how SideQuests works and how I can find or create tasks.",
+      });
+    }
+
+    return base;
+  }, [user]);
+
+  // Layout: embed vs direct
   const containerClass = isEmbedded
     ? "h-screen w-screen flex flex-col p-3 gap-2 bg-slate-50"
     : "min-h-screen w-full flex justify-center bg-slate-50 p-6";
@@ -248,30 +224,29 @@ const TaskchainAgenticChat: React.FC = () => {
     ? "flex-1 min-h-0"
     : "w-full max-w-4xl h-[80vh] rounded-2xl border bg-white shadow-sm overflow-hidden";
 
+  // Key to reset per identity (optional but nice)
+  const copilotKey = useMemo(() => {
+    if (!user) return "sq-chat-anon";
+    return (
+      "sq-chat-user-" +
+      (user.uid ||
+        user.id ||
+        user.walletAddress ||
+        user.email ||
+        "unknown")
+    );
+  }, [user]);
+
   return (
     <div className={containerClass}>
       {isEmbedded && user && <UserContextBanner user={user} />}
 
       <div className={chatWrapperClass}>
         <CopilotChat
+          key={copilotKey}
           className="h-full w-full copilotKitChat"
-          instructions={systemPrompt}
           labels={{ initial: initialLabel }}
-          suggestions={[
-            {
-              title: "Find tasks for my skills",
-              message:
-                "Based on my profile and skillset, suggest a few tasks that fit me.",
-            },
-            {
-              title: "Show open tasks",
-              message: "Show me only open / available tasks.",
-            },
-            {
-              title: "Show completed tasks",
-              message: "Show me only completed / verified tasks.",
-            },
-          ]}
+          suggestions={suggestions}
           RenderActionExecutionMessage={ToolCallMessage}
           RenderResultMessage={ToolResultMessage}
         />
