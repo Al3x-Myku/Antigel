@@ -236,6 +236,28 @@
                                     </div>
                                 </div>
 
+                                <!-- Personal Tasks (PTasks) -->
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em] flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary">person_check</span>
+                                            My Personal Tasks
+                                        </h2>
+                                        <button id="refreshPTasks" class="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">refresh</span>
+                                            Refresh
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="ptasksContainer">
+                                        <div class="col-span-full flex items-center justify-center h-32">
+                                            <div class="text-center">
+                                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                                                <p class="text-sm text-text-muted-dark">Loading your personal tasks...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Section Header -->
                                 <h2 class="text-cream text-[22px] font-bold leading-tight tracking-[-0.015em]">My Active Quests</h2>
                                 
@@ -596,6 +618,9 @@
 
                     // Load AI recommendations
                     await loadAIRecommendations(user.uid);
+
+                    // Load Personal Tasks (PTasks)
+                    await loadPTasks(user.uid);
 
                     // Build user profile for AI Assistant iframe
                     userProfileData = {
@@ -1269,99 +1294,459 @@
             return date.toLocaleDateString();
         }
 
-        // Load AI recommendations
+        // Load AI recommendations from ptask collection
         async function loadAIRecommendations(userId) {
             const container = document.getElementById('aiRecommendedTasksContainer');
             
             try {
-                // Get user data for personalization
+                console.log('🔍 Loading AI Recommendations from ptask collection for user:', userId);
+                
+                // Get user data for email
                 const userDocRef = doc(db, 'users', userId);
                 const userDoc = await getDoc(userDocRef);
                 const userData = userDoc.data() || {};
+                const userEmail = (auth.currentUser?.email || userData.email || '').toLowerCase();
                 
-                // Get user's skills and interests
-                const userSkills = userData.skills || [];
-                const userInterests = userData.interests || [];
-                
-                // Query tasks (we'll filter them based on user profile)
-                const tasksRef = collection(db, 'tasks');
-                const q = query(
-                    tasksRef,
-                    where('status', '==', 'open'),
-                    limit(20)
-                );
-                
-                const querySnapshot = await getDocs(q);
+                console.log('📧 User email:', userEmail);
+                console.log('👤 User ID:', userId);
+
+                // FIRST: Try to get the ptask document directly using userId
                 let recommendedTasks = [];
                 
-                querySnapshot.forEach((doc) => {
-                    const task = doc.data();
-                    // Simple scoring: match skills or interests
-                    let score = 0;
-                    if (userSkills.some(skill => task.title?.toLowerCase().includes(skill.toLowerCase()))) {
-                        score += 2;
+                try {
+                    const ptaskDocRef = doc(db, 'ptask', userId);
+                    const ptaskDocSnap = await getDoc(ptaskDocRef);
+                    
+                    if (ptaskDocSnap.exists()) {
+                        const ptaskData = ptaskDocSnap.data();
+                        console.log('✅ Found ptask document for user ID:', userId);
+                        console.log('📄 PTask data:', ptaskData);
+                        console.log('📋 Available fields in ptask:', Object.keys(ptaskData));
+                        console.log('❓ Does it have "tasks" field?', 'tasks' in ptaskData);
+                        console.log('❓ Does it have "recommendedTasks" field?', 'recommendedTasks' in ptaskData);
+                        
+                        // Extract tasks from ptask document
+                        if (ptaskData.tasks && Array.isArray(ptaskData.tasks)) {
+                            console.log(`📋 Found ${ptaskData.tasks.length} tasks in ptask.tasks array`);
+                            ptaskData.tasks.forEach((task, index) => {
+                                console.log(`  Task ${index}:`, task);
+                                recommendedTasks.push({
+                                    id: `${userId}_task_${index}`,
+                                    data: task,
+                                    matchTag: 'Personal Task',
+                                    source: 'ptask'
+                                });
+                            });
+                        }
+                        
+                        if (ptaskData.recommendedTasks && Array.isArray(ptaskData.recommendedTasks)) {
+                            console.log(`📋 Found ${ptaskData.recommendedTasks.length} recommended tasks`);
+                            ptaskData.recommendedTasks.forEach((task, index) => {
+                                console.log(`  Recommended task ${index}:`, task);
+                                recommendedTasks.push({
+                                    id: `${userId}_rec_${index}`,
+                                    data: task,
+                                    matchTag: 'Recommended for you',
+                                    source: 'ptask'
+                                });
+                            });
+                        }
+                        
+                        // Check all fields for task-like data
+                        Object.keys(ptaskData).forEach(key => {
+                            if (key.toLowerCase().includes('task') && Array.isArray(ptaskData[key])) {
+                                console.log(`📋 Found array field "${key}" with ${ptaskData[key].length} items`);
+                                ptaskData[key].forEach((item, index) => {
+                                    if (typeof item === 'object' && item !== null) {
+                                        recommendedTasks.push({
+                                            id: `${userId}_${key}_${index}`,
+                                            data: item,
+                                            matchTag: 'Personal Task',
+                                            source: 'ptask'
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        console.log('⚠️ No ptask document found for userId:', userId);
                     }
-                    if (userInterests.some(interest => task.title?.toLowerCase().includes(interest.toLowerCase()))) {
-                        score += 1;
+                } catch (ptaskError) {
+                    console.error('❌ Error loading ptask document:', ptaskError);
+                }
+
+                // SECOND: Also scan all ptask documents for email matches
+                const ptaskRef = collection(db, 'ptask');
+                const ptaskSnapshot = await getDocs(ptaskRef);
+                
+                console.log(`📦 Scanning ${ptaskSnapshot.size} ptask documents for email matches...`);
+
+                // Check each ptask document
+                ptaskSnapshot.forEach((ptaskDoc) => {
+                    const ptaskData = ptaskDoc.data();
+                    console.log(`🔍 Checking ptask document ID: ${ptaskDoc.id}`);
+                    console.log(`📄 Full ptask data:`, JSON.stringify(ptaskData, null, 2));
+                    
+                    // Skip if we already processed this user's document
+                    if (ptaskDoc.id === userId) {
+                        console.log('⏭️ Skipping - already processed this document');
+                        return;
                     }
                     
-                    recommendedTasks.push({ id: doc.id, data: task, score });
+                    // Check if this ptask document has an email field matching the user
+                    const ptaskEmail = (ptaskData.email || '').toLowerCase();
+                    const ptaskRawEmail = (ptaskData.raw?.email || '').toLowerCase();
+                    const ptaskUid = ptaskData.uid;
+                    
+                    console.log(`  - ptask.email: ${ptaskEmail}`);
+                    console.log(`  - ptask.raw.email: ${ptaskRawEmail}`);
+                    console.log(`  - ptask.uid: ${ptaskUid}`);
+                    console.log(`  - Looking for: ${userEmail} or ${userId}`);
+                    
+                    if (ptaskEmail === userEmail || ptaskRawEmail === userEmail || ptaskUid === userId) {
+                        console.log('✅ MATCH FOUND! Processing tasks from this ptask document...');
+                        
+                        // Check if ptask has embedded tasks
+                        if (ptaskData.tasks && Array.isArray(ptaskData.tasks)) {
+                            console.log(`📋 Found ${ptaskData.tasks.length} tasks in ptask.tasks array`);
+                            ptaskData.tasks.forEach((task, index) => {
+                                console.log(`  Adding task ${index}:`, task);
+                                recommendedTasks.push({
+                                    id: `${ptaskDoc.id}_task_${index}`,
+                                    data: task,
+                                    matchTag: 'Personal Task',
+                                    source: 'ptask'
+                                });
+                            });
+                        }
+                        
+                        // Check for other task-related fields
+                        if (ptaskData.recommendedTasks && Array.isArray(ptaskData.recommendedTasks)) {
+                            console.log(`📋 Found ${ptaskData.recommendedTasks.length} recommended tasks`);
+                            ptaskData.recommendedTasks.forEach((task, index) => {
+                                recommendedTasks.push({
+                                    id: `${ptaskDoc.id}_rec_${index}`,
+                                    data: task,
+                                    matchTag: 'Recommended for you',
+                                    source: 'ptask'
+                                });
+                            });
+                        }
+                        
+                        // Check ALL fields for arrays that might contain tasks
+                        Object.keys(ptaskData).forEach(fieldKey => {
+                            const fieldValue = ptaskData[fieldKey];
+                            if (Array.isArray(fieldValue) && fieldValue.length > 0) {
+                                console.log(`� Checking array field "${fieldKey}" with ${fieldValue.length} items`);
+                                fieldValue.forEach((item, index) => {
+                                    // Check if item looks like a task (has title or description)
+                                    if (typeof item === 'object' && item !== null && (item.title || item.name || item.description)) {
+                                        console.log(`  ✅ Found task-like object in ${fieldKey}[${index}]:`, item);
+                                        recommendedTasks.push({
+                                            id: `${ptaskDoc.id}_${fieldKey}_${index}`,
+                                            data: item,
+                                            matchTag: 'Personal Task',
+                                            source: 'ptask'
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        console.log('❌ No match for this ptask document');
+                    }
                 });
-                
-                // Sort by score and take top 3
-                recommendedTasks.sort((a, b) => b.score - a.score);
-                recommendedTasks = recommendedTasks.slice(0, 3);
-                
-                if (recommendedTasks.length === 0) {
-                    // Fallback: show random tasks
-                    const allTasks = [];
-                    querySnapshot.forEach((doc) => {
-                        allTasks.push({ id: doc.id, data: doc.data() });
+
+                console.log(`📋 Total tasks found in ptask collection: ${recommendedTasks.length}`);
+
+                // Also check the main tasks collection for email-matched tasks
+                try {
+                    const tasksRef = collection(db, 'tasks');
+                    const q = query(
+                        tasksRef,
+                        where('status', 'in', ['open', 'in-progress']),
+                        limit(50)
+                    );
+                    
+                    const querySnapshot = await getDocs(q);
+                    console.log(`🔍 Checking ${querySnapshot.size} tasks in main collection...`);
+
+                    querySnapshot.forEach((docItem) => {
+                        const task = docItem.data();
+                        
+                        // Check ALL possible email fields
+                        const taskEmails = [
+                            task.email,
+                            task.ptaskEmail,
+                            task.associatedEmail,
+                            task.ownerEmail,
+                            task.createdByEmail,
+                            task.contactEmail,
+                            task.recommendedEmail,
+                            task.assignedToEmail,
+                            task.targetEmail,
+                            task.userEmail,
+                            ...(task.recommendedByEmails || []),
+                            ...(task.recommendedForEmails || []),
+                            ...(task.associatedEmails || []),
+                            ...(task.targetEmails || []),
+                            ...(task.ptaskEmails || [])
+                        ].filter(Boolean).map(e => String(e).toLowerCase());
+
+                        // Check if user's email matches
+                        if (taskEmails.includes(userEmail)) {
+                            console.log(`✅ Email match in tasks collection: ${task.title}`);
+                            recommendedTasks.push({
+                                id: docItem.id,
+                                data: task,
+                                matchTag: 'Recommended for you',
+                                source: 'tasks'
+                            });
+                        }
                     });
-                    recommendedTasks = allTasks.slice(0, 3);
+                } catch (tasksError) {
+                    console.warn('⚠️ Could not query tasks collection:', tasksError.message);
                 }
-                
+
+                console.log(`� Total recommended tasks: ${recommendedTasks.length}`);
+
+                // Sort by creation date if available
+                recommendedTasks.sort((a, b) => {
+                    const aTime = a.data.createdAt?.seconds || a.data.timestamp?.seconds || 0;
+                    const bTime = b.data.createdAt?.seconds || b.data.timestamp?.seconds || 0;
+                    return bTime - aTime;
+                });
+
+                // Limit to 6 tasks
+                recommendedTasks = recommendedTasks.slice(0, 6);
+
                 if (recommendedTasks.length === 0) {
+                    console.log('⚠️ No tasks found in ptask collection for this email');
+                    console.log('💡 SOLUTION: Your ptask document needs a "tasks" array field!');
+                    console.log('📝 To fix this, add tasks to Firestore at: ptask/' + userId);
+                    console.log('📝 Example structure needed in ptask document:');
+                    console.log(JSON.stringify({
+                        tasks: [{
+                            title: "Complete Security Audit",
+                            description: "Review the authentication system",
+                            reward: 500,
+                            status: "open"
+                        }]
+                    }, null, 2));
+                    
                     container.innerHTML = `
-                        <div class="flex items-center justify-center h-full">
-                            <div class="text-center">
-                                <span class="material-symbols-outlined text-4xl text-primary mb-2">auto_awesome</span>
-                                <p class="text-sm text-text-muted-dark">No recommendations yet</p>
-                                <p class="text-xs text-text-muted-dark mt-1">Complete more tasks to get personalized suggestions!</p>
+                        <div class="col-span-full flex items-center justify-center">
+                            <div class="text-center max-w-2xl p-6">
+                                <span class="material-symbols-outlined text-5xl text-primary mb-3">auto_awesome</span>
+                                <p class="text-base text-cream font-bold mb-2">No Tasks in PTask Document</p>
+                                <p class="text-sm text-text-muted-dark mb-4">Your ptask document exists but contains no "tasks" field.</p>
+                                <div class="text-left bg-card-dark rounded-lg p-4 text-sm space-y-2">
+                                    <p class="font-bold text-primary">📋 How to add tasks:</p>
+                                    <p class="text-text-muted-dark">1. Open Firestore Console</p>
+                                    <p class="text-text-muted-dark">2. Go to collection: <code class="bg-background-dark px-2 py-1 rounded text-primary">ptask</code></p>
+                                    <p class="text-text-muted-dark">3. Open document: <code class="bg-background-dark px-2 py-1 rounded text-primary">${userId}</code></p>
+                                    <p class="text-text-muted-dark">4. Add field: <code class="bg-background-dark px-2 py-1 rounded text-primary">tasks</code> (type: array)</p>
+                                    <p class="text-text-muted-dark">5. Add task objects with: title, description, reward, status</p>
+                                </div>
+                                <button onclick="window.open('https://console.firebase.google.com/project/taskmatch-openhack2025/firestore/data/ptask/${userId}')" class="mt-4 px-4 py-2 bg-primary text-background-dark rounded-lg font-bold hover:bg-primary-light transition-colors">
+                                    Open in Firestore →
+                                </button>
                             </div>
                         </div>
                     `;
                     return;
                 }
-                
+
+                // Render tasks
                 container.innerHTML = '';
-                recommendedTasks.forEach(({ id, data, score }) => {
+                recommendedTasks.forEach(({ id, data, matchTag, source }) => {
+                    const taskCard = document.createElement('a');
+                    // Use different link based on source
+                    if (source === 'ptask') {
+                        taskCard.href = data.link || data.url || '#';
+                        if (!data.link && !data.url) {
+                            taskCard.style.cursor = 'default';
+                            taskCard.onclick = (e) => {
+                                e.preventDefault();
+                                alert('Task details:\n\n' + JSON.stringify(data, null, 2));
+                            };
+                        }
+                    } else {
+                        taskCard.href = `/task/${id}`;
+                    }
+                    
+                    taskCard.className = 'flex flex-col gap-2 p-4 rounded-lg bg-card-dark/60 hover:bg-card-dark border border-border-dark hover:border-primary transition-all cursor-pointer';
+
+                    const tagHtml = `<span class="text-[11px] bg-primary/20 text-primary px-2 py-1 rounded-full font-bold flex-shrink-0">${matchTag}</span>`;
+                    const sourceTag = source === 'ptask' ? '<span class="text-[11px] bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full font-bold flex-shrink-0">PTASK</span>' : '';
+
+                    taskCard.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-cream font-bold text-sm line-clamp-2">${data.title || data.name || 'Untitled Task'}</p>
+                            <div class="flex gap-1 flex-shrink-0">
+                                ${tagHtml}
+                                ${sourceTag}
+                            </div>
+                        </div>
+                        <p class="text-text-muted-dark text-xs line-clamp-2">${data.description || data.desc || 'No description'}</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-primary font-bold text-sm">${data.reward || data.points || 0} HLP</span>
+                            <span class="text-xs text-text-muted-dark">✨ ${source === 'ptask' ? 'From PTask' : 'Personalized'}</span>
+                        </div>
+                    `;
+
+                    container.appendChild(taskCard);
+                });
+
+                console.log('✅ AI Recommendations loaded successfully');
+
+            } catch (error) {
+                console.error('❌ Error loading AI recommendations:', error);
+                console.error('Stack:', error.stack);
+                container.innerHTML = `
+                    <div class="col-span-full flex items-center justify-center h-32">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+                            <p class="text-sm text-text-muted-dark">Could not load recommendations</p>
+                            <p class="text-xs text-text-muted-dark mt-1">${error.message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load Personal Tasks (PTasks) for the user
+        async function loadPTasks(userId) {
+            const container = document.getElementById('ptasksContainer');
+            
+            try {
+                console.log('🔍 Loading PTasks for user:', userId);
+                
+                // Get the ptask document for this user
+                const ptaskDocRef = doc(db, 'ptask', userId);
+                const ptaskDoc = await getDoc(ptaskDocRef);
+                
+                if (!ptaskDoc.exists()) {
+                    console.log('⚠️ No ptask document found for user');
+                    container.innerHTML = `
+                        <div class="col-span-full flex items-center justify-center h-32">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">assignment</span>
+                                <p class="text-sm text-text-muted-dark">No personal tasks yet</p>
+                                <p class="text-xs text-text-muted-dark mt-1">Tasks will appear here as they are assigned to you</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const ptaskData = ptaskDoc.data();
+                console.log('✅ PTasks data loaded:', ptaskData);
+
+                // Get user's email from ptask data or auth
+                const userEmail = auth.currentUser?.email || ptaskData.email || '';
+
+                // Query tasks collection for tasks associated with this user's email
+                const tasksRef = collection(db, 'tasks');
+                const q = query(
+                    tasksRef,
+                    where('status', 'in', ['open', 'in-progress']),
+                    limit(50)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                let userPTasks = [];
+
+                // Filter tasks that are associated with the user's email
+                querySnapshot.forEach((docItem) => {
+                    const task = docItem.data();
+                    
+                    // Check various email fields
+                    const taskEmails = [
+                        task.associatedEmail,
+                        task.ownerEmail,
+                        task.createdByEmail,
+                        task.email,
+                        task.ptaskEmail,
+                        task.contactEmail,
+                        task.recommendedEmail,
+                        task.assignedToEmail,
+                        ...(task.recommendedByEmails || []),
+                        ...(task.recommendedForEmails || []),
+                        ...(task.associatedEmails || [])
+                    ].filter(Boolean).map(e => String(e).toLowerCase());
+
+                    // Check if user's email matches any task email
+                    if (userEmail && taskEmails.includes(userEmail.toLowerCase())) {
+                        userPTasks.push({
+                            id: docItem.id,
+                            data: task
+                        });
+                    }
+                });
+
+                console.log(`📋 Found ${userPTasks.length} personal tasks for user`);
+
+                // Sort by creation date or priority
+                userPTasks.sort((a, b) => {
+                    const aTime = a.data.createdAt?.seconds || 0;
+                    const bTime = b.data.createdAt?.seconds || 0;
+                    return bTime - aTime;
+                });
+
+                // Limit to 6 tasks
+                userPTasks = userPTasks.slice(0, 6);
+
+                if (userPTasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full flex items-center justify-center h-32">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-4xl text-primary mb-2">assignment_turned_in</span>
+                                <p class="text-sm text-text-muted-dark">No personal tasks assigned</p>
+                                <p class="text-xs text-text-muted-dark mt-1">Tasks linked to your email will appear here</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Render PTasks
+                container.innerHTML = '';
+                userPTasks.forEach(({ id, data }) => {
                     const taskCard = document.createElement('a');
                     taskCard.href = `/task/${id}`;
-                    taskCard.className = 'flex flex-col gap-2 p-4 rounded-lg bg-background-dark/50 hover:bg-background-dark border border-primary/20 hover:border-primary transition-all cursor-pointer';
-                    
+                    taskCard.className = 'flex flex-col gap-2 p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border border-primary/30 hover:border-primary transition-all cursor-pointer';
+
+                    const statusBadge = data.status === 'in-progress' 
+                        ? '<span class="text-[11px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full font-bold">IN PROGRESS</span>'
+                        : '<span class="text-[11px] bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-bold">OPEN</span>';
+
                     taskCard.innerHTML = `
                         <div class="flex items-start justify-between gap-2">
                             <p class="text-cream font-bold text-sm line-clamp-2">${data.title || 'Untitled Task'}</p>
-                            ${score > 0 ? '<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold flex-shrink-0">Match!</span>' : ''}
+                            ${statusBadge}
                         </div>
                         <p class="text-text-muted-dark text-xs line-clamp-2">${data.description || 'No description'}</p>
                         <div class="flex items-center justify-between mt-1">
                             <span class="text-primary font-bold text-sm">${data.reward || 0} HLP</span>
-                            <span class="text-xs text-text-muted-dark">AI suggested</span>
+                            <span class="text-xs text-primary flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">person_check</span>
+                                Personal Task
+                            </span>
                         </div>
                     `;
-                    
+
                     container.appendChild(taskCard);
                 });
-                
+
             } catch (error) {
-                console.error('Error loading AI recommendations:', error);
+                console.error('❌ Error loading PTasks:', error);
                 container.innerHTML = `
-                    <div class="flex items-center justify-center h-full">
+                    <div class="col-span-full flex items-center justify-center h-32">
                         <div class="text-center">
-                            <span class="material-symbols-outlined text-4xl text-text-muted-dark mb-2">error</span>
-                            <p class="text-sm text-text-muted-dark">Could not load recommendations</p>
+                            <span class="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+                            <p class="text-sm text-text-muted-dark">Could not load personal tasks</p>
+                            <p class="text-xs text-text-muted-dark mt-1">${error.message}</p>
                         </div>
                     </div>
                 `;
@@ -1381,6 +1766,22 @@
                     </div>
                 `;
                 await loadAIRecommendations(currentUser.uid);
+            }
+        });
+
+        // Refresh PTasks button
+        document.getElementById('refreshPTasks')?.addEventListener('click', async () => {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                document.getElementById('ptasksContainer').innerHTML = `
+                    <div class="col-span-full flex items-center justify-center h-32">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                            <p class="text-sm text-text-muted-dark">Refreshing...</p>
+                        </div>
+                    </div>
+                `;
+                await loadPTasks(currentUser.uid);
             }
         });
 
