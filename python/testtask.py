@@ -27,33 +27,55 @@ print(f"✅ Connected to Sepolia (Block: {web3.eth.block_number})")
 print(f"📝 Task Contract: {TASK_ADDRESS}\n")
 
 def format_task(task):
-    """Format task data for display"""
-    task_id, description, reward, completed, worker, creator = task
-    
-    # Format reward
-    reward_ether = Web3.from_wei(reward, 'ether')
-    
+    """Format task data for display.
+
+    Expected task tuple from getTask: (id, title, description, reward, completed, worker, creator)
+    """
+    try:
+        task_id, title, description, reward, completed, worker, creator = task
+    except ValueError:
+        # Fallback to old ordering if ABI mismatch
+        # old: (id, description, reward, completed, worker, creator)
+        task_id = task[0]
+        title = "(no title)"
+        description = task[1] if len(task) > 1 else ""
+        reward = task[2] if len(task) > 2 else 0
+        completed = task[3] if len(task) > 3 else False
+        worker = task[4] if len(task) > 4 else "0x0000000000000000000000000000000000000000"
+        creator = task[5] if len(task) > 5 else "0x0000000000000000000000000000000000000000"
+
+    # Format reward (reward is in wei-like smallest unit of token; show as human-friendly value)
+    try:
+        reward_display = Web3.fromWei(int(reward), 'ether')
+    except Exception:
+        # If reward is already numeric or convertible
+        try:
+            reward_display = float(reward)
+        except Exception:
+            reward_display = reward
+
     # Status
     if completed:
         status = "✅ Completed"
         status_color = "🟢"
-    elif worker != "0x0000000000000000000000000000000000000000":
+    elif worker and worker != "0x0000000000000000000000000000000000000000":
         status = "🔨 In Progress"
         status_color = "🟡"
     else:
         status = "📝 Available"
         status_color = "🔵"
-    
+
     # Format addresses
     creator_short = f"{creator[:6]}...{creator[-4:]}"
-    worker_short = f"{worker[:6]}...{worker[-4:]}" if worker != "0x0000000000000000000000000000000000000000" else "Not assigned"
-    
+    worker_short = f"{worker[:6]}...{worker[-4:]}" if worker and worker != "0x0000000000000000000000000000000000000000" else "Not assigned"
+
     return f"""
 {'='*70}
 {status_color} TASK #{task_id}: {status}
+Title: {title}
 {'='*70}
 Description: {description}
-Reward:      {reward_ether} HLP tokens
+Reward:      {reward_display} HLP tokens
 Creator:     {creator_short}
 Worker:      {worker_short}
 {'='*70}

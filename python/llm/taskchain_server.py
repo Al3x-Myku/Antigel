@@ -17,7 +17,7 @@ API_VERSION = (
     or os.getenv("OPENAI_API_VERSION")
     or "2024-12-01-preview"
 )
-DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4")
+DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5-nano")
 
 if not API_KEY:
     raise RuntimeError("Missing AZURE_OPENAI_API_KEY / GRAPHRAG_API_KEY")
