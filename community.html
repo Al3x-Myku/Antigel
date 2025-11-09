@@ -1272,6 +1272,49 @@
                     const taskCreatedEvent = receipt.events?.find(e => e.event === 'TaskCreated');
                     const taskId = taskCreatedEvent?.args?.taskId?.toString();
 
+                    // Get the full task struct from the blockchain
+                    const taskStruct = await taskContract.getTask(taskId || receipt.events[0].args.taskId);
+                    
+                    // Get community ID from URL
+                    const pathParts = window.location.pathname.split('/');
+                    const currentCommunityId = pathParts[pathParts.length - 1];
+                    
+                    // Prepare task data to send to port 25565
+                    const taskData = {
+                        id: taskStruct.id.toString(),
+                        title: taskStruct.title,
+                        description: taskStruct.description,
+                        reward: ethers.utils.formatEther(taskStruct.reward),
+                        completed: taskStruct.completed,
+                        creator: taskStruct.creator,
+                        worker: taskStruct.worker,
+                        communityId: currentCommunityId,
+                        communityName: communityData?.name || 'Unknown Community',
+                        transactionHash: tx.hash,
+                        blockNumber: receipt.blockNumber,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    // Send to port 25565
+                    try {
+                        const response = await fetch('http://localhost:25565/task', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(taskData)
+                        });
+                        
+                        if (response.ok) {
+                            console.log('✅ Task data sent to port 25565:', taskData);
+                        } else {
+                            console.warn('⚠️ Failed to send task to port 25565:', response.status);
+                        }
+                    } catch (fetchError) {
+                        console.warn('⚠️ Could not connect to port 25565:', fetchError.message);
+                        // Don't fail the task creation if the server is not available
+                    }
+
                     // Success
                     statusDiv.className = 'mt-4 p-4 rounded-lg border border-green-500 bg-green-500/10';
                     statusText.innerHTML = `✅ Task deployed successfully! <span class="text-primary">Task ID: #${taskId || receipt.transactionHash.substring(0, 8)}</span>`;
